@@ -1,0 +1,22 @@
+map_enabled: "<#08c0c2>Мини-карта <#008f9a>включена"
+map_disabled: "<#08c0c2>Мини-карта <#008f9a>выключена"
+scale_set: "<#08c0c2>Масштаб мини-карты:<#008f9a> {scale}"
+style_set: "<#08c0c2>Мини-карта теперь<#008f9a> {style}"
+side_set: "<#08c0c2>Мини-карта теперь расположена на <#008f9a>{side}<#08c0c2> стороне экрана"
+
+help:
+  - '<reset><gray>------------------<#008f9a>Помощь по NMinimap<reset><gray>-------------------'
+  - "<reset><#08c0c2><click:suggest_command:'/mm enable'>/mm <#08c0c2>включить <#008f9a>включить мини-карту"
+  - "<reset><#08c0c2><click:suggest_command:'/mm disable'>/mm <#08c0c2>выключить <#008f9a>выключить мини-карту"
+  - "<reset><#08c0c2><click:suggest_command:'/mm scale '>/mm <#08c0c2>масштаб 1/2/4/8<#008f9a> задать масштаб мини-карты"
+  - "<reset><#08c0c2><click:suggest_command:'/mm style '>/mm <#08c0c2>стиль left/square<#008f9a> установить круглый или квадратный стиль мини-карты"
+  - "<reset><#08c0c2><click:suggest_command:'/mm side '>/mm <#08c0c2>сторона right/left<#008f9a> установить положение мини-карты на экране"
+
+incorrect_scale: "<red>Неправильный масштаб!<#08c0c2> Поддерживаемые масштабы: <#008f9a>1<#08c0c2>, <#008f9a>2<#08c0c2>, <#008f9a>4<#08c0c2>, <#008f9a>8"
+insufficient_permissions: "<red>У вас нет прав на использование этой команды!"
+you_cannot_use_this_scale: "<red>Вы не можете использовать этот масштаб!"
+
+side_left: "левой"
+side_right: "правой"
+style_round: "круглая"
+style_square: "квадратная"

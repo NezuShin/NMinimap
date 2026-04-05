@@ -1,0 +1,53 @@
+#Vanilla map id for plugin to work with
+map-id: 0
+
+#Map is rendered and cached by chunks
+#Every rendered chunk must have representation in ram to be displayed on map
+cache:
+  #Cache tiles instead of rendering it every time
+  allow-file-cache: true
+  #How much tiles to store? Every chunk is about 380 bytes
+  max-tiles-in-ram: 1000
+
+database:
+  mysql:
+    #Use mysql or sqlite?
+    use: false
+    ssl: true
+    port: 3306
+    host: 127.0.0.1
+    username: root
+    password: root
+    database: storage
+    table-names:
+      players: nminimap_players
+
+markers:
+  #Marker for player on minimap. Leave empty to disable
+  player-marker: player
+  #Marker for another players in world on minimap. Leave empty to disable
+  another-players-marker: player_small
+
+#Supported languages: en_US, ru_RU
+#Lang file will be copied to NMinimap/lang/<name>.yml
+language: en_US
+
+#Markers are symbols in font, so player needs resourcepack installed to see them.
+#Also, plugin uses core shader to work.
+resourcepack:
+  #Copy the default pack.mcmeta and shader files to resourcepack folder. Files are only copied if they do not already exist
+  copy-defaults: true
+  #where to copy resourcepack folder after building font files?
+  copy-destinations:
+  #    - 'PackMerger/packs/nminimap'
+  #    - 'C:\Users\nezushin\AppData\Roaming\.minecraft\resourcepacks\nminimap'
+  zip-destinations:
+    - 'NMinimap/built-pack.zip'
+#    - 'PackMerger/packs/nminimap.zip'
+#    - 'C:\Users\nezushin\AppData\Roaming\.minecraft\resourcepacks\nminimap.zip'
+
+scale:
+  #Max scale that can be selected using /map scale command.
+  max-scale: 8
+  #Check permission nminimap.scale.<scale> for /map scale <scale> command
+  use-permission: false

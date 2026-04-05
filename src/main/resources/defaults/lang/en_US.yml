@@ -1,0 +1,32 @@
+map_enabled: "<#08c0c2>Minimap<#008f9a> enabled"
+map_disabled: "<#08c0c2>Minimap<#008f9a> disabled"
+scale_set: "<#08c0c2>Minimap scale:<#008f9a> {scale}"
+style_set: "<#08c0c2>Minimap style:<#008f9a> {style}"
+side_set: "<#08c0c2>Minimap now at <#008f9a> {side} <#08c0c2> side of the screen"
+
+help:
+  - '<reset><gray>----------------<#008f9a>NMinimap help<reset><gray>---------------'
+  - "<reset><#08c0c2><click:suggest_command:'/mm enable'>/mm <#08c0c2>enable <#008f9a>turn on minimap"
+  - "<reset><#08c0c2><click:suggest_command:'/mm disable'>/mm <#08c0c2>disable <#008f9a>turn off minimap"
+  - "<reset><#08c0c2><click:suggest_command:'/mm scale '>/mm <#08c0c2>scale 1/2/4/8 <#008f9a>set minimap scale"
+  - "<reset><#08c0c2><click:suggest_command:'/mm style '>/mm <#08c0c2>scale round/square <#008f9a>set minimap round or square"
+  - "<reset><#08c0c2><click:suggest_command:'/mm side '>/mm <#08c0c2>side left/right <#008f9a>set position of minimap on screen"
+
+incorrect_scale: "<red>Incorrect scale!<#08c0c2> Supported scales: <#008f9a>1<#08c0c2>, <#008f9a>2<#08c0c2>, <#008f9a>4<#08c0c2>, <#008f9a>8"
+insufficient_permissions: "<red>Insufficient permissions!"
+you_cannot_use_this_scale: "<red>You can't use this scale!"
+
+reload_start: "<#008f9a>Reloading..."
+reload_complete: "<#008f9a>Reload complete!"
+reload_failed: "<#008f9a>Reload failed! Check console to view detailed error"
+
+admin_stats:
+  - "<reset><#08c0c2>Tiles in ram: <#008f9a>{loaded_tiles}"
+  - "<reset><#08c0c2>Cache size: <#008f9a>{cache_size}"
+  - "<reset><#08c0c2>Players with enabled maps: <#008f9a>{enabled_maps}"
+  - "<reset><#08c0c2>Active threads count: <#008f9a>{threads}"
+
+side_left: "left"
+side_right: "right"
+style_round: "round"
+style_square: "square"
