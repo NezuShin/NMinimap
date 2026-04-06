@@ -3,7 +3,7 @@
 ### Instruction
 
 - Backup your old files from `BetterHud/shaders` directory
-- Download `text.vsh` and `text.fsh` from [releases](https://github.com/) and drop them to `BetterHud/shaders`
+- Download `text.vsh` and `text.fsh` from [releases](https://github.com/NezuShin/NMinimap/releases) and drop them to `BetterHud/shaders`
 - Set `copy-defaults: false` in NMinimap's config.yml
 - Delete `NMinimap/resourcepack/assets/minecraft/shaders/core` folder
 - Reload NMinimap and BetterHud

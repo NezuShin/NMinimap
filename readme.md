@@ -3,6 +3,15 @@
 Fully vanilla minimap papermc plugin based on core shaders. Inspired by [VanillaMinimaps](https://github.com/JNNGL/VanillaMinimaps) and [Cartographer2](https://www.spigotmc.org/resources/cartographer-2-1-8-9-1-21-the-best-minimap-plugin-for-bukkit.46922/).\
 If you have questions, want ask for a feature or report a bug - feel free to open issue, mail me at nezushin@ya.ru or dm in discord @nezushin or matrix @nezushin:matrix.nezushin.ru.
 
+### Showcase
+
+* * *
+![](https://nezushin.su/nminimap-media/example_1.gif)
+![](https://nezushin.su/nminimap-media/example_2.gif)
+![](https://nezushin.su/nminimap-media/example_3.gif)
+* * *
+
+
 ### Features
 
 - Round and square minimap
@@ -62,7 +71,7 @@ You can make images smaller by increasing image size with same texture. Like in 
 
 Plugin uses `rendertype_text` shader, so shaders for hud or text decorations may not be compatible. In most plugins you must 
 disable text decorations from NMinimap work. \
-Patched shader for BetterHUD is already [provided](betterhud-patching.md). 
+Patched shader for BetterHUD is already [provided](betterhud-patching.md). If you are developer you can add compatibility with your plugin using this example easily
 
 ### How does it work?
 
