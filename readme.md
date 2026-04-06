@@ -6,9 +6,9 @@ If you have questions, want ask for a feature or report a bug - feel free to ope
 ### Showcase
 
 * * *
-![](https://nezushin.su/nminimap-media/example_1.gif)
-![](https://nezushin.su/nminimap-media/example_2.gif)
-![](https://nezushin.su/nminimap-media/example_3.gif)
+![](images/example_1.gif)
+![](images/example_2.gif)
+![](images/example_3.gif)
 * * *
 
 
