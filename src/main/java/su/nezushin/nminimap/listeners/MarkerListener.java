@@ -25,16 +25,8 @@ public class MarkerListener implements Listener {
         if(Config.anotherPlayerMarker.isEmpty())
             return;
 
-        p.getWorld().getPlayers().stream().filter(i -> !i.equals(p)).forEach(i -> {
+        p.getWorld().getPlayers().stream().filter(i -> !i.equals(p) && p.getWorld().equals(i.getWorld())).forEach(i -> {
             e.getMarkers().add(new LocationMarker(Config.anotherPlayerMarker, i.getLocation()));
         });
     }
-
-    /*@EventHandler
-    public void north(AsyncMarkerRenderEvent e) {
-        var player = e.getPlayer();
-        var p = player.getPlayer();
-
-        e.getMarkers().add(new PositionMarker("blue_marker", 0, -127, 0));
-    }*/
 }

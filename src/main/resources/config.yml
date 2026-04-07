@@ -23,10 +23,10 @@ database:
       players: nminimap_players
 
 markers:
-  #Marker for player on minimap. Leave empty to disable
-  player-marker: player
-  #Marker for another players in world on minimap. Leave empty to disable
-  another-players-marker: player_small
+  #Marker for player on minimap. Leave empty brackets to disable
+  player-marker: "player"
+  #Marker for another players in world on minimap. Leave empty brackets to disable
+  another-players-marker: "player_small"
 
 #Supported languages: en_US, ru_RU
 #Lang file will be copied to NMinimap/lang/<name>.yml

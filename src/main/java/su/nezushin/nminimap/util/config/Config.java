@@ -19,7 +19,7 @@ public class Config {
 
     public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>();
 
-    public static String playerMarker = "player", anotherPlayerMarker = "player", mysqlHost, mysqlUser, mysqlPassword, mysqlDatabase, mysqlPlayersTableName, langName;
+    public static String playerMarker, anotherPlayerMarker, mysqlHost, mysqlUser, mysqlPassword, mysqlDatabase, mysqlPlayersTableName, langName;
 
     public static File cacheFolder;
 
@@ -50,8 +50,8 @@ public class Config {
         mysqlDatabase = config.getString("database.mysql.database");
         mysqlPlayersTableName = config.getString("database.mysql.table-names.players", "nminimap_players");
 
-        playerMarker = config.getString("markers.player-marker");
-        anotherPlayerMarker = config.getString("markers.another-players-marker");
+        playerMarker = config.getString("markers.player-marker", "");
+        anotherPlayerMarker = config.getString("markers.another-players-marker", "");
 
         resourcepackCopyDestinations = config.getStringList("resourcepack.copy-destinations");
         resourcepackZipDestinations = config.getStringList("resourcepack.zip-destinations");

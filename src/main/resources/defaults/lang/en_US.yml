@@ -2,7 +2,7 @@ map_enabled: "<#08c0c2>Minimap<#008f9a> enabled"
 map_disabled: "<#08c0c2>Minimap<#008f9a> disabled"
 scale_set: "<#08c0c2>Minimap scale:<#008f9a> {scale}"
 style_set: "<#08c0c2>Minimap style:<#008f9a> {style}"
-side_set: "<#08c0c2>Minimap now at <#008f9a> {side} <#08c0c2> side of the screen"
+side_set: "<#08c0c2>Minimap now at <#008f9a>{side}<#08c0c2> side of the screen"
 
 help:
   - '<reset><gray>----------------<#008f9a>NMinimap help<reset><gray>---------------'
