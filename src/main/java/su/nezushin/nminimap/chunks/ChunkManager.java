@@ -51,7 +51,6 @@ public class ChunkManager {
 
             loadedTiles.remove(entry.getKey());
             lastChunkUse.remove(entry.getKey());
-            System.out.println("REMOVED CHUNK " + entry.getKey().x() +  " " + entry.getKey().z());
         }
     }
 
@@ -82,11 +81,8 @@ public class ChunkManager {
     }
 
     public void reRenderChunk(ChunkEntry chunk) {
-        /*chunkCache.removeFromCache(chunk);
-        getOrRenderChunk(chunk);*/
         NMinimap.async(() -> {
             chunkCache.removeFromCache(chunk);
-            //loadedTiles.remove(chunk);
 
             lastChunkUse.remove(chunk);
             awaitingChunks.add(chunk);
