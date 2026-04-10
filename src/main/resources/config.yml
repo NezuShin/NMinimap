@@ -8,6 +8,8 @@ cache:
   allow-file-cache: true
   #How much tiles to store? Every chunk is about 380 bytes
   max-tiles-in-ram: 1000
+  #Render chunk before it is needed? Useful if you are pre-generating your world using Chunky
+  render-new-chunks: true
 
 database:
   mysql:

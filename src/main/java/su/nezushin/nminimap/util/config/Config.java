@@ -16,7 +16,7 @@ public class Config {
 
     public static int mapId, maxRenderThreads = 30, maxTilesInRam = 100, maxScale = 8, mysqlPort, defaultScale;
 
-    public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true, scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound;
+    public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true, scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks;
 
     public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>(), defaultEnableBrands = new ArrayList<>();
 
@@ -38,6 +38,7 @@ public class Config {
 
         allowFileCache = config.getBoolean("cache.allow-file-cache", true);
         maxTilesInRam = config.getInt("cache.max-tiles-in-ram", 9999);
+        renderNewChunks = config.getBoolean("cache.render-new-chunks", false);
 
         mapId = config.getInt("map-id", 0);
 
@@ -68,6 +69,7 @@ public class Config {
         defaultScale = config.getInt("default-settings.scale", 1);
         defaultRightSide = config.getString("default-settings.side", "left").equalsIgnoreCase("right");
         defaultRound = config.getString("default-settings.style", "square").equalsIgnoreCase("round");
+
 
 
         cacheFolder = new File(plugin.getDataFolder(), "cache");

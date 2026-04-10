@@ -11,7 +11,6 @@ import java.util.zip.ZipOutputStream;
 
 public class ZipUtil {
 
-
     //Taken from https://stackoverflow.com/questions/15968883/how-to-zip-a-folder-itself-using-java
     public static void pack(File sourceDirPath, File file) throws IOException {
         var p = file.toPath();
@@ -20,8 +19,9 @@ public class ZipUtil {
             walk
                     .filter(path -> !Files.isDirectory(path))
                     .forEach(path -> {
-                        ZipEntry zipEntry = new ZipEntry(pp.relativize(path).toString());
+                        ZipEntry zipEntry = new ZipEntry(pp.relativize(path).toString().replace("\\", "/"));
                         try {
+
                             zs.putNextEntry(zipEntry);
                             Files.copy(path, zs);
                             zs.closeEntry();
@@ -29,6 +29,8 @@ public class ZipUtil {
                             throw new RuntimeException(e);
                         }
                     });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

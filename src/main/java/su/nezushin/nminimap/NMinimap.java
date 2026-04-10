@@ -8,6 +8,7 @@ import su.nezushin.nminimap.bstats.Metrics;
 import su.nezushin.nminimap.command.MinimapCommand;
 import su.nezushin.nminimap.database.DatabaseManager;
 import su.nezushin.nminimap.listeners.BlockListener;
+import su.nezushin.nminimap.listeners.ChunkListener;
 import su.nezushin.nminimap.listeners.PlayerListener;
 import su.nezushin.nminimap.listeners.MarkerListener;
 import su.nezushin.nminimap.packets.PacketManager;
@@ -77,6 +78,7 @@ public final class NMinimap extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(new MarkerListener(), getInstance());
         Bukkit.getPluginManager().registerEvents(new PlayerListener(), getInstance());
+        Bukkit.getPluginManager().registerEvents(new ChunkListener(), getInstance());
         new BlockListener().registerListener();
 
         for (var p : Bukkit.getOnlinePlayers())
