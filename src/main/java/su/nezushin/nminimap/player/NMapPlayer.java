@@ -30,8 +30,9 @@ public class NMapPlayer implements AnvilORMSerializable {
     private boolean enabled = false, isRight, isRound;
 
 
-    public NMapPlayer(Player player) {
+    public NMapPlayer(Player player, boolean enabled) {
         this.setPlayer(player);
+        this.enabled = enabled;
         NMinimap.getInstance().getPacketManager().spawnEntities(this.player);
     }
 

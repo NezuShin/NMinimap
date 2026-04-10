@@ -37,6 +37,9 @@ public final class NMinimap extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+
+        getCommand("minimap").setExecutor(new MinimapCommand());
+
         int pluginId = 30414;
         Metrics metrics = new Metrics(this, pluginId);
 
@@ -68,8 +71,6 @@ public final class NMinimap extends JavaPlugin {
         databaseManager = new DatabaseManager();
 
 
-        getCommand("minimap").setExecutor(new MinimapCommand());
-
         Bukkit.getScheduler().runTaskTimerAsynchronously(getInstance(), () -> {
             playersWithMap.forEach(NMapPlayer::sendMap);
         }, 1, 1).getTaskId();
@@ -98,7 +99,12 @@ public final class NMinimap extends JavaPlugin {
                     .completeAsOne();
 
             if (player == null) {
-                player = new NMapPlayer(p);
+                player = new NMapPlayer(p, Config.defaultEnableAnyway || Config.defaultEnableBrands.contains(p.getClientBrandName()));
+
+                player.setRight(Config.defaultRightSide);
+                player.setRound(Config.defaultRound);
+                player.setScale(Config.defaultScale);
+
                 player.saveAsync();
             }
 

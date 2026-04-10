@@ -15,7 +15,6 @@ public class DatabaseManager {
 
     public DatabaseManager() {
 
-//String tableName, String ip, int port, String dbname, String user, String password, boolean useSSL
         if (Config.useMysql)
             playersTable = AnvilORMFactory.factory().buildMysqlTable(NMapPlayer.class, Config.mysqlPlayersTableName, Config.mysqlHost, Config.mysqlPort, Config.mysqlDatabase, Config.mysqlUser, Config.mysqlPassword, Config.mysqlUseSSL);
         else {

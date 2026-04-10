@@ -1,6 +1,10 @@
 {
   "pack": {
-    "pack_format": 42,
+    "max_format": [84, 0],
+    "min_format": [
+      75,
+      0
+    ],
     "description": "NMinimap"
   }
 }

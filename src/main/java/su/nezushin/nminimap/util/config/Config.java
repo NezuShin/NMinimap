@@ -2,6 +2,7 @@ package su.nezushin.nminimap.util.config;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import su.nezushin.nminimap.NMinimap;
 
 import java.io.*;
@@ -13,11 +14,11 @@ public class Config {
 
     public static FileConfiguration config;
 
-    public static int mapId, maxRenderThreads = 30, maxTilesInRam = 100, maxScale = 8, mysqlPort;
+    public static int mapId, maxRenderThreads = 30, maxTilesInRam = 100, maxScale = 8, mysqlPort, defaultScale;
 
-    public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true, scaleUsePermission;
+    public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true, scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound;
 
-    public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>();
+    public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>(), defaultEnableBrands = new ArrayList<>();
 
     public static String playerMarker, anotherPlayerMarker, mysqlHost, mysqlUser, mysqlPassword, mysqlDatabase, mysqlPlayersTableName, langName;
 
@@ -27,13 +28,13 @@ public class Config {
 
 
         var plugin = NMinimap.getInstance();
-        if (!new File(plugin.getDataFolder() + File.separator + "config.yml").exists()) {
+        var configFile  = new File(plugin.getDataFolder() + File.separator + "config.yml");
+        if (!configFile.exists()) {
             plugin.getConfig().options().copyDefaults(true);
             plugin.saveDefaultConfig();
         }
 
-
-        config = plugin.getConfig();
+        config = YamlConfiguration.loadConfiguration(configFile);
 
         allowFileCache = config.getBoolean("cache.allow-file-cache", true);
         maxTilesInRam = config.getInt("cache.max-tiles-in-ram", 9999);
@@ -61,6 +62,13 @@ public class Config {
         maxScale = config.getInt("scale.max-scale", 8);
 
         langName = config.getString("language", "en_US");
+
+        defaultEnableBrands = config.getStringList("default-settings.enable-if-brand-is");
+        defaultEnableAnyway = config.getBoolean("default-settings.enable-anyway", false);
+        defaultScale = config.getInt("default-settings.scale", 1);
+        defaultRightSide = config.getString("default-settings.side", "left").equalsIgnoreCase("right");
+        defaultRound = config.getString("default-settings.style", "square").equalsIgnoreCase("round");
+
 
         cacheFolder = new File(plugin.getDataFolder(), "cache");
 
