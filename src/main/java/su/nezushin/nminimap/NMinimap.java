@@ -6,6 +6,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import su.nezushin.nminimap.bstats.Metrics;
 import su.nezushin.nminimap.command.MinimapCommand;
+import su.nezushin.nminimap.compatibility.ModCompatibilityManager;
 import su.nezushin.nminimap.database.DatabaseManager;
 import su.nezushin.nminimap.listeners.BlockListener;
 import su.nezushin.nminimap.listeners.ChunkListener;
@@ -17,9 +18,6 @@ import su.nezushin.nminimap.chunks.ChunkManager;
 import su.nezushin.nminimap.resourcepack.MarkerImageManager;
 import su.nezushin.nminimap.util.config.Config;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -31,6 +29,7 @@ public final class NMinimap extends JavaPlugin {
     private ChunkManager chunkManager;
     private MarkerImageManager markerImageManager;
     private DatabaseManager databaseManager;
+    private ModCompatibilityManager modCompatibilityManager;
 
     private final Set<NMapPlayer> playersWithMap = ConcurrentHashMap.newKeySet();//Collections.synchronizedList(new ArrayList<>());
 
@@ -65,11 +64,11 @@ public final class NMinimap extends JavaPlugin {
 
             return;
         }
+
         chunkManager = new ChunkManager();
-
         markerImageManager = new MarkerImageManager();
-
         databaseManager = new DatabaseManager();
+        modCompatibilityManager = new ModCompatibilityManager();
 
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(getInstance(), () -> {
@@ -109,9 +108,11 @@ public final class NMinimap extends JavaPlugin {
 
                 player.saveAsync();
             }
+            if (Config.disableModMapAlways)
+                getModCompatibilityManager().disableModMinimap(p);
 
             player.setPlayer(p);
-
+            
             player.setEnabled(player.isEnabled());
 
             NMinimap.getInstance().getPlayersWithMap().add(player);
@@ -141,6 +142,10 @@ public final class NMinimap extends JavaPlugin {
 
     public DatabaseManager getDatabaseManager() {
         return databaseManager;
+    }
+
+    public ModCompatibilityManager getModCompatibilityManager() {
+        return modCompatibilityManager;
     }
 
     public static NMinimap getInstance() {

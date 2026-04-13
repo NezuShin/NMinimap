@@ -67,3 +67,16 @@ default-settings:
   #round or square
   style: square
 
+#Currently works with VoxelMap and Xaero's Minimap
+mods-compatibility:
+  mode: 1
+  #Modes:
+  #1 - Always disable mod-driven minimap
+  #2 - Disable mod-driven minimap only if plugin-driven minimap is activated
+  #3 - Do not disable mod-driven minimap
+
+  #Enable compatibility for:
+  enable-voxel-map: true
+  enable-xaeros-map: true
+  #Note that Xaero's Minimap disable/enable action will always result empty message in chat.
+  

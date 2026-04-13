@@ -13,6 +13,7 @@ import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.api.events.AsyncMapRenderEvent;
 import su.nezushin.nminimap.api.events.AsyncMarkerRenderEvent;
 import su.nezushin.nminimap.chunks.ChunkEntry;
+import su.nezushin.nminimap.util.config.Config;
 
 public class NMapPlayer implements AnvilORMSerializable {
 
@@ -41,11 +42,11 @@ public class NMapPlayer implements AnvilORMSerializable {
 
     public void onQuit() {
         NMinimap.getInstance().getPacketManager().removeEntities(this.player);
-
+        NMinimap.getInstance().getModCompatibilityManager().resetModMinimap(this.player);
     }
 
     public void sendMap() {
-        if(!enabled)
+        if (!enabled)
             return;
         NMinimap.async(() -> {
             NMinimap.getInstance().getPacketManager().updateMap(player, prepareMap(), prepareMarkers());
@@ -74,13 +75,10 @@ public class NMapPlayer implements AnvilORMSerializable {
                 var localZ = Math.floorMod(wz, 16);
 
                 var chunk = new ChunkEntry(world, cx, cz);
-                //System.out.println("getOrRenderChunk start");
                 var bytes = chunkManager.getOrRenderChunk(chunk).get(scale);
-                //System.out.println("getOrRenderChunk end");
 
-               // System.out.println("getLastChunkUse start");
                 chunkManager.getLastChunkUse().put(new ChunkEntry(world, cx, cz), System.currentTimeMillis());
-                //System.out.println("getLastChunkUse end");
+
                 var indexXX = Math.floorDiv(localX, scale);
                 var indexZZ = Math.floorDiv(localZ, scale);
 
@@ -122,8 +120,6 @@ public class NMapPlayer implements AnvilORMSerializable {
             }
         }
 
-        //builder.append(Component.text("\uE000").font(Key.key("nminimap:default")).color(TextColor.color(128, 128, (int) ((player.getYaw() / 360.0f) * 256.0) - 127)));
-
         return builder.asComponent();
     }
 
@@ -134,6 +130,15 @@ public class NMapPlayer implements AnvilORMSerializable {
         } else {
             NMinimap.getInstance().getPacketManager().removeEntities(player);
         }
+
+        if (Config.disableModMapActivated) {
+            var mods = NMinimap.getInstance().getModCompatibilityManager();
+            if (enabled)
+                mods.disableModMinimap(player);
+            else
+                mods.resetModMinimap(player);
+        }
+
         saveAsync();
     }
 

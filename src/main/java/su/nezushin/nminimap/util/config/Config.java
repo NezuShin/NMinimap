@@ -16,7 +16,7 @@ public class Config {
 
     public static int mapId, maxRenderThreads = 30, maxTilesInRam = 100, maxScale = 8, mysqlPort, defaultScale;
 
-    public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true, scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks;
+    public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true, scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated, disableModMapAlways, enableModVoxelMap, enableModXaerosMap;
 
     public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>(), defaultEnableBrands = new ArrayList<>();
 
@@ -28,7 +28,7 @@ public class Config {
 
 
         var plugin = NMinimap.getInstance();
-        var configFile  = new File(plugin.getDataFolder() + File.separator + "config.yml");
+        var configFile = new File(plugin.getDataFolder() + File.separator + "config.yml");
         if (!configFile.exists()) {
             plugin.getConfig().options().copyDefaults(true);
             plugin.saveDefaultConfig();
@@ -70,7 +70,21 @@ public class Config {
         defaultRightSide = config.getString("default-settings.side", "left").equalsIgnoreCase("right");
         defaultRound = config.getString("default-settings.style", "square").equalsIgnoreCase("round");
 
+        var modsCompatibilityMode = config.getInt("mods-compatibility.mode", 2);
 
+        if (modsCompatibilityMode == 1) {
+            disableModMapAlways = true;
+            disableModMapActivated = false;
+        } else if (modsCompatibilityMode == 2) {
+            disableModMapAlways = false;
+            disableModMapActivated = true;
+        } else {
+            disableModMapAlways = false;
+            disableModMapActivated = false;
+        }
+
+        enableModVoxelMap = config.getBoolean("mods-compatibility.enable-voxel-map", true);
+        enableModXaerosMap = config.getBoolean("mods-compatibility.enable-xaeros-map", true);
 
         cacheFolder = new File(plugin.getDataFolder(), "cache");
 
