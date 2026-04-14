@@ -1,7 +1,6 @@
 # NMinimap
 
 Fully vanilla minimap papermc plugin based on core shaders. Inspired by [VanillaMinimaps](https://github.com/JNNGL/VanillaMinimaps) and [Cartographer2](https://www.spigotmc.org/resources/cartographer-2-1-8-9-1-21-the-best-minimap-plugin-for-bukkit.46922/).\
-If you have questions, want ask for a feature or report a bug - feel free to open issue, mail me at nezushin@ya.ru or dm in discord @nezushin or matrix @nezushin:matrix.nezushin.ru.
 
 ### Showcase
 
@@ -69,9 +68,24 @@ You can make images smaller by increasing image size with same texture. Like in 
 
 ### Compatibility 
 
+#### Core shaders and another plugins
 Plugin uses `rendertype_text` shader, so shaders for hud or text decorations may not be compatible. In most plugins you must 
 disable text decorations from NMinimap work. \
 Patched shader for BetterHUD is already [provided](betterhud-patching.md). If you are developer you can add compatibility with your plugin using this example easily
+
+#### Mods
+
+Plugin can turn off some mod-driven minimaps at all or while serverside minimap enabled:
+
+![](images/example_4.gif)
+
+
+Supported mods:
+- [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap)
+- [VoxelMap-Updated](https://modrinth.com/mod/voxelmap-updated)
+- Another mods do not have such functionality, or it is not documented. 
+
+
 
 ### How does it work?
 
@@ -144,3 +158,9 @@ public void drawMarker(AsyncMarkerRenderEvent e){
 - [NezuShin](https://github.com/NezuShin) - Plugin development
 - [DartCat25](https://github.com/DartCat25) - Shader development
 - [DEMEMZEA](https://github.com/DEMEMZEA) - Help with readme
+
+
+### Help and support
+
+If you have questions, want ask for a feature or report a bug - feel free to [open issue](https://github.com/NezuShin/NMinimap/issues),\
+Also you can ask a question in the [discord server](https://discord.gg/rZ7gfCTr3Y).

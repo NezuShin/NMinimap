@@ -79,4 +79,3 @@ mods-compatibility:
   enable-voxel-map: true
   enable-xaeros-map: true
   #Note that Xaero's Minimap disable/enable action will always result empty message in chat.
-  
