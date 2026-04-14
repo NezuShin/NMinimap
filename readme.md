@@ -70,7 +70,7 @@ You can make images smaller by increasing image size with same texture. Like in 
 
 #### Core shaders and another plugins
 Plugin uses `rendertype_text` shader, so shaders for hud or text decorations may not be compatible. In most plugins you must 
-disable text decorations from NMinimap work. \
+disable text decorations for NMinimap work. \
 Patched shader for BetterHUD is already [provided](betterhud-patching.md). If you are developer you can add compatibility with your plugin using this example easily
 
 #### Mods
