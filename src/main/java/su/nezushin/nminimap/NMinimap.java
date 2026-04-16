@@ -13,6 +13,7 @@ import su.nezushin.nminimap.listeners.ChunkListener;
 import su.nezushin.nminimap.listeners.PlayerListener;
 import su.nezushin.nminimap.listeners.MarkerListener;
 import su.nezushin.nminimap.packets.PacketManager;
+import su.nezushin.nminimap.papi.NMinimapPAPIExpansion;
 import su.nezushin.nminimap.player.NMapPlayer;
 import su.nezushin.nminimap.chunks.ChunkManager;
 import su.nezushin.nminimap.resourcepack.MarkerImageManager;
@@ -30,6 +31,8 @@ public final class NMinimap extends JavaPlugin {
     private MarkerImageManager markerImageManager;
     private DatabaseManager databaseManager;
     private ModCompatibilityManager modCompatibilityManager;
+
+    private NMinimapPAPIExpansion placeholderAPIExpansion;
 
     private final Set<NMapPlayer> playersWithMap = ConcurrentHashMap.newKeySet();//Collections.synchronizedList(new ArrayList<>());
 
@@ -51,7 +54,7 @@ public final class NMinimap extends JavaPlugin {
         Config.init();
         this.packetManager = new PacketManager();
 
-        if (Bukkit.getPluginManager().getPlugin("AnvilORM") == null) {
+        if (!Bukkit.getPluginManager().isPluginEnabled("AnvilORM")) {
             setEnabled(false);
             this.getLogger().severe("AnvilORM plugin is not found. It is mandatory dependency. Please download it from https://github.com/NezuShin/AnvilORM/releases/");
 
@@ -65,6 +68,13 @@ public final class NMinimap extends JavaPlugin {
             return;
         }
 
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            placeholderAPIExpansion = new NMinimapPAPIExpansion();
+            sync(() -> {
+                placeholderAPIExpansion.register();
+            });
+        }
+
         chunkManager = new ChunkManager();
         markerImageManager = new MarkerImageManager();
         databaseManager = new DatabaseManager();
@@ -73,7 +83,7 @@ public final class NMinimap extends JavaPlugin {
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(getInstance(), () -> {
             playersWithMap.forEach(NMapPlayer::sendMap);
-        }, 1, 1).getTaskId();
+        }, 1, Config.mapRenderInterval).getTaskId();
 
         Bukkit.getPluginManager().registerEvents(new MarkerListener(), getInstance());
         Bukkit.getPluginManager().registerEvents(new PlayerListener(), getInstance());
@@ -89,6 +99,8 @@ public final class NMinimap extends JavaPlugin {
         playersWithMap.clear();
         HandlerList.unregisterAll(getInstance());
         Bukkit.getScheduler().cancelTasks(getInstance());
+        if (placeholderAPIExpansion != null)
+            placeholderAPIExpansion.unregister();
     }
 
     public void loadPlayer(Player p) {
@@ -112,7 +124,7 @@ public final class NMinimap extends JavaPlugin {
                 getModCompatibilityManager().disableModMinimap(p);
 
             player.setPlayer(p);
-            
+
             player.setEnabled(player.isEnabled());
 
             NMinimap.getInstance().getPlayersWithMap().add(player);

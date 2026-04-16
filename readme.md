@@ -1,6 +1,6 @@
 # NMinimap
 
-Fully vanilla minimap papermc plugin based on core shaders. Inspired by [VanillaMinimaps](https://github.com/JNNGL/VanillaMinimaps) and [Cartographer2](https://www.spigotmc.org/resources/cartographer-2-1-8-9-1-21-the-best-minimap-plugin-for-bukkit.46922/).\
+Fully vanilla minimap papermc plugin based on core shaders. Inspired by [VanillaMinimaps](https://github.com/JNNGL/VanillaMinimaps), [Cartographer2](https://www.spigotmc.org/resources/cartographer-2-1-8-9-1-21-the-best-minimap-plugin-for-bukkit.46922/) and [Minimap control](https://modrinth.com/plugin/minimap-control).\
 
 ### Showcase
 
@@ -26,6 +26,7 @@ Fully vanilla minimap papermc plugin based on core shaders. Inspired by [Vanilla
 - [AnvilORM](https://github.com/NezuShin/AnvilORM/releases/tag/V1.0.0)
 - [Packet events](https://www.spigotmc.org/resources/packetevents-api.80279/)
 - [PassengerAPI](https://www.spigotmc.org/resources/passengerapi-entity-passenger-bug-fixes-more.117017/) (Optional; Needed for compatibility with another plugins)
+- [PassengerAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) (Optional; If you need placeholders)
 - Papermc server or its fork. Spigot is not supported due to it not being able to load chunks async and
 not having MaterialTags used to determine block color
 
@@ -55,6 +56,20 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 - `/minimap style round/square` - set map round or square
 - `/minmap disable/enable` - disable or enable map
 
+### PlaceholderAPI Placeholders
+
+#### Player related:
+- `nminimap_enabled` - true or false
+- `nminimap_scale` - 1, 2, 4, 8
+- `nminimap_side` - right or left
+- `nminimap_style` - round or square
+
+#### Statistics related:
+- `nminimap_stats_loaded_tiles` - count of tiles in ram, number
+- `nminimap_stats_cache_size` - total count of all cached chunks, number
+- `nminimap_stats_enabled_maps` - how many players use map right now, number
+- `nminimap_stats_threads` - how many plugin's threads running right now, number
+
 ### Markers
 
 Markers are just font images with special marks on texture, so they have same limitations:
@@ -83,6 +98,7 @@ Plugin can turn off some mod-driven minimaps at all or while serverside minimap 
 Supported mods:
 - [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap)
 - [VoxelMap-Updated](https://modrinth.com/mod/voxelmap-updated)
+- [JourneyMap](https://modrinth.com/mod/journeymap)
 - Another mods do not have such functionality, or it is not documented. 
 
 

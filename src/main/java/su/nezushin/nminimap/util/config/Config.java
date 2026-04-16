@@ -14,9 +14,10 @@ public class Config {
 
     public static FileConfiguration config;
 
-    public static int mapId, maxRenderThreads = 30, maxTilesInRam = 100, maxScale = 8, mysqlPort, defaultScale;
+    public static int mapId, maxRenderThreads = 30, maxTilesInRam = 100, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval;
 
-    public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true, scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated, disableModMapAlways, enableModVoxelMap, enableModXaerosMap;
+    public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true,
+            scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated, disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling;
 
     public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>(), defaultEnableBrands = new ArrayList<>();
 
@@ -41,6 +42,10 @@ public class Config {
         renderNewChunks = config.getBoolean("cache.render-new-chunks", false);
 
         mapId = config.getInt("map-id", 0);
+
+        mapRenderInterval = config.getInt("player-render-interval", 1);
+
+        skipCeiling = config.getBoolean("skip-ceiling", true);
 
         useMysql = config.getBoolean("database.mysql.use", false);
 
@@ -85,6 +90,7 @@ public class Config {
 
         enableModVoxelMap = config.getBoolean("mods-compatibility.enable-voxel-map", true);
         enableModXaerosMap = config.getBoolean("mods-compatibility.enable-xaeros-map", true);
+        enableModJourneyMap = config.getBoolean("mods-compatibility.enable-journey-map", true);
 
         cacheFolder = new File(plugin.getDataFolder(), "cache");
 

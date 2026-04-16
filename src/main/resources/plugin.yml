@@ -3,6 +3,10 @@ version: '1.0.2'
 main: su.nezushin.nminimap.NMinimap
 api-version: '1.21'
 
+authors:
+  - NezuShin
+  - DartCat25
+
 commands:
   minimap:
     aliases: [mm]
@@ -11,3 +15,4 @@ softdepend:
   - packetevents
   - PassengerAPI
   - AnvilORM
+  - PlaceholderAPI

@@ -11,12 +11,16 @@ public class ChunkListener implements Listener {
 
     @EventHandler
     public void chunkGenerate(ChunkLoadEvent e) {
-        if (!e.isNewChunk() || !Config.renderNewChunks)
+        if (!Config.renderNewChunks)
             return;
 
         var chunk = e.getChunk();
         NMinimap.async(() -> {
-            NMinimap.getInstance().getChunkManager().getOrRenderChunk(new ChunkEntry(chunk.getWorld(), chunk.getX(), chunk.getZ()));
+            var chunkManager = NMinimap.getInstance().getChunkManager();
+            var entry = new ChunkEntry(chunk.getWorld(), chunk.getX(), chunk.getZ());
+
+            if (!chunkManager.getChunkCache().hasInCache(entry))
+                NMinimap.getInstance().getChunkManager().getOrRenderChunk(entry);
         });
     }
 }

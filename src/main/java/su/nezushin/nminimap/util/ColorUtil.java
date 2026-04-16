@@ -4,22 +4,35 @@ import org.bukkit.Color;
 import org.bukkit.map.MapPalette;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 
 public class ColorUtil {
 
+    private static final Map<Integer, Byte> colorMap;
+
+    private static final Map<Color, Byte> colorDistanceCache = new ConcurrentHashMap<>();
+
+
     public static byte exactColor(@NotNull Color color) {
-        for (var i = 0; i < colors.length; i++)
-            if (colors[i].asRGB() == color.asRGB())
-                return (byte) (i < 128 ? i : -129 + (i - 127));
-        return (byte) 0;
+        return colorMap.get(color.asRGB());
     }
 
     /**
-     * Similar to deprecated MapPalette.matchColor()
+     * Clear getNearestColor's cache
      */
+    public static void clearColorCache(){
+        colorDistanceCache.clear();
+    }
 
+    /**
+     * Similar to deprecated MapPalette.matchColor(). Also caches colors to increase performance. Cache can be cleared using ColorUtil.clearColorCache()
+     */
     public static byte getNearestColor(Color color) {
         if (color.getAlpha() < 128) return 0;
+        if (colorDistanceCache.containsKey(color))
+            return colorDistanceCache.get(color);
 
         int index = 0;
         double best = -1;
@@ -33,7 +46,10 @@ public class ColorUtil {
         }
 
         // Minecraft has 248 colors, some of which have negative byte representations
-        return (byte) (index < 128 ? index : -129 + (index - 127));
+        var c = (byte) (index < 128 ? index : -129 + (index - 127));
+
+        colorDistanceCache.put(color, c);
+        return c;
     }
 
     private static double getDistance(@NotNull Color c1, @NotNull Color c2) {
@@ -303,4 +319,12 @@ public class ColorUtil {
             Color.fromRGB(0x7FA796),
             Color.fromRGB(0x43584F),
     };
+
+    static {
+        colorMap = new ConcurrentHashMap<>();
+
+        for (var i = 0; i < colors.length; i++) {
+            colorMap.put(colors[i].asRGB(), (byte) (i < 128 ? i : -129 + (i - 127)));
+        }
+    }
 }

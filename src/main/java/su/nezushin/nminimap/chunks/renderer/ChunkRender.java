@@ -27,7 +27,7 @@ public class ChunkRender {
             Chunk c = futureFirstChunk.join();
             Chunk cNorth = futureSecondChunk.join();
 
-
+            var hasCeiling = c.getWorld().hasCeiling();
             int minY = c.getWorld().getMinHeight();
             var chunkSnapshot = c.getChunkSnapshot(true, false, false);
             var northChunkSnapshot = cNorth.getChunkSnapshot(true, false, false);
@@ -40,9 +40,9 @@ public class ChunkRender {
                 for (var x = 0; x < 16; x++) {
                     for (var z = 0; z < 16; z++) {
                         if (z < 8) {
-                            northChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(northChunkSnapshot, x, 15 - z, minY);
+                            northChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(northChunkSnapshot, x, 15 - z, minY, hasCeiling);
                         }
-                        currentChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(chunkSnapshot, x, z, minY);
+                        currentChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(chunkSnapshot, x, z, minY, hasCeiling);
                     }
                 }
 

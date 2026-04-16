@@ -6,6 +6,7 @@ import org.bukkit.ChunkSnapshot;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import su.nezushin.nminimap.chunks.BlockDataInfo;
+import su.nezushin.nminimap.util.config.Config;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -59,8 +60,13 @@ public class RenderUtil {
     }
 
 
-    public static int getHighestNonTransparentBlockAt(ChunkSnapshot c, int x, int z, int minY) {
+    public static int getHighestNonTransparentBlockAt(ChunkSnapshot c, int x, int z, int minY, boolean hasCeiling) {
         var y = c.getHighestBlockYAt(x, z);
+
+        if (Config.skipCeiling && hasCeiling && c.getBlockType(x, y, z) == Material.BEDROCK)//skip ceiling if needed
+            while (y > minY && !isTransparent(c.getBlockType(x, y, z))) {
+                y--;
+            }
 
         while (y > minY && isTransparent(c.getBlockType(x, y, z))) {
             y--;
@@ -75,8 +81,8 @@ public class RenderUtil {
         return level - y;
     }
 
-    public static BlockDataInfo getHighestBlockDataAt(ChunkSnapshot c, int x, int z, int minY) {
-        var y = Math.max(getHighestNonTransparentBlockAt(c, x, z, minY), minY);
+    public static BlockDataInfo getHighestBlockDataAt(ChunkSnapshot c, int x, int z, int minY, boolean hasCeiling) {
+        var y = Math.max(getHighestNonTransparentBlockAt(c, x, z, minY, hasCeiling), minY);
 
         var blockData = c.getBlockData(x, y, z);
         var waterDepth = 0;

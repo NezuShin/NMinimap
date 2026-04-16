@@ -15,11 +15,13 @@ repositories {
     maven { url 'https://jitpack.io' }
     maven { url 'https://maven.evokegames.gg/snapshots' }
     maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
+    maven { url 'https://repo.extendedclip.com/releases/' }
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly('com.github.maximjsx:PassengerAPI:1.5.1')
+    compileOnly('me.clip:placeholderapi:2.12.2')
     compileOnly("com.github.retrooper:packetevents-spigot:2.11.2")
     compileOnly(files("F:\\minecraft-servers\\v5-minimap-tests\\plugins\\AnvilORM.jar"))
 

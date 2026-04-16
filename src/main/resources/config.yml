@@ -11,6 +11,15 @@ cache:
   #Render chunk before it is needed? Useful if you are pre-generating your world using Chunky
   render-new-chunks: true
 
+#How frequent update player's map? In ticks. One second is 20 ticks
+# 1 = 20 updates per second; 2 = 10 updates; etc.
+player-render-interval: 1
+
+#When rendering worlds with a ceiling(e.g. Nether), should it be skipped?
+#false - only display buildings above the ceiling (like vanilla maps do)
+#true - also display territory under the ceiling
+skip-ceiling: true
+
 database:
   mysql:
     #Use mysql or sqlite?
@@ -78,4 +87,7 @@ mods-compatibility:
   #Enable compatibility for:
   enable-voxel-map: true
   enable-xaeros-map: true
+  enable-journey-map: true
   #Note that Xaero's Minimap disable/enable action will always result empty message in chat.
+  #Also, Journey Minimap sends messages that minimap was disabled by server.
+
