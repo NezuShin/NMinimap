@@ -131,15 +131,18 @@ public class NMapPlayer implements AnvilORMSerializable {
             NMinimap.getInstance().getPacketManager().removeEntities(player);
         }
 
-        if (Config.disableModMapActivated) {
+        handleModMinimap();
+        saveAsync();
+    }
+
+    public void handleModMinimap() {
+        if (Config.disableModMapActivated || Config.disableModMapAlways) {
             var mods = NMinimap.getInstance().getModCompatibilityManager();
-            if (enabled)
+            if (enabled || Config.disableModMapAlways)
                 mods.disableModMinimap(player);
             else
                 mods.resetModMinimap(player);
         }
-
-        saveAsync();
     }
 
     public void saveAsync() {

@@ -65,7 +65,7 @@ public class VoxelMapProvider implements ModInterfaceProvider {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }, 2L);
+        }, 10L);
 
     }
 

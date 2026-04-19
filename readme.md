@@ -27,19 +27,17 @@ Serverside minimap based on core shaders
 
 ### Showcase
 
-* * *
 ![](images/example_1.gif)
 ![](images/example_2.gif)
 ![](images/example_3.gif)
-* * *
 
 
 ### Dependencies
 
-- [AnvilORM](https://github.com/NezuShin/AnvilORM/releases/tag/V1.0.0)
+- [AnvilORM](https://github.com/NezuShin/AnvilORM/releases/)
 - [Packet events](https://www.spigotmc.org/resources/packetevents-api.80279/)
 - [PassengerAPI](https://www.spigotmc.org/resources/passengerapi-entity-passenger-bug-fixes-more.117017/) (Optional; Needed for compatibility with another plugins)
-- [PassengerAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) (Optional; If you need placeholders)
+- [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) (Optional; If you need placeholders)
 
 ### Installation
 
@@ -185,7 +183,7 @@ public void drawMarker(AsyncMarkerRenderEvent e){
 ### Inspirations
 - [VanillaMinimaps](https://github.com/JNNGL/VanillaMinimaps)
 - [Cartographer2](https://www.spigotmc.org/resources/cartographer-2-1-8-9-1-21-the-best-minimap-plugin-for-bukkit.46922/)
-- [Minimap control](https://modrinth.com/plugin/minimap-control).
+- [Minimap control](https://modrinth.com/plugin/minimap-control)
 
 
 ### Credits
