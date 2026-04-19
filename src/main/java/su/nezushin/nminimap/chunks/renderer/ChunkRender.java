@@ -16,7 +16,6 @@ public class ChunkRender {
     public void renderChunk(ChunkEntry chunk) {
         var chunkManager = NMinimap.getInstance().getChunkManager();
         chunkManager.getLoadingChunks().add(chunk);
-
         CompletableFuture<Chunk> futureFirstChunk = chunk.w().getChunkAtAsync(chunk.x(), chunk.z());
         CompletableFuture<Chunk> futureSecondChunk = chunk.w().getChunkAtAsync(chunk.x(), chunk.z() - 1);
 

@@ -2,6 +2,7 @@ package su.nezushin.nminimap.packets;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
@@ -11,12 +12,12 @@ import su.nezushin.nminimap.packets.hooks.PassengerHook;
 import su.nezushin.nminimap.packets.hooks.impl.PacketEventsEntityHook;
 import su.nezushin.nminimap.packets.hooks.impl.PacketEventsPassengerHook;
 import su.nezushin.nminimap.packets.hooks.impl.PassengerAPIPassengerHook;
+import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
 import su.nezushin.nminimap.util.VanillaMapUtil;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class PacketManager {
 
@@ -31,14 +32,10 @@ public class PacketManager {
 
     private ItemStack mapItem;
 
-    private Set<Player> trackedPlayers = Collections.synchronizedSet(new HashSet<>());
-    private final Object trackedPlayersSync = new Object();
+    private final Set<Player> trackedPlayers = ConcurrentHashMap.newKeySet();
 
-    private BukkitTask tracker;
 
     public PacketManager() {
-
-
         if (Bukkit.getPluginManager().getPlugin("packetevents") != null) {
             this.entityHook = new PacketEventsEntityHook();
             this.passengerHook = new PacketEventsPassengerHook();
@@ -62,7 +59,10 @@ public class PacketManager {
         mapItem = VanillaMapUtil.createItem(mapId);
 
 
-        tracker = Bukkit.getScheduler().runTaskTimerAsynchronously(NMinimap.getInstance(), this::tickTrackedPlayers, 1, 1);
+        SchedulerUtil.getScheduler().async(this::tickTrackedPlayers, 1, 1);
+        if (SchedulerUtil.getScheduler().isFolia())
+            SchedulerUtil.getScheduler().async(this::foliaTickTrackedPlayers, 20, 20);
+
     }
 
     public boolean isReady() {
@@ -84,10 +84,7 @@ public class PacketManager {
 
         passengerHook.updatePassengers(p, upItemFrameEntityId, downItemFrameEntityId, markerEntityId);
 
-
-        synchronized (trackedPlayersSync) {
-            trackedPlayers.add(p);
-        }
+        trackedPlayers.add(p);
     }
 
     /**
@@ -96,7 +93,8 @@ public class PacketManager {
      * @param mapData
      * @param markers
      */
-    public void updateMap(Player p, byte[] mapData, Component markers){
+    public void updateMap(Player p, byte[] mapData, Component markers) {
+
         entityHook.sendMapData(p, mapId, 0, mapData);
         entityHook.sendMarkerData(p, markerEntityId, markers);
     }
@@ -108,17 +106,31 @@ public class PacketManager {
      */
     public void removeEntities(Player p) {
         entityHook.removeEntities(p, upItemFrameEntityId, downItemFrameEntityId, facingItemFrameEntityId, markerEntityId);
-        synchronized (trackedPlayersSync) {
-            this.trackedPlayers.remove(p);
-        }
+        this.trackedPlayers.remove(p);
     }
 
-    private void tickTrackedPlayers() {
-        synchronized (trackedPlayersSync) {
-            for (var p : trackedPlayers) {
-                entityHook.teleportItemFrame(p, facingItemFrameEntityId);
+
+    private final Map<Player, World> foliaWorldMap = new ConcurrentHashMap<>();
+
+    /*
+     PlayerTeleportEvent is broken on folia, this is ugly fix
+     https://github.com/PaperMC/Folia/issues/330
+      */
+    private void foliaTickTrackedPlayers() {
+        for (var p : trackedPlayers) {
+            if (!p.getWorld().equals(foliaWorldMap.get(p))) {
+                spawnEntities(p);
+                foliaWorldMap.put(p, p.getWorld());
             }
         }
     }
+
+
+    private void tickTrackedPlayers() {
+        for (var p : trackedPlayers) {
+            entityHook.teleportItemFrame(p, facingItemFrameEntityId);
+        }
+    }
+
 
 }

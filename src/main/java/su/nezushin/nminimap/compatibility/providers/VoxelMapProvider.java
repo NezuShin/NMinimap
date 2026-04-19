@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import su.nezushin.nminimap.NMinimap;
+import su.nezushin.nminimap.util.SchedulerUtil;
+import su.nezushin.nminimap.util.config.Config;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -31,6 +33,7 @@ public class VoxelMapProvider implements ModInterfaceProvider {
     public void disableMap(Player p) {
         Map<String, Object> settings = new HashMap<>();
         settings.put("minimapAllowed", false);
+        putRadarData(settings);
 
         sendData(p, settings);
     }
@@ -39,12 +42,19 @@ public class VoxelMapProvider implements ModInterfaceProvider {
     public void resetMap(Player p) {
         Map<String, Object> settings = new HashMap<>();
         settings.put("minimapAllowed", true);
+        putRadarData(settings);
 
         sendData(p, settings);
     }
 
+    private void putRadarData(Map<String, Object> settings) {
+        settings.put("radarAllowed", Config.allowModRadar);
+        settings.put("radarMobsAllowed", Config.allowModRadar);
+        settings.put("radarPlayersAllowed", Config.allowModRadar);
+    }
+
     private void sendData(Player p, Map<String, Object> settings) {
-        Bukkit.getScheduler().runTaskLaterAsynchronously(NMinimap.getInstance(), () -> {//We need this delay because mod does not receive messages immediately after player join
+        SchedulerUtil.getScheduler().async(() -> {//We need this delay because mod does not receive messages immediately after player join
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             MinecraftDataOutputStream dataOut = new MinecraftDataOutputStream(out);
             try {

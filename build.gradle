@@ -19,7 +19,8 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    //compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly("dev.folia:folia-api:1.21.11-R0.1-SNAPSHOT")
     compileOnly('com.github.maximjsx:PassengerAPI:1.5.1')
     compileOnly('me.clip:placeholderapi:2.12.2')
     compileOnly("com.github.retrooper:packetevents-spigot:2.11.2")

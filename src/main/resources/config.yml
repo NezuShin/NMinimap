@@ -87,7 +87,8 @@ mods-compatibility:
   #Enable compatibility for:
   enable-voxel-map: true
   enable-xaeros-map: true
-  enable-journey-map: true
   #Note that Xaero's Minimap disable/enable action will always result empty message in chat.
-  #Also, Journey Minimap sends messages that minimap was disabled by server.
+  enable-journey-map: true
+
+  allow-radar: false
 

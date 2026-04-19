@@ -6,6 +6,8 @@ import com.google.gson.Gson;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import su.nezushin.nminimap.NMinimap;
+import su.nezushin.nminimap.util.SchedulerUtil;
+import su.nezushin.nminimap.util.config.Config;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -13,6 +15,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Taken from <a href="https://github.com/funniray/minimap-control/blob/main/common/src/main/java/com/funniray/minimap/common/jm/JMHandler.java">https://github.com/funniray/minimap-control/blob/main/common/src/main/java/com/funniray/minimap/common/jm/JMHandler.java</a>
+ */
 public class JourneyMapProvider implements ModInterfaceProvider {
 
     private static final String JOURNEY_MAP_SETTINGS_CHANNEL = "journeymap:perm_req";
@@ -26,6 +31,7 @@ public class JourneyMapProvider implements ModInterfaceProvider {
     public void disableMap(Player p) {
         Map<String, Object> settings = new HashMap<>();
         settings.put("journeymapEnabled", false);
+        putRadarData(settings);
 
         sendData(p, settings);
     }
@@ -34,12 +40,21 @@ public class JourneyMapProvider implements ModInterfaceProvider {
     public void resetMap(Player p) {
         Map<String, Object> settings = new HashMap<>();
         settings.put("journeymapEnabled", true);
+        putRadarData(settings);
 
         sendData(p, settings);
     }
 
+    private void putRadarData(Map<String, Object> settings) {
+        settings.put("playerRadarEnabled", Config.allowModRadar);
+        settings.put("playerRadarNamesEnabled", Config.allowModRadar);
+        settings.put("villagerRadarEnabled", Config.allowModRadar);
+        settings.put("animalRadarEnabled", Config.allowModRadar);
+        settings.put("mobRadarEnabled", Config.allowModRadar);
+    }
+
     private void sendData(Player p, Map<String, Object> settings) {
-        Bukkit.getScheduler().runTaskLaterAsynchronously(NMinimap.getInstance(), () -> {//We need this delay because mod does not receive messages immediately after player join
+        SchedulerUtil.getScheduler().async(() -> {
 
             Gson gson = new Gson();
             String payload = gson.toJson(settings);

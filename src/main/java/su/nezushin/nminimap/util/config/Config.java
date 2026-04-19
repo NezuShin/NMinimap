@@ -17,7 +17,8 @@ public class Config {
     public static int mapId, maxRenderThreads = 30, maxTilesInRam = 100, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval;
 
     public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true,
-            scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated, disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling;
+            scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated,
+            disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar;
 
     public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>(), defaultEnableBrands = new ArrayList<>();
 
@@ -91,6 +92,8 @@ public class Config {
         enableModVoxelMap = config.getBoolean("mods-compatibility.enable-voxel-map", true);
         enableModXaerosMap = config.getBoolean("mods-compatibility.enable-xaeros-map", true);
         enableModJourneyMap = config.getBoolean("mods-compatibility.enable-journey-map", true);
+
+        allowModRadar = config.getBoolean("mods-compatibility.allow-radar", false);
 
         cacheFolder = new File(plugin.getDataFolder(), "cache");
 

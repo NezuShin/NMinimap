@@ -5,6 +5,7 @@ import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.cache.ChunkCache;
 import su.nezushin.nminimap.chunks.renderer.ChunkRender;
 import su.nezushin.nminimap.util.MapDataUtil;
+import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
 
 import java.util.*;
@@ -31,9 +32,7 @@ public class ChunkManager {
         this.chunkRender = new ChunkRender();
         this.chunkCache = new ChunkCache();
 
-        Bukkit.getScheduler().runTaskTimerAsynchronously(NMinimap.getInstance(), () -> {
-            removeOldChunks();
-        }, 40, 40);
+        SchedulerUtil.getScheduler().async(this::removeOldChunks, 40, 40);
     }
 
     private void removeOldChunks() {

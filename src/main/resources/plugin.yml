@@ -16,3 +16,6 @@ softdepend:
   - PassengerAPI
   - AnvilORM
   - PlaceholderAPI
+
+
+folia-supported: true

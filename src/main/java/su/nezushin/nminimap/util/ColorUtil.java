@@ -27,7 +27,7 @@ public class ColorUtil {
     }
 
     /**
-     * Similar to deprecated MapPalette.matchColor(). Also caches colors to increase performance. Cache can be cleared using ColorUtil.clearColorCache()
+     * Fast and thread safe version of deprecated MapPalette.matchColor(). It's cache can be cleared using ColorUtil.clearColorCache()
      */
     public static byte getNearestColor(Color color) {
         if (color.getAlpha() < 128) return 0;

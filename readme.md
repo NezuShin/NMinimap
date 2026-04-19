@@ -1,6 +1,6 @@
 # NMinimap
 
-Fully vanilla minimap papermc plugin based on core shaders. Inspired by [VanillaMinimaps](https://github.com/JNNGL/VanillaMinimaps), [Cartographer2](https://www.spigotmc.org/resources/cartographer-2-1-8-9-1-21-the-best-minimap-plugin-for-bukkit.46922/) and [Minimap control](https://modrinth.com/plugin/minimap-control).\
+Fully vanilla minimap papermc plugin based on core shaders. Inspired by [VanillaMinimaps](https://github.com/JNNGL/VanillaMinimaps), [Cartographer2](https://www.spigotmc.org/resources/cartographer-2-1-8-9-1-21-the-best-minimap-plugin-for-bukkit.46922/) and [Minimap control](https://modrinth.com/plugin/minimap-control).
 
 ### Showcase
 

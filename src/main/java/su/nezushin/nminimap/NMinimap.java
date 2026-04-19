@@ -17,6 +17,7 @@ import su.nezushin.nminimap.papi.NMinimapPAPIExpansion;
 import su.nezushin.nminimap.player.NMapPlayer;
 import su.nezushin.nminimap.chunks.ChunkManager;
 import su.nezushin.nminimap.resourcepack.MarkerImageManager;
+import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
 
 import java.util.Set;
@@ -57,14 +58,12 @@ public final class NMinimap extends JavaPlugin {
         if (!Bukkit.getPluginManager().isPluginEnabled("AnvilORM")) {
             setEnabled(false);
             this.getLogger().severe("AnvilORM plugin is not found. It is mandatory dependency. Please download it from https://github.com/NezuShin/AnvilORM/releases/");
-
             return;
         }
 
         if (!this.packetManager.isReady()) {
             setEnabled(false);
             this.getLogger().severe("Packetevents plugin is not found. It is mandatory dependency. Please download it from https://www.spigotmc.org/resources/packetevents-api.80279/");
-
             return;
         }
 
@@ -81,9 +80,9 @@ public final class NMinimap extends JavaPlugin {
         modCompatibilityManager = new ModCompatibilityManager();
 
 
-        Bukkit.getScheduler().runTaskTimerAsynchronously(getInstance(), () -> {
+        SchedulerUtil.getScheduler().async(() -> {
             playersWithMap.forEach(NMapPlayer::sendMap);
-        }, 1, Config.mapRenderInterval).getTaskId();
+        }, 1, Config.mapRenderInterval);
 
         Bukkit.getPluginManager().registerEvents(new MarkerListener(), getInstance());
         Bukkit.getPluginManager().registerEvents(new PlayerListener(), getInstance());
@@ -95,12 +94,15 @@ public final class NMinimap extends JavaPlugin {
     }
 
     public void unload() {
-        playersWithMap.forEach(i -> i.onQuit());
+        if (isEnabled())
+            playersWithMap.forEach(i -> i.onQuit());
         playersWithMap.clear();
         HandlerList.unregisterAll(getInstance());
-        Bukkit.getScheduler().cancelTasks(getInstance());
-        if (placeholderAPIExpansion != null)
-            placeholderAPIExpansion.unregister();
+        SchedulerUtil.getScheduler().cancelAllTasks();
+        if (placeholderAPIExpansion != null && isEnabled())
+            sync(() -> {
+                placeholderAPIExpansion.unregister();
+            });
     }
 
     public void loadPlayer(Player p) {
@@ -165,14 +167,13 @@ public final class NMinimap extends JavaPlugin {
     }
 
     public static void sync(Runnable run) {
-        Bukkit.getScheduler().scheduleSyncDelayedTask(NMinimap.getInstance(), run);
+        SchedulerUtil.getScheduler().sync(run);
     }
 
     public static void async(Runnable run) {
-
-        //Bukkit.getScheduler().runTaskAsynchronously(getInstance(), run);
         var thread = new Thread(run);
         thread.setName("NMinimapThread");
         thread.start();
     }
+
 }

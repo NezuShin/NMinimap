@@ -1,10 +1,7 @@
 package su.nezushin.nminimap.compatibility;
 
 import org.bukkit.entity.Player;
-import su.nezushin.nminimap.compatibility.providers.JourneyMapProvider;
-import su.nezushin.nminimap.compatibility.providers.ModInterfaceProvider;
-import su.nezushin.nminimap.compatibility.providers.VoxelMapProvider;
-import su.nezushin.nminimap.compatibility.providers.XaerosMinimapProvider;
+import su.nezushin.nminimap.compatibility.providers.*;
 import su.nezushin.nminimap.util.config.Config;
 
 import java.util.ArrayList;
@@ -20,6 +17,7 @@ public class ModCompatibilityManager {
             providers.add(new XaerosMinimapProvider());
         if (Config.enableModJourneyMap)
             providers.add(new JourneyMapProvider());
+
     }
 
     public void disableModMinimap(Player p) {
