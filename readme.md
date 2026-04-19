@@ -1,15 +1,14 @@
+
+
+<div align="center">
+
 # NMinimap
 
-Fully vanilla minimap papermc plugin based on core shaders. Inspired by [VanillaMinimaps](https://github.com/JNNGL/VanillaMinimaps), [Cartographer2](https://www.spigotmc.org/resources/cartographer-2-1-8-9-1-21-the-best-minimap-plugin-for-bukkit.46922/) and [Minimap control](https://modrinth.com/plugin/minimap-control).
+Serverside minimap based on core shaders
 
-### Showcase
+![](images/example_5.png)
 
-* * *
-![](images/example_1.gif)
-![](images/example_2.gif)
-![](images/example_3.gif)
-* * *
-
+</div>
 
 ### Features
 
@@ -21,14 +20,26 @@ Fully vanilla minimap papermc plugin based on core shaders. Inspired by [Vanilla
 - Map size 127 x 127 pixels
 - Automatic resource pack build
 
+### Supported server platforms
+- [Papermc](https://papermc.io/software/paper/)
+- [Folia](https://papermc.io/software/folia/)
+- Spigot is not supported due to it do not have all necessary api features
+
+### Showcase
+
+* * *
+![](images/example_1.gif)
+![](images/example_2.gif)
+![](images/example_3.gif)
+* * *
+
+
 ### Dependencies
 
 - [AnvilORM](https://github.com/NezuShin/AnvilORM/releases/tag/V1.0.0)
 - [Packet events](https://www.spigotmc.org/resources/packetevents-api.80279/)
 - [PassengerAPI](https://www.spigotmc.org/resources/passengerapi-entity-passenger-bug-fixes-more.117017/) (Optional; Needed for compatibility with another plugins)
 - [PassengerAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) (Optional; If you need placeholders)
-- Papermc server or its fork. Spigot is not supported due to it not being able to load chunks async and
-not having MaterialTags used to determine block color
 
 ### Installation
 
@@ -169,6 +180,13 @@ public void drawMarker(AsyncMarkerRenderEvent e){
 
 }
 ```
+
+
+### Inspirations
+- [VanillaMinimaps](https://github.com/JNNGL/VanillaMinimaps)
+- [Cartographer2](https://www.spigotmc.org/resources/cartographer-2-1-8-9-1-21-the-best-minimap-plugin-for-bukkit.46922/)
+- [Minimap control](https://modrinth.com/plugin/minimap-control).
+
 
 ### Credits
 - [NezuShin](https://github.com/NezuShin) - Plugin development
