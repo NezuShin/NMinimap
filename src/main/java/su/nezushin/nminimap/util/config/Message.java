@@ -1,6 +1,7 @@
 package su.nezushin.nminimap.util.config;
 
 import com.google.common.collect.Lists;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -16,11 +17,21 @@ public enum Message {
 
     map_enabled, map_disabled, scale_set, style_set, side_set, side_left, side_right, style_round, style_square, help, incorrect_scale, insufficient_permissions, reload_complete, reload_failed, reload_start, admin_stats, you_cannot_use_this_scale;
 
+    private static BukkitAudiences adventure;
+
+    public static BukkitAudiences getAdventure() {
+        if (adventure == null) {
+            adventure = BukkitAudiences.create(NMinimap.getInstance());
+        }
+        return adventure;
+    }
 
     private List<String> message;
 
 
     public static void load() {
+        getAdventure();
+
         var file = getLangFile(Config.langName);
 
         if (file == null) {
@@ -97,8 +108,14 @@ public enum Message {
         }
 
         public Sender send(CommandSender p) {
+            var adventureSender = adventure.sender(p);
+
+
             for (var msg : message)
-                p.sendMessage(MiniMessage.miniMessage().deserialize(msg));
+                adventureSender.sendMessage(MiniMessage.miniMessage().deserialize(msg));
+
+            //for (var msg : message)
+            //p.sendMessage(MiniMessage.miniMessage().deserialize(msg));
             return this;
         }
 

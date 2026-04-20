@@ -13,6 +13,7 @@ import su.nezushin.nminimap.packets.hooks.impl.PacketEventsEntityHook;
 import su.nezushin.nminimap.packets.hooks.impl.PacketEventsPassengerHook;
 import su.nezushin.nminimap.packets.hooks.impl.PassengerAPIPassengerHook;
 import su.nezushin.nminimap.util.SchedulerUtil;
+import su.nezushin.nminimap.util.SpigotEntityIdUtil;
 import su.nezushin.nminimap.util.config.Config;
 import su.nezushin.nminimap.util.VanillaMapUtil;
 
@@ -51,10 +52,10 @@ public class PacketManager {
 
         this.mapId = Config.mapId;
 
-        this.markerEntityId = Bukkit.getUnsafe().nextEntityId();
-        this.upItemFrameEntityId = Bukkit.getUnsafe().nextEntityId();
-        this.downItemFrameEntityId = Bukkit.getUnsafe().nextEntityId();
-        this.facingItemFrameEntityId = Bukkit.getUnsafe().nextEntityId();
+        this.markerEntityId = SpigotEntityIdUtil.nextEntityId();
+        this.upItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
+        this.downItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
+        this.facingItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
 
         mapItem = VanillaMapUtil.createItem(mapId);
 

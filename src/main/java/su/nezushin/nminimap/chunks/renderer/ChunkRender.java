@@ -4,6 +4,7 @@ import org.bukkit.Chunk;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.BlockDataInfo;
 import su.nezushin.nminimap.chunks.ChunkEntry;
+import su.nezushin.nminimap.util.ChunkLoadingUtil;
 import su.nezushin.nminimap.util.ColorUtil;
 import su.nezushin.nminimap.util.RenderUtil;
 
@@ -16,8 +17,8 @@ public class ChunkRender {
     public void renderChunk(ChunkEntry chunk) {
         var chunkManager = NMinimap.getInstance().getChunkManager();
         chunkManager.getLoadingChunks().add(chunk);
-        CompletableFuture<Chunk> futureFirstChunk = chunk.w().getChunkAtAsync(chunk.x(), chunk.z());
-        CompletableFuture<Chunk> futureSecondChunk = chunk.w().getChunkAtAsync(chunk.x(), chunk.z() - 1);
+        CompletableFuture<Chunk> futureFirstChunk = ChunkLoadingUtil.getChunkAt(chunk.w(), chunk.x(), chunk.z());//chunk.w().getChunkAtAsync(chunk.x(), chunk.z());
+        CompletableFuture<Chunk> futureSecondChunk = ChunkLoadingUtil.getChunkAt(chunk.w(), chunk.x(), chunk.z() - 1);//chunk.w().getChunkAtAsync(chunk.x(), chunk.z() - 1);
 
         CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futureFirstChunk, futureSecondChunk);
 

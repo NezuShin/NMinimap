@@ -17,6 +17,7 @@ import su.nezushin.nminimap.papi.NMinimapPAPIExpansion;
 import su.nezushin.nminimap.player.NMapPlayer;
 import su.nezushin.nminimap.chunks.ChunkManager;
 import su.nezushin.nminimap.resourcepack.MarkerImageManager;
+import su.nezushin.nminimap.util.ChunkLoadingUtil;
 import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
 
@@ -36,7 +37,6 @@ public final class NMinimap extends JavaPlugin {
     private NMinimapPAPIExpansion placeholderAPIExpansion;
 
     private final Set<NMapPlayer> playersWithMap = ConcurrentHashMap.newKeySet();//Collections.synchronizedList(new ArrayList<>());
-
 
     @Override
     public void onEnable() {
@@ -94,7 +94,6 @@ public final class NMinimap extends JavaPlugin {
     }
 
     public void unload() {
-        if (isEnabled())
             playersWithMap.forEach(i -> i.onQuit());
         playersWithMap.clear();
         HandlerList.unregisterAll(getInstance());
@@ -114,7 +113,7 @@ public final class NMinimap extends JavaPlugin {
                     .completeAsOne();
 
             if (player == null) {
-                player = new NMapPlayer(p, Config.defaultEnableAnyway || Config.defaultEnableBrands.contains(p.getClientBrandName()));
+                player = new NMapPlayer(p, Config.defaultEnableAnyway || (ChunkLoadingUtil.isPaper() ? Config.defaultEnableBrands.contains(p.getClientBrandName()) : false));
 
                 player.setRight(Config.defaultRightSide);
                 player.setRound(Config.defaultRound);

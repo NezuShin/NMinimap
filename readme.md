@@ -23,7 +23,7 @@ Serverside minimap based on core shaders
 ### Supported server platforms
 - [Papermc](https://papermc.io/software/paper/)
 - [Folia](https://papermc.io/software/folia/)
-- Spigot is not supported due to it do not have all necessary api features
+- [Spigot](https://www.spigotmc.org/) with a [lot of limitations](#running-on-spigot)
 
 ### Showcase
 
@@ -196,3 +196,8 @@ public void drawMarker(AsyncMarkerRenderEvent e){
 
 If you have questions, want ask for a feature or report a bug - feel free to [open issue](https://github.com/NezuShin/NMinimap/issues),\
 Also you can ask a question in the [discord server](https://discord.gg/rZ7gfCTr3Y).
+
+### Running on spigot
+Spigot is outdated server software and should not be used in production. However, NMinimap supports running on spigot.\
+Main problem is that spigot, unlike paper, cannot load chunks asynchronously. To run on spigot, you need to set `max-render-threads` config property to `1`. Otherwise, the server will freeze on chunck generation.\
+Also recommended to set `max-scale` to 1 or 2 to reduce server load.

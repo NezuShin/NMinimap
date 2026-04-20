@@ -42,7 +42,8 @@ public class NMapPlayer implements AnvilORMSerializable {
 
     public void onQuit() {
         NMinimap.getInstance().getPacketManager().removeEntities(this.player);
-        NMinimap.getInstance().getModCompatibilityManager().resetModMinimap(this.player);
+        if (NMinimap.getInstance().isEnabled())
+            NMinimap.getInstance().getModCompatibilityManager().resetModMinimap(this.player);
     }
 
     public void sendMap() {

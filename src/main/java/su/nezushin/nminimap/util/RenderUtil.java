@@ -1,21 +1,32 @@
 package su.nezushin.nminimap.util;
 
-import com.destroystokyo.paper.MaterialSetTag;
-import com.destroystokyo.paper.MaterialTags;
+import com.google.common.collect.Sets;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import su.nezushin.nminimap.chunks.BlockDataInfo;
 import su.nezushin.nminimap.util.config.Config;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class RenderUtil {
 
+    private static final Set<Material> transparent = Sets.newHashSet(Material.BLUE_STAINED_GLASS_PANE, Material.OXIDIZED_COPPER_BARS,
+            Material.LIME_STAINED_GLASS, Material.WAXED_WEATHERED_COPPER_BARS, Material.ORANGE_STAINED_GLASS_PANE,
+            Material.ORANGE_STAINED_GLASS, Material.WHITE_STAINED_GLASS_PANE, Material.COPPER_BARS, Material.RED_STAINED_GLASS_PANE,
+            Material.CYAN_STAINED_GLASS, Material.LIGHT_BLUE_STAINED_GLASS, Material.CYAN_STAINED_GLASS_PANE,
+            Material.WEATHERED_COPPER_BARS, Material.MAGENTA_STAINED_GLASS_PANE, Material.WAXED_EXPOSED_COPPER_BARS,
+            Material.WHITE_STAINED_GLASS, Material.PURPLE_STAINED_GLASS_PANE, Material.BLACK_STAINED_GLASS,
+            Material.BROWN_STAINED_GLASS, Material.YELLOW_STAINED_GLASS, Material.BLUE_STAINED_GLASS, Material.BROWN_STAINED_GLASS_PANE,
+            Material.LIGHT_BLUE_STAINED_GLASS_PANE, Material.WAXED_OXIDIZED_COPPER_BARS, Material.IRON_BARS,
+            Material.PURPLE_STAINED_GLASS, Material.GLASS, Material.GREEN_STAINED_GLASS_PANE, Material.BLACK_STAINED_GLASS_PANE,
+            Material.LIGHT_GRAY_STAINED_GLASS, Material.WAXED_COPPER_BARS, Material.LIME_STAINED_GLASS_PANE, Material.GRAY_STAINED_GLASS,
+            Material.GLASS_PANE, Material.EXPOSED_COPPER_BARS, Material.PINK_STAINED_GLASS, Material.GREEN_STAINED_GLASS,
+            Material.GRAY_STAINED_GLASS_PANE, Material.TINTED_GLASS, Material.LIGHT_GRAY_STAINED_GLASS_PANE, Material.RED_STAINED_GLASS,
+            Material.PINK_STAINED_GLASS_PANE, Material.MAGENTA_STAINED_GLASS, Material.YELLOW_STAINED_GLASS_PANE);
+
     public static boolean isTransparent(Material material) {
-        if (MaterialTags.GLASS.isTagged(material) || MaterialTags.GLASS_PANES.isTagged(material) || MaterialSetTag.BARS.isTagged(material))
+        if (transparent.contains(material))
             return true;
         return switch (material) {
             //<editor-fold defaultstate="collapsed" desc="isTransparent">

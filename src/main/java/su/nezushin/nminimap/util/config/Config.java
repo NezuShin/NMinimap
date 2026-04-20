@@ -38,6 +38,8 @@ public class Config {
 
         config = YamlConfiguration.loadConfiguration(configFile);
 
+        maxRenderThreads = config.getInt("max-render-threads", 30);
+
         allowFileCache = config.getBoolean("cache.allow-file-cache", true);
         maxTilesInRam = config.getInt("cache.max-tiles-in-ram", 9999);
         renderNewChunks = config.getBoolean("cache.render-new-chunks", false);
@@ -122,10 +124,10 @@ public class Config {
     }
 
     public static List<File> getResourcepackCopyDestinationFiles() {
-        return resourcepackCopyDestinations.stream().map(i -> Path.of(i).isAbsolute() ? new File(i) : new File(Bukkit.getPluginsFolder(), i)).toList();
+        return resourcepackCopyDestinations.stream().map(i -> Path.of(i).isAbsolute() ? new File(i) : new File(NMinimap.getInstance().getDataFolder().getParentFile(), i)).toList();
     }
 
     public static List<File> getResourcepackZipDestinationFiles() {
-        return resourcepackZipDestinations.stream().map(i -> Path.of(i).isAbsolute() ? new File(i) : new File(Bukkit.getPluginsFolder(), i)).toList();
+        return resourcepackZipDestinations.stream().map(i -> Path.of(i).isAbsolute() ? new File(i) : new File(NMinimap.getInstance().getDataFolder().getParentFile(), i)).toList();
     }
 }

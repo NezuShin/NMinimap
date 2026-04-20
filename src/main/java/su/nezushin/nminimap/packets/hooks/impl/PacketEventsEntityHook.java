@@ -8,12 +8,15 @@ import com.github.retrooper.packetevents.wrapper.play.server.*;
 import com.google.common.collect.Lists;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import su.nezushin.nminimap.packets.hooks.EntityHook;
+import su.nezushin.nminimap.util.ChunkLoadingUtil;
 import su.nezushin.nminimap.util.PacketEventsUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 public class PacketEventsEntityHook implements EntityHook {
@@ -64,11 +67,18 @@ public class PacketEventsEntityHook implements EntityHook {
 
     @Override
     public void sendMarkerData(Player p, int id, Component markerData) {
-        PacketEvents.getAPI().getPlayerManager().sendPacket(p, new WrapperPlayServerEntityMetadata(id, Lists.newArrayList(
-                new EntityData(23, EntityDataTypes.ADV_COMPONENT, markerData),
+        List<EntityData<?>> list = Lists.newArrayList(
                 new EntityData(25, EntityDataTypes.INT, 0x000000FF),
                 new EntityData(27, EntityDataTypes.BYTE, (byte) 0x00),
                 new EntityData(15, EntityDataTypes.BYTE, (byte) 3)
-        )));
+        );
+
+        if (ChunkLoadingUtil.isPaper()) {
+            list.add(new EntityData(23, EntityDataTypes.ADV_COMPONENT, markerData));
+        } else {
+            list.add(new EntityData(23, EntityDataTypes.COMPONENT, JSONComponentSerializer.json().serialize(markerData)));
+        }
+
+        PacketEvents.getAPI().getPlayerManager().sendPacket(p, new WrapperPlayServerEntityMetadata(id, list));
     }
 }

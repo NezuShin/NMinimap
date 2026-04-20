@@ -11,6 +11,10 @@ cache:
   #Render chunk before it is needed? Useful if you are pre-generating your world using Chunky
   render-new-chunks: true
 
+#How many chunks can be rendered simultaneously?
+#Recommended to set this property to 1 if you are using spigot as server platform because it is not supports async chink loading
+max-render-threads: 30
+
 #How frequent update player's map? In ticks. One second is 20 ticks
 # 1 = 20 updates per second; 2 = 10 updates; etc.
 player-render-interval: 1
@@ -65,7 +69,7 @@ scale:
 
 #Default settings for players who joined server for first time
 default-settings:
-  #Enable minimap if client sent this brand
+  #Enable minimap if client sent this brand. This feature is not supported on spigot.
   enable-if-brand-is: [vanilla, optifine]
   #Enable without any conditions
   enable-anyway: false
