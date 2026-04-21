@@ -37,6 +37,10 @@ public class NMinimapPAPIExpansion extends PlaceholderExpansion {
         } else if (params.equalsIgnoreCase("stats_threads")) {
             return String.valueOf(Thread.getAllStackTraces().keySet()
                     .stream().filter(i -> i.getName().equalsIgnoreCase("NMinimapThread")).count());
+        } else if (params.equalsIgnoreCase("stats_loading_chunks")) {
+            return String.valueOf(NMinimap.getInstance().getChunkManager().getLoadingChunks().size());
+        } else if (params.equalsIgnoreCase("stats_render_queue")) {
+            return String.valueOf(NMinimap.getInstance().getChunkManager().getAwaitingChunksSize());
         }
 
         var nminimapPlayer = NMinimap.getInstance().getPlayersWithMap().stream()

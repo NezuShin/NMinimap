@@ -89,6 +89,10 @@ public class ChunkManager {
         });
     }
 
+    public int getAwaitingChunksSize() {
+        return awaitingChunks.size();
+    }
+
     public Set<ChunkEntry> getLoadingChunks() {
         return loadingChunks;
     }

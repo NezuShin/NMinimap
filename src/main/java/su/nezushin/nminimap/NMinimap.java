@@ -55,15 +55,21 @@ public final class NMinimap extends JavaPlugin {
         Config.init();
         this.packetManager = new PacketManager();
 
+        //Fix to display both messages about AnvilORM and Packetevents
+        boolean shouldExit = false;
+
         if (!Bukkit.getPluginManager().isPluginEnabled("AnvilORM")) {
-            setEnabled(false);
+            shouldExit = true;
             this.getLogger().severe("AnvilORM plugin is not found. It is mandatory dependency. Please download it from https://github.com/NezuShin/AnvilORM/releases/");
-            return;
         }
 
         if (!this.packetManager.isReady()) {
-            setEnabled(false);
+            shouldExit = true;
             this.getLogger().severe("Packetevents plugin is not found. It is mandatory dependency. Please download it from https://www.spigotmc.org/resources/packetevents-api.80279/");
+        }
+
+        if (shouldExit) {
+            setEnabled(false);
             return;
         }
 
@@ -94,7 +100,7 @@ public final class NMinimap extends JavaPlugin {
     }
 
     public void unload() {
-            playersWithMap.forEach(i -> i.onQuit());
+        playersWithMap.forEach(i -> i.onQuit());
         playersWithMap.clear();
         HandlerList.unregisterAll(getInstance());
         SchedulerUtil.getScheduler().cancelAllTasks();

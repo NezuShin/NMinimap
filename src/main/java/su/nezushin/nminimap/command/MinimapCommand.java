@@ -44,11 +44,13 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                     }
 
                 } else if (args[1].equalsIgnoreCase("stats")) {
-                    //{loaded_tiles} {cache_size} {enabled_maps} {threads}
                     Message.admin_stats.replace("{loaded_tiles}", String.valueOf(NMinimap.getInstance().getChunkManager().getLoadedTiles().size()),
                             "{cache_size}", String.valueOf(NMinimap.getInstance().getChunkManager().getChunkCache().getCachedFiles().size()),
                             "{enabled_maps}", String.valueOf(NMinimap.getInstance().getPlayersWithMap().stream().filter(NMapPlayer::isEnabled).count()),
-                            "{threads}", String.valueOf(Thread.getAllStackTraces().keySet().stream().filter(i -> i.getName().equalsIgnoreCase("NMinimapThread")).count())
+                            "{render_queue}", String.valueOf(NMinimap.getInstance().getChunkManager().getAwaitingChunksSize()),
+                            "{loading_chunks}", String.valueOf(NMinimap.getInstance().getChunkManager().getLoadingChunks().size()),
+                            "{threads}", String.valueOf(Thread.getAllStackTraces().keySet().stream().filter(i -> i.getName().equalsIgnoreCase("NMinimapThread")
+                            ).count())
                     ).send(sender);
                     return;
                 }

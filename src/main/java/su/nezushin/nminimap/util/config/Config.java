@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import su.nezushin.nminimap.NMinimap;
+import su.nezushin.nminimap.util.ChunkLoadingUtil;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -34,6 +35,17 @@ public class Config {
         if (!configFile.exists()) {
             plugin.getConfig().options().copyDefaults(true);
             plugin.saveDefaultConfig();
+            if (!ChunkLoadingUtil.isPaper()) {
+                config = YamlConfiguration.loadConfiguration(configFile);
+                config.set("max-render-threads", 1);
+                config.set("scale.max-scale", 2);
+                try {
+                    config.save(configFile);
+                } catch (IOException ex) {
+                    throw new RuntimeException();
+                }
+            }
+
         }
 
         config = YamlConfiguration.loadConfiguration(configFile);
