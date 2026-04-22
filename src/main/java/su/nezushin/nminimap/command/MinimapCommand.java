@@ -42,7 +42,7 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                         Message.reload_failed.send(sender);
                         NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to reload plugin: ", ex);
                     }
-
+                    return;
                 } else if (args[1].equalsIgnoreCase("stats")) {
                     Message.admin_stats.replace("{loaded_tiles}", String.valueOf(NMinimap.getInstance().getChunkManager().getLoadedTiles().size()),
                             "{cache_size}", String.valueOf(NMinimap.getInstance().getChunkManager().getChunkCache().getCachedFiles().size()),

@@ -131,7 +131,6 @@ public final class NMinimap extends JavaPlugin {
                 getModCompatibilityManager().disableModMinimap(p);
 
             player.setPlayer(p);
-
             player.setEnabled(player.isEnabled());
 
             NMinimap.getInstance().getPlayersWithMap().add(player);

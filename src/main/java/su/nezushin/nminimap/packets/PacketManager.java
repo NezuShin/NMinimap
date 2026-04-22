@@ -12,6 +12,7 @@ import su.nezushin.nminimap.packets.hooks.PassengerHook;
 import su.nezushin.nminimap.packets.hooks.impl.PacketEventsEntityHook;
 import su.nezushin.nminimap.packets.hooks.impl.PacketEventsPassengerHook;
 import su.nezushin.nminimap.packets.hooks.impl.PassengerAPIPassengerHook;
+import su.nezushin.nminimap.util.ChunkLoadingUtil;
 import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.SpigotEntityIdUtil;
 import su.nezushin.nminimap.util.config.Config;
@@ -52,18 +53,28 @@ public class PacketManager {
 
         this.mapId = Config.mapId;
 
-        this.markerEntityId = SpigotEntityIdUtil.nextEntityId();
-        this.upItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
-        this.downItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
-        this.facingItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
 
-        mapItem = VanillaMapUtil.createItem(mapId);
+        Runnable run = () -> {
+            this.markerEntityId = SpigotEntityIdUtil.nextEntityId();
+            this.upItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
+            this.downItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
+            this.facingItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
+
+            mapItem = VanillaMapUtil.createItem(mapId);
 
 
-        SchedulerUtil.getScheduler().async(this::tickTrackedPlayers, 1, 1);
-        if (SchedulerUtil.getScheduler().isFolia())
-            SchedulerUtil.getScheduler().async(this::foliaTickTrackedPlayers, 20, 20);
+            SchedulerUtil.getScheduler().async(this::tickTrackedPlayers, 1, 1);
+            if (SchedulerUtil.getScheduler().isFolia())
+                SchedulerUtil.getScheduler().async(this::foliaTickTrackedPlayers, 20, 20);
 
+            if (!ChunkLoadingUtil.isPaper())
+                for (var p : trackedPlayers)
+                    spawnEntities(p);
+        };
+        if (!ChunkLoadingUtil.isPaper())
+            SchedulerUtil.getScheduler().sync(run);
+        else
+            run.run();
     }
 
     public boolean isReady() {
