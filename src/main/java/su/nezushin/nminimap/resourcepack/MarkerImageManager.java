@@ -54,13 +54,17 @@ public class MarkerImageManager {
                 Config.copyDefaults("defaults/markers/player_small.png", new File(markersDir, "player_small.png"));
                 Config.copyDefaults("defaults/pack.mcmeta", new File(resourcepackDir, "pack.mcmeta"));
 
-                var shadersDir = new File(resourcepackDir, "assets/minecraft/shaders");
+                var niminimapShadersDir = new File(namespaceDir, "shaders");
 
-                Config.copyDefaults("defaults/shaders/core/rendertype_text.fsh", new File(shadersDir, "core/rendertype_text.fsh"));
-                Config.copyDefaults("defaults/shaders/core/rendertype_text.vsh", new File(shadersDir, "core/rendertype_text.vsh"));
-                Config.copyDefaults("defaults/shaders/include/minimap/config.glsl", new File(shadersDir, "include/minimap/config.glsl"));
-                Config.copyDefaults("defaults/shaders/include/minimap/vertex_body.glsl", new File(shadersDir, "include/minimap/vertex_body.glsl"));
-                Config.copyDefaults("defaults/shaders/include/minimap/vertex_utils.glsl", new File(shadersDir, "include/minimap/vertex_utils.glsl"));
+                Config.copyDefaults("defaults/shaders/core/v26_1/rendertype_text.fsh", new File(resourcepackDir, "nminimap_26_1/assets/minecraft/shaders/core/rendertype_text.fsh"));
+                Config.copyDefaults("defaults/shaders/core/v26_1/rendertype_text.vsh", new File(resourcepackDir, "nminimap_26_1/assets/minecraft/shaders/core/rendertype_text.vsh"));
+                Config.copyDefaults("defaults/shaders/core/v1_21_11/rendertype_text.fsh", new File(resourcepackDir, "nminimap_1_21_11/assets/minecraft/shaders/core/rendertype_text.fsh"));
+                Config.copyDefaults("defaults/shaders/core/v1_21_11/rendertype_text.vsh", new File(resourcepackDir, "nminimap_1_21_11/assets/minecraft/shaders/core/rendertype_text.vsh"));
+
+
+                Config.copyDefaults("defaults/shaders/include/config.glsl", new File(niminimapShadersDir, "include/config.glsl"));
+                Config.copyDefaults("defaults/shaders/include/vertex_body.glsl", new File(niminimapShadersDir, "include/vertex_body.glsl"));
+                Config.copyDefaults("defaults/shaders/include/vertex_utils.glsl", new File(niminimapShadersDir, "include/vertex_utils.glsl"));
             }
 
             for (var i : markersDir.listFiles()) {

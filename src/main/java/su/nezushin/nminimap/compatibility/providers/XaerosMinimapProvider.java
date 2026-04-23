@@ -12,6 +12,7 @@ public class XaerosMinimapProvider implements ModInterfaceProvider {
 
     @Override
     public void disableMap(Player p) {
+
         sendMessage(p, "§n§o§m§i§n§i§m§a§p");
     }
 
@@ -27,10 +28,8 @@ public class XaerosMinimapProvider implements ModInterfaceProvider {
     }
 
     public void sendMessage(Player p, String msg) {
-        if(!p.isOnline())
-            return;
         if (ChunkLoadingUtil.isPaper())
-            Message.getAdventure().sender(p).sendMessage(Component.text(msg));
+            p.sendMessage(Component.text(msg));
         else
             p.spigot().sendMessage(new TextComponent(msg));
     }

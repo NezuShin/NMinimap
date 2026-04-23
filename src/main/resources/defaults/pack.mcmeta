@@ -6,5 +6,20 @@
       0
     ],
     "description": "NMinimap"
+  },
+  "overlays": {
+    "entries":
+    [
+      {
+        "directory": "nminimap_1_21_11",
+        "min_format": 75,
+        "max_format": 84
+      },
+      {
+        "directory": "nminimap_26_1",
+        "min_format": 84,
+        "max_format": 1000
+      }
+    ]
   }
 }

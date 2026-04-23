@@ -1,6 +1,6 @@
 #version 330
 
-#moj_import <minimap/config.glsl>
+#moj_import <nminimap:config.glsl>
 
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:dynamictransforms.glsl>
@@ -22,7 +22,7 @@ out vec2 texCoord0;
 
 flat out int custom;
 
-#moj_import <minimap/vertex_utils.glsl>
+#moj_import <nminimap:vertex_utils.glsl>
 
 void main() {
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
@@ -32,5 +32,5 @@ void main() {
     vertexColor = Color * texelFetch(Sampler2, UV2 / 16, 0);
     texCoord0 = UV0;
 
-    #moj_import <minimap/vertex_body.glsl>
+    #moj_import <nminimap:vertex_body.glsl>
 }
