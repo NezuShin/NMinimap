@@ -60,6 +60,15 @@ resourcepack:
     - 'NMinimap/built-pack.zip'
 #    - 'PackMerger/packs/nminimap.zip'
 #    - 'C:\Users\nezushin\AppData\Roaming\.minecraft\resourcepacks\nminimap.zip'
+  pack-mcmeta:
+    #Should plugin manage pack.mcmeta file?
+    enable: true
+    #Pack description
+    description: 'NMinimap pack'
+    overlays:
+      #Enable shader for 1.21.11?
+      enable-1-21-11: true
+      enable-26-1: true
 
 scale:
   #Max scale that can be selected using /map scale command.

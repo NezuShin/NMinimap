@@ -1,8 +1,13 @@
 package su.nezushin.nminimap.resourcepack;
 
+import com.google.common.collect.Lists;
+import com.google.common.io.Files;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.resourcepack.cache.FontImageIdCache;
 import su.nezushin.nminimap.resourcepack.font.BitmapFontImage;
+import su.nezushin.nminimap.resourcepack.packmcmeta.PackMcMeta;
 import su.nezushin.nminimap.util.config.Config;
 import su.nezushin.nminimap.util.ImageCanvasUtil;
 import su.nezushin.nminimap.util.ZipUtil;
@@ -10,7 +15,9 @@ import su.nezushin.nminimap.util.ZipUtil;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MarkerImageManager {
@@ -49,6 +56,7 @@ public class MarkerImageManager {
             fontsDir.mkdirs();
             markersDir.mkdirs();
 
+
             if (Config.resourcepackCopyDefaults) {
                 Config.copyDefaults("defaults/markers/player.png", new File(markersDir, "player.png"));
                 Config.copyDefaults("defaults/markers/player_small.png", new File(markersDir, "player_small.png"));
@@ -56,16 +64,38 @@ public class MarkerImageManager {
 
                 var niminimapShadersDir = new File(namespaceDir, "shaders");
 
-                Config.copyDefaults("defaults/shaders/core/v26_1/rendertype_text.fsh", new File(resourcepackDir, "nminimap_26_1/assets/minecraft/shaders/core/rendertype_text.fsh"));
-                Config.copyDefaults("defaults/shaders/core/v26_1/rendertype_text.vsh", new File(resourcepackDir, "nminimap_26_1/assets/minecraft/shaders/core/rendertype_text.vsh"));
-                Config.copyDefaults("defaults/shaders/core/v1_21_11/rendertype_text.fsh", new File(resourcepackDir, "nminimap_1_21_11/assets/minecraft/shaders/core/rendertype_text.fsh"));
-                Config.copyDefaults("defaults/shaders/core/v1_21_11/rendertype_text.vsh", new File(resourcepackDir, "nminimap_1_21_11/assets/minecraft/shaders/core/rendertype_text.vsh"));
+
+                if (Config.packEnable1_21_11) {
+                    Config.copyDefaults("defaults/shaders/core/v1_21_11/rendertype_text.fsh", new File(resourcepackDir, "nminimap_1_21_11/assets/minecraft/shaders/core/rendertype_text.fsh"));
+                    Config.copyDefaults("defaults/shaders/core/v1_21_11/rendertype_text.vsh", new File(resourcepackDir, "nminimap_1_21_11/assets/minecraft/shaders/core/rendertype_text.vsh"));
+                }
+
+                if (Config.packEnable26_1) {
+                    Config.copyDefaults("defaults/shaders/core/v26_1/rendertype_text.fsh", new File(resourcepackDir, "nminimap_26_1/assets/minecraft/shaders/core/rendertype_text.fsh"));
+                    Config.copyDefaults("defaults/shaders/core/v26_1/rendertype_text.vsh", new File(resourcepackDir, "nminimap_26_1/assets/minecraft/shaders/core/rendertype_text.vsh"));
+                }
 
 
                 Config.copyDefaults("defaults/shaders/include/config.glsl", new File(niminimapShadersDir, "include/config.glsl"));
                 Config.copyDefaults("defaults/shaders/include/vertex_body.glsl", new File(niminimapShadersDir, "include/vertex_body.glsl"));
                 Config.copyDefaults("defaults/shaders/include/vertex_utils.glsl", new File(niminimapShadersDir, "include/vertex_utils.glsl"));
+
+
             }
+            if (Config.packMcMetaChangeEnabled) {
+                List<PackMcMeta.Overlay> packOverlays = Lists.newArrayList();
+                if (Config.packEnable1_21_11)
+                    packOverlays.add(new PackMcMeta.Overlay("nminimap_1_21_11", new int[]{75, 0}, new int[]{84, 0}));
+                if (Config.packEnable26_1)
+                    packOverlays.add(new PackMcMeta.Overlay("nminimap_26_1", new int[]{84, 0}, new int[]{9999, 0}));
+                Files.write(new GsonBuilder().setPrettyPrinting().create().toJson(
+                        new PackMcMeta(
+                                new PackMcMeta.Pack(Config.packDescription,
+                                        new int[]{75, 0}, new int[]{84, 0}),
+                                new PackMcMeta.Overlays(packOverlays))
+                ).getBytes(StandardCharsets.UTF_8), new File(resourcepackDir, "pack.mcmeta"));
+            }
+
 
             for (var i : markersDir.listFiles()) {
                 var img = ImageIO.read(i);
@@ -103,11 +133,11 @@ public class MarkerImageManager {
             cache.build(fontsDir);
             cache.save();
 
-            for(var i : Config.getResourcepackCopyDestinationFiles()) {
+            for (var i : Config.getResourcepackCopyDestinationFiles()) {
                 ZipUtil.deleteDirectory(i);
                 ZipUtil.copyDirectory(resourcepackDir, i);
             }
-            for(var i : Config.getResourcepackZipDestinationFiles())
+            for (var i : Config.getResourcepackZipDestinationFiles())
                 ZipUtil.pack(resourcepackDir, i);
 
         } catch (Exception ex) {

@@ -112,7 +112,8 @@ Supported mods:
 - [JourneyMap](https://modrinth.com/mod/journeymap)
 - Another mods do not have such functionality, or it is not documented. 
 
-
+#### Known incompatibilities 
+- [ImmediatelyFast](https://modrinth.com/mod/immediatelyfast) - Stores all maps to one atlas, which breaks shader logic
 
 ### How does it work?
 
@@ -125,6 +126,7 @@ The first map column is also disabled for symmetry.
 
 Marker images have for pixels with specific color on then's corners. For every combination of map style and screen corner image is being created. Four images in total \
 Also color of image is used. Red is X position on map. Green is Y position on map. Blue is marker rotation.
+
 
 ### API
 

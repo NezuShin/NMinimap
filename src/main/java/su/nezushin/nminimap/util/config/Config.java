@@ -1,6 +1,6 @@
 package su.nezushin.nminimap.util.config;
 
-import org.bukkit.Bukkit;
+import com.tchristofferson.configupdater.ConfigUpdater;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import su.nezushin.nminimap.NMinimap;
@@ -19,11 +19,13 @@ public class Config {
 
     public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true,
             scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated,
-            disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar;
+            disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar,
+            packEnable1_21_11, packEnable26_1, packMcMetaChangeEnabled;
 
     public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>(), defaultEnableBrands = new ArrayList<>();
 
-    public static String playerMarker, anotherPlayerMarker, mysqlHost, mysqlUser, mysqlPassword, mysqlDatabase, mysqlPlayersTableName, langName;
+    public static String playerMarker, anotherPlayerMarker, mysqlHost, mysqlUser, mysqlPassword, mysqlDatabase, mysqlPlayersTableName, langName,
+            packDescription;
 
     public static File cacheFolder;
 
@@ -42,10 +44,15 @@ public class Config {
                 try {
                     config.save(configFile);
                 } catch (IOException ex) {
-                    throw new RuntimeException();
+                    throw new RuntimeException(ex);
                 }
             }
-
+        } else {
+            try {
+                ConfigUpdater.update(NMinimap.getInstance(), "config.yml", configFile);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
         }
 
         config = YamlConfiguration.loadConfiguration(configFile);
@@ -108,6 +115,11 @@ public class Config {
         enableModJourneyMap = config.getBoolean("mods-compatibility.enable-journey-map", true);
 
         allowModRadar = config.getBoolean("mods-compatibility.allow-radar", false);
+
+        packDescription = config.getString("resourcepack.pack-mcmeta.description", "NMinimap pack");
+        packEnable1_21_11 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-1-21-11", true);
+        packEnable26_1 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-26-1", true);
+        packMcMetaChangeEnabled = config.getBoolean("resourcepack.pack-mcmeta.enable");
 
         cacheFolder = new File(plugin.getDataFolder(), "cache");
 

@@ -28,8 +28,9 @@ dependencies {
     compileOnly("com.github.retrooper:packetevents-spigot:2.11.2")
     compileOnly(files("F:\\minecraft-servers\\v5-minimap-tests\\plugins\\AnvilORM.jar"))
     //compileOnly('net.kyori:adventure-api:5.0.0')
-    compileOnly('net.kyori:adventure-platform-bukkit:4.4.1')
-    compileOnly('net.kyori:adventure-text-minimessage:5.0.0')
+    compileOnly('net.kyori:adventure-platform-bukkit:4.4.0')
+    compileOnly('net.kyori:adventure-text-minimessage:4.23.0')
+    compileOnly('com.tchristofferson:ConfigUpdater:2.2')
 }
 
 tasks {
