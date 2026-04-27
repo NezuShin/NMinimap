@@ -78,8 +78,8 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 - `nminimap_stats_cache_size` - total count of all cached chunks, number
 - `nminimap_stats_enabled_maps` - how many players use map right now, number
 - `nminimap_stats_threads` - how many plugin's threads running right now, number
-- `stats_loading_chunks` - how many chunks are being rendered right now, number
-- `stats_render_queue` - how many chunks are waiting to be rendered, number
+- `nminimap_stats_loading_chunks` - how many chunks are being rendered right now, number
+- `nminimap_stats_render_queue` - how many chunks are waiting to be rendered, number
 
 ### Markers
 
@@ -202,6 +202,7 @@ If you have questions, want ask for a feature or report a bug - feel free to [op
 Also you can ask a question in the [discord server](https://discord.gg/rZ7gfCTr3Y).
 
 ### Running on spigot
+
 Spigot is outdated server software and should not be used in production. However, it is possible to run NMinimap on Spigot.\
 Main problem is that spigot, unlike paper, cannot load chunks asynchronously. To run on spigot, you need to set `max-render-threads` config property to `1`. Otherwise, the server will freeze on chunck generation.\
 Also recommended to set `max-scale` to 1 or 2 to reduce server load.
