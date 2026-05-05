@@ -19,6 +19,7 @@ Serverside minimap based on core shaders
 - Async work as much as possible
 - Map size 127 x 127 pixels
 - Automatic resource pack build
+- Supported minecraft versions from 1.21.11 to 26.1.2
 
 ### Supported server platforms
 - [Papermc](https://papermc.io/software/paper/)
