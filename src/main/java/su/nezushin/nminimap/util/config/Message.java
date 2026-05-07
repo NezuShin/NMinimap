@@ -15,7 +15,8 @@ import java.util.List;
 
 public enum Message {
 
-    map_enabled, map_disabled, scale_set, style_set, side_set, side_left, side_right, style_round, style_square, help, incorrect_scale, insufficient_permissions, reload_complete, reload_failed, reload_start, admin_stats, you_cannot_use_this_scale;
+    map_enabled, map_disabled, scale_set, style_set, side_set, side_left, side_right, style_round, style_square, help, incorrect_scale, insufficient_permissions, reload_complete, reload_failed, reload_start, admin_stats, you_cannot_use_this_scale,
+    new_version_found;
 
     private static BukkitAudiences adventure;
 

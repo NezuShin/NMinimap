@@ -4,7 +4,9 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.util.NumberConversions;
 import su.nezushin.anvil.orm.SqlFlag;
 import su.nezushin.anvil.orm.SqlType;
 import su.nezushin.anvil.orm.table.AnvilORMSerializable;
@@ -13,6 +15,7 @@ import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.api.events.AsyncMapRenderEvent;
 import su.nezushin.nminimap.api.events.AsyncMarkerRenderEvent;
 import su.nezushin.nminimap.chunks.ChunkEntry;
+import su.nezushin.nminimap.markers.impl.LocationMarker;
 import su.nezushin.nminimap.util.config.Config;
 
 public class NMapPlayer implements AnvilORMSerializable {
@@ -59,15 +62,24 @@ public class NMapPlayer implements AnvilORMSerializable {
 
         var px = player.getLocation().getBlockX();
         var pz = player.getLocation().getBlockZ();
-        var mapSize = 128;
+        var fullMapSize = 128;
+
+        //var offset = (fullMapSize - Config.mapPixelSize) / 2;
+        //var mapSize = Config.mapPixelSize + 1 + offset;//128;
+        var offsetX = isRight ? 128 - Config.mapPixelSize : 0;
+        var offsetZ = 0;
+
+        var mapSizeX = isRight ? 128 : Config.mapPixelSize + 1;
+        var mapSizeZ = Config.mapPixelSize + 1;
+
         var chunkSize = 16 / scale;
         var mapData = new byte[128 * 128];
         var world = player.getWorld();
 
-        for (var x = 1; x < mapSize; x++) {
-            for (var z = 1; z < mapSize; z++) {
-                var wx = px + (x - mapSize / 2) * scale;
-                var wz = pz + (z - mapSize / 2) * scale;
+        for (var x = offsetX + 1; x < mapSizeX; x++) {
+            for (var z = offsetZ + 1; z < mapSizeZ; z++) {
+                var wx = px + (x - mapSizeX / 2) * scale;
+                var wz = pz + (z - mapSizeZ / 2) * scale;
 
                 var cx = Math.floorDiv(wx, 16);
                 var cz = Math.floorDiv(wz, 16);
@@ -83,7 +95,7 @@ public class NMapPlayer implements AnvilORMSerializable {
                 var indexXX = Math.floorDiv(localX, scale);
                 var indexZZ = Math.floorDiv(localZ, scale);
 
-                mapData[x + (z * mapSize)] = bytes[indexXX + (indexZZ * chunkSize)];
+                mapData[x + (z * fullMapSize)] = bytes[indexXX + (indexZZ * chunkSize)];
             }
         }
 
@@ -109,6 +121,8 @@ public class NMapPlayer implements AnvilORMSerializable {
         var event = new AsyncMarkerRenderEvent(this);
         Bukkit.getPluginManager().callEvent(event);
 
+        event.getMarkers().add(new LocationMarker("player", new Location(Bukkit.getWorld("world"), 1, 1, 1)));
+
         for (var marker : event.getMarkers()) {
 
             var pos = marker.getPositionOnMap(this);
@@ -116,8 +130,16 @@ public class NMapPlayer implements AnvilORMSerializable {
             var markerZ = pos[1];
             var rotation = pos[2];
 
-            if (Math.abs(markerX) < 128 && Math.abs(markerZ) < 128) {
-                builder.append(Component.text(NMinimap.getInstance().getMarkerImageManager().getMarkerIcon(marker.getIcon(), isRight, isRound)).font(Key.key("nminimap:default")).color(TextColor.color(markerX - 128, markerZ - 128, rotation)));
+            if (
+                    (isRound && NumberConversions.square(markerX) + NumberConversions.square(markerZ) < NumberConversions.square(Config.mapPixelSize))
+                            ||
+                            (!isRound && Math.abs(markerX) < Config.mapPixelSize && Math.abs(markerZ) < Config.mapPixelSize)) {
+                builder.append(Component.text(NMinimap.getInstance().getMarkerImageManager().getMarkerIcon(marker.getIcon(), isRight, isRound)).font(Key.key("nminimap:default"))
+                        .color(
+                                isRound ?
+                                        TextColor.color(markerX - 128, markerZ - 128, rotation)//
+                                        :
+                                        TextColor.color(markerX + (isRight ? -Config.mapPixelSize : Config.mapPixelSize + 2), markerZ + Config.mapPixelSize + 2, rotation)));
             }
         }
 

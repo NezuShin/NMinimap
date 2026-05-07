@@ -105,3 +105,6 @@ mods-compatibility:
 
   allow-radar: false
 
+
+updates:
+  check-for-updates: true

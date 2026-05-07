@@ -17,6 +17,7 @@ import su.nezushin.nminimap.papi.NMinimapPAPIExpansion;
 import su.nezushin.nminimap.player.NMapPlayer;
 import su.nezushin.nminimap.chunks.ChunkManager;
 import su.nezushin.nminimap.resourcepack.MarkerImageManager;
+import su.nezushin.nminimap.updatechecker.UpdateCheckerManager;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
 import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
@@ -33,6 +34,7 @@ public final class NMinimap extends JavaPlugin {
     private MarkerImageManager markerImageManager;
     private DatabaseManager databaseManager;
     private ModCompatibilityManager modCompatibilityManager;
+    private UpdateCheckerManager updateCheckerManager;
 
     private NMinimapPAPIExpansion placeholderAPIExpansion;
 
@@ -84,6 +86,7 @@ public final class NMinimap extends JavaPlugin {
         markerImageManager = new MarkerImageManager();
         databaseManager = new DatabaseManager();
         modCompatibilityManager = new ModCompatibilityManager();
+        updateCheckerManager = new UpdateCheckerManager();
 
 
         SchedulerUtil.getScheduler().async(() -> {
@@ -164,6 +167,10 @@ public final class NMinimap extends JavaPlugin {
 
     public ModCompatibilityManager getModCompatibilityManager() {
         return modCompatibilityManager;
+    }
+
+    public UpdateCheckerManager getUpdateCheckerManager() {
+        return updateCheckerManager;
     }
 
     public static NMinimap getInstance() {

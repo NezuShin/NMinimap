@@ -22,7 +22,8 @@ public class LocationMarker extends NMapMarker {
         return new int[]{
                 ((location.getBlockX() - ploc.getBlockX()) * 2) / player.getScale(),
                 ((location.getBlockZ() - ploc.getBlockZ()) * 2) / player.getScale(),
-                (int) (((Math.floorMod((int) location.getYaw(), 360) / 360.0f) * 256.0) - 127)};
+                (int) (((Math.floorMod((int) location.getYaw() - 2, 360) / 360.0f) * 256.0) - 127)
+        };
     }
 
     public Location getLocation() {

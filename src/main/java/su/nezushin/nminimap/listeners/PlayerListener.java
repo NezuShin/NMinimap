@@ -13,7 +13,12 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void join(PlayerJoinEvent e) {
-        NMinimap.getInstance().loadPlayer(e.getPlayer());
+        var p = e.getPlayer();
+
+        NMinimap.getInstance().loadPlayer(p);
+
+        if (p.hasPermission("nminimap.admin"))
+            NMinimap.getInstance().getUpdateCheckerManager().notifyIfHasNewVersion(p);
     }
 
     @EventHandler

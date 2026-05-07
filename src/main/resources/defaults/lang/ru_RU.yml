@@ -32,3 +32,8 @@ side_left: "левой"
 side_right: "правой"
 style_round: "круглая"
 style_square: "квадратная"
+
+
+new_version_found:
+  - "<reset><#08c0c2>Найден новый релиз NMinimap: <#008f9a>{version}"
+  - "<reset><click:open_url:'https://modrinth.com/plugin/nminimap'><#08c0c2>[<#008f9a>Modrinth<#08c0c2>]</click> <click:open_url:'https://github.com/NezuShin/NMinimap/releases/'>[<#008f9a>Github<#08c0c2>]</click>"

@@ -15,7 +15,7 @@ public class MarkerListener implements Listener {
         if(Config.playerMarker.isEmpty())
             return;
 
-        e.getMarkers().add(new PositionMarker(Config.playerMarker, 0, 0, (int) (((Math.floorMod((int) player.getPlayer().getLocation().getYaw(), 360) / 360.0f) * 256.0) - 127)));
+        e.getMarkers().add(new PositionMarker(Config.playerMarker, 0, 0, (int) (((Math.floorMod((int) player.getPlayer().getLocation().getYaw() - 2, 360) / 360.0f) * 256.0) - 127)));
     }
 
     @EventHandler
