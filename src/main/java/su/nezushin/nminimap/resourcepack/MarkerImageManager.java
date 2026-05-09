@@ -23,7 +23,7 @@ import java.util.Map;
 public class MarkerImageManager {
 
 
-    Map<String, String[]> markerImages = new HashMap<>();
+    private Map<String, String[]> markerImages = new HashMap<>();
 
     public MarkerImageManager() {
         load();
@@ -58,29 +58,33 @@ public class MarkerImageManager {
 
 
             if (Config.resourcepackCopyDefaults) {
-                Config.copyDefaults("defaults/markers/player.png", new File(markersDir, "player.png"));
-                Config.copyDefaults("defaults/markers/player_small.png", new File(markersDir, "player_small.png"));
-                Config.copyDefaults("defaults/pack.mcmeta", new File(resourcepackDir, "pack.mcmeta"));
+                Config.copyDefaults("defaults/markers/player.png", new File(markersDir, "player.png"), false);
+                Config.copyDefaults("defaults/markers/player_small.png", new File(markersDir, "player_small.png"), false);
+                Config.copyDefaults("defaults/markers/white_banner.png", new File(markersDir, "white_banner.png"), false);
 
                 var niminimapShadersDir = new File(namespaceDir, "shaders");
 
 
                 if (Config.packEnable1_21_11) {
-                    Config.copyDefaults("defaults/shaders/core/v1_21_11/rendertype_text.fsh", new File(resourcepackDir, "nminimap_1_21_11/assets/minecraft/shaders/core/rendertype_text.fsh"));
-                    Config.copyDefaults("defaults/shaders/core/v1_21_11/rendertype_text.vsh", new File(resourcepackDir, "nminimap_1_21_11/assets/minecraft/shaders/core/rendertype_text.vsh"));
+                    Config.copyDefaults("defaults/shaders/core/v1_21_11/rendertype_text.fsh", new File(resourcepackDir, "nminimap_1_21_11/assets/minecraft/shaders/core/rendertype_text.fsh"), true);
+                    Config.copyDefaults("defaults/shaders/core/v1_21_11/rendertype_text.vsh", new File(resourcepackDir, "nminimap_1_21_11/assets/minecraft/shaders/core/rendertype_text.vsh"), true);
                 }
 
                 if (Config.packEnable26_1) {
-                    Config.copyDefaults("defaults/shaders/core/v26_1/rendertype_text.fsh", new File(resourcepackDir, "nminimap_26_1/assets/minecraft/shaders/core/rendertype_text.fsh"));
-                    Config.copyDefaults("defaults/shaders/core/v26_1/rendertype_text.vsh", new File(resourcepackDir, "nminimap_26_1/assets/minecraft/shaders/core/rendertype_text.vsh"));
+                    Config.copyDefaults("defaults/shaders/core/v26_1/rendertype_text.fsh", new File(resourcepackDir, "nminimap_26_1/assets/minecraft/shaders/core/rendertype_text.fsh"), true);
+                    Config.copyDefaults("defaults/shaders/core/v26_1/rendertype_text.vsh", new File(resourcepackDir, "nminimap_26_1/assets/minecraft/shaders/core/rendertype_text.vsh"), true);
                 }
 
 
-                Config.copyDefaults("defaults/shaders/include/config.glsl", new File(niminimapShadersDir, "include/config.glsl"));
-                Config.copyDefaults("defaults/shaders/include/vertex_body.glsl", new File(niminimapShadersDir, "include/vertex_body.glsl"));
-                Config.copyDefaults("defaults/shaders/include/vertex_utils.glsl", new File(niminimapShadersDir, "include/vertex_utils.glsl"));
+                //Config.copyDefaults("defaults/shaders/include/config.glsl", new File(niminimapShadersDir, "include/config.glsl"), true);
+                Config.copyDefaults("defaults/shaders/include/vertex_body.glsl", new File(niminimapShadersDir, "include/vertex_body.glsl"), true);
+                Config.copyDefaults("defaults/shaders/include/vertex_utils.glsl", new File(niminimapShadersDir, "include/vertex_utils.glsl"), true);
+                Config.copyDefaults("defaults/shaders/include/fragment_body.glsl", new File(niminimapShadersDir, "include/fragment_body.glsl"), true);
 
-
+                Files.write(Config.getResourceAsString("defaults/shaders/include/config.glsl")
+                                .replace("{radius}", String.valueOf((int) Math.floor(((double) Config.mapPixelSize) / 2.0)))
+                                .getBytes(StandardCharsets.UTF_8),
+                        new File(niminimapShadersDir, "include/config.glsl"));
             }
             if (Config.packMcMetaChangeEnabled) {
                 List<PackMcMeta.Overlay> packOverlays = Lists.newArrayList();
@@ -147,6 +151,10 @@ public class MarkerImageManager {
 
     public String getMarkerIcon(String image, boolean isRight, boolean isRoundMap) {
         return markerImages.get(image)[(isRoundMap ? 2 : 0) + (isRight ? 0 : 1)];
+    }
+
+    public Map<String, String[]> getMarkerImages() {
+        return markerImages;
     }
 
     private String getNameWithoutExt(File f) {

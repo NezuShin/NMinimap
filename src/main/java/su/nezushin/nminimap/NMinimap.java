@@ -88,10 +88,12 @@ public final class NMinimap extends JavaPlugin {
         modCompatibilityManager = new ModCompatibilityManager();
         updateCheckerManager = new UpdateCheckerManager();
 
+        Config.validateLocationMarkers();
 
         SchedulerUtil.getScheduler().async(() -> {
             playersWithMap.forEach(NMapPlayer::sendMap);
         }, 1, Config.mapRenderInterval);
+
 
         Bukkit.getPluginManager().registerEvents(new MarkerListener(), getInstance());
         Bukkit.getPluginManager().registerEvents(new PlayerListener(), getInstance());

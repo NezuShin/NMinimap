@@ -1,14 +1,20 @@
 package su.nezushin.nminimap.util.config;
 
+import com.google.common.collect.Lists;
 import com.tchristofferson.configupdater.ConfigUpdater;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import su.nezushin.nminimap.NMinimap;
+import su.nezushin.nminimap.markers.impl.LocationMarker;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Config {
@@ -24,14 +30,14 @@ public class Config {
 
     public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>(), defaultEnableBrands = new ArrayList<>();
 
+    public static List<StaticMarker> staticMarkers = new ArrayList<>();
+
     public static String playerMarker, anotherPlayerMarker, mysqlHost, mysqlUser, mysqlPassword, mysqlDatabase, mysqlPlayersTableName, langName,
             packDescription;
 
     public static File cacheFolder;
 
     public static void init() {
-
-
         var plugin = NMinimap.getInstance();
         var configFile = new File(plugin.getDataFolder() + File.separator + "config.yml");
         if (!configFile.exists()) {
@@ -122,6 +128,10 @@ public class Config {
         packMcMetaChangeEnabled = config.getBoolean("resourcepack.pack-mcmeta.enable");
 
 
+        mapPixelSize = Math.max(Math.min(config.getInt("map-pixel-size", 127), 127), 10);
+
+        staticMarkers = loadLocationMarkers(config);
+
         checkForUpdates = config.getBoolean("updates.check-for-updates", true);
 
         cacheFolder = new File(plugin.getDataFolder(), "cache");
@@ -131,10 +141,20 @@ public class Config {
         Message.load();
     }
 
+    public static String getResourceAsString(String resourcePath) {
+        try (InputStream in = NMinimap.getInstance().getResource(resourcePath.replace('\\', '/'));) {
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
-    public static void copyDefaults(String resourcePath, File dest) {
-        if (dest.exists())
-            return;
+    public static void copyDefaults(String resourcePath, File dest, boolean force) {
+        if (dest.exists()) {
+            if (!force)
+                return;
+            dest.delete();
+        }
         dest.getParentFile().mkdirs();
         try (InputStream in = NMinimap.getInstance().getResource(resourcePath.replace('\\', '/')); OutputStream out = new FileOutputStream(dest);) {
             if (in == null) {
@@ -156,5 +176,40 @@ public class Config {
 
     public static List<File> getResourcepackZipDestinationFiles() {
         return resourcepackZipDestinations.stream().map(i -> Path.of(i).isAbsolute() ? new File(i) : new File(NMinimap.getInstance().getDataFolder().getParentFile(), i)).toList();
+    }
+
+    public static void validateLocationMarkers() {
+        staticMarkers.removeIf((marker) -> {
+            if (!NMinimap.getInstance().getMarkerImageManager().getMarkerImages().containsKey(marker.marker().getIcon())) {
+                NMinimap.getInstance().getLogger().severe("Icon " + marker.marker().getIcon() + " is not found for static marker " + marker.name() + "!");
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private static List<StaticMarker> loadLocationMarkers(FileConfiguration config) {
+        var cs = config.getConfigurationSection("static-markers");
+        if (cs == null)
+            return Lists.newArrayList();
+
+        List<StaticMarker> list = new ArrayList<>();
+
+        for (var i : cs.getKeys(false)) {
+            list.add(new StaticMarker(
+                    new LocationMarker(
+                            config.getString("static-markers." + i + ".icon"),
+                            new Location(
+                                    Bukkit.getWorld(config.getString("static-markers." + i + ".world", "world")),
+                                    config.getInt("static-markers." + i + ".x", 0),
+                                    config.getInt("static-markers." + i + ".y", 0),
+                                    config.getInt("static-markers." + i + ".z", 0),
+                                    (float) config.getDouble("static-markers." + i + ".yaw", 0),
+                                    (float) config.getDouble("static-markers." + i + ".pitch", 0)
+                            )),
+                    i));
+        }
+
+        return list;
     }
 }

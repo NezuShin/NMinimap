@@ -64,8 +64,6 @@ public class NMapPlayer implements AnvilORMSerializable {
         var pz = player.getLocation().getBlockZ();
         var fullMapSize = 128;
 
-        //var offset = (fullMapSize - Config.mapPixelSize) / 2;
-        //var mapSize = Config.mapPixelSize + 1 + offset;//128;
         var offsetX = isRight ? 128 - Config.mapPixelSize : 0;
         var offsetZ = 0;
 
@@ -98,8 +96,6 @@ public class NMapPlayer implements AnvilORMSerializable {
                 mapData[x + (z * fullMapSize)] = bytes[indexXX + (indexZZ * chunkSize)];
             }
         }
-
-
         var event = new AsyncMapRenderEvent(this, mapData);
 
         Bukkit.getPluginManager().callEvent(event);
@@ -111,7 +107,6 @@ public class NMapPlayer implements AnvilORMSerializable {
         mapData[2] = 49;
         mapData[3] = (byte) (isRight ? (isRound ? 29 : -127) : (isRound ? 67 : 17));
 
-
         return mapData;
     }
 
@@ -120,8 +115,6 @@ public class NMapPlayer implements AnvilORMSerializable {
         var builder = Component.text();
         var event = new AsyncMarkerRenderEvent(this);
         Bukkit.getPluginManager().callEvent(event);
-
-        event.getMarkers().add(new LocationMarker("player", new Location(Bukkit.getWorld("world"), 1, 1, 1)));
 
         for (var marker : event.getMarkers()) {
 

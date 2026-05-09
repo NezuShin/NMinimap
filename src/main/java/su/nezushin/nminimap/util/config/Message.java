@@ -47,7 +47,7 @@ public enum Message {
         var file = new File(NMinimap.getInstance().getDataFolder(), "lang/" + lang + ".yml");
         if (!file.exists()) {
             try {
-                Config.copyDefaults("defaults/lang/" + lang + ".yml", file);
+                Config.copyDefaults("defaults/lang/" + lang + ".yml", file, false);
             } catch (IllegalArgumentException ex) {
                 return null;
             }

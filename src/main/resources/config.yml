@@ -19,6 +19,11 @@ max-render-threads: 30
 # 1 = 20 updates per second; 2 = 10 updates; etc.
 player-render-interval: 1
 
+#Map size in pixels. Minimum value is 10; Maximum is 127
+#The value is baked into shader, so changing it will require re-applying the resource pack.
+#Also, this setting will not apply if  resourcepack.copy-defaults set to false.
+map-pixel-size: 127
+
 #When rendering worlds with a ceiling(e.g. Nether), should it be skipped?
 #false - only display buildings above the ceiling (like vanilla maps do)
 #true - also display territory under the ceiling
@@ -107,4 +112,17 @@ mods-compatibility:
 
 
 updates:
+  #modrinth update checker
   check-for-updates: true
+
+#Static markers always displayed on map
+#To remove any markers, write static-markers: {}
+static-markers:
+  my-banner:
+    #Icon from ./icons directory
+    icon: "white_banner"
+    x: 0
+    z: 0
+    #marker rotation. From 0 to 360
+    yaw: 180
+    world: "world"

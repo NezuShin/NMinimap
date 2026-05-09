@@ -17,6 +17,7 @@ uniform sampler2D Sampler2;
 out float sphericalVertexDistance;
 out float cylindricalVertexDistance;
 out vec4 vertexColor;
+out vec2 uvCoord;
 out vec2 texCoord0;
 
 flat out int custom;
@@ -30,7 +31,6 @@ void main() {
     cylindricalVertexDistance = fog_cylindrical_distance(Position);
     vertexColor = Color * sample_lightmap(Sampler2, UV2);
     texCoord0 = UV0;
-	
 
     #moj_import <nminimap:vertex_body.glsl>
 }

@@ -1,7 +1,6 @@
 #version 330
 
 #moj_import <nminimap:config.glsl>
-
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:dynamictransforms.glsl>
 #moj_import <minecraft:globals.glsl>
@@ -18,6 +17,7 @@ uniform sampler2D Sampler2;
 out float sphericalVertexDistance;
 out float cylindricalVertexDistance;
 out vec4 vertexColor;
+out vec2 uvCoord;
 out vec2 texCoord0;
 
 flat out int custom;

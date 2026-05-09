@@ -1,5 +1,6 @@
 #version 330
 
+#moj_import <nminimap:config.glsl>
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:dynamictransforms.glsl>
 
@@ -8,6 +9,7 @@ uniform sampler2D Sampler0;
 in float sphericalVertexDistance;
 in float cylindricalVertexDistance;
 in vec4 vertexColor;
+in vec2 uvCoord;
 in vec2 texCoord0;
 
 flat in int custom;
@@ -15,14 +17,10 @@ flat in int custom;
 out vec4 fragColor;
 
 void main() {
-    
+
     vec4 color = texture(Sampler0, texCoord0) * vertexColor * ColorModulator;
 
-    if (
-        (custom == 1 && (texCoord0.x < 1.0/128.0 || texCoord0.y < 1.0/128.0)) ||
-        (custom == 2 && length(texCoord0 - 0.5 - 1.0/128.0) > (0.5 - 1.0/128.0))
-    )
-        discard;
+    #moj_import <nminimap:fragment_body.glsl>
     
     if (color.a < 0.1) {
         discard;
