@@ -6,6 +6,10 @@ map-id: 0
 cache:
   #Cache tiles instead of rendering it every time
   allow-file-cache: true
+  #Threshold for available disk space to stop writing to cache.
+  #Setting 10G will leave free 10 gigabytes of space and then stop writing to cache
+  #You can use G for gigabytes, M for megabytes and K for Kilobytes.
+  available-disk-space-threshold: "10G"
   #How much tiles to store? Every chunk is about 380 bytes
   max-tiles-in-ram: 1000
   #Render chunk before it is needed? Useful if you are pre-generating your world using Chunky

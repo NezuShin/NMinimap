@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.player.NMapPlayer;
+import su.nezushin.nminimap.util.DiskCapacityUtil;
 import su.nezushin.nminimap.util.config.Config;
 import su.nezushin.nminimap.util.config.Message;
 import su.nezushin.nminimap.util.config.Permission;
@@ -49,8 +50,12 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                             "{enabled_maps}", String.valueOf(NMinimap.getInstance().getPlayersWithMap().stream().filter(NMapPlayer::isEnabled).count()),
                             "{render_queue}", String.valueOf(NMinimap.getInstance().getChunkManager().getAwaitingChunksSize()),
                             "{loading_chunks}", String.valueOf(NMinimap.getInstance().getChunkManager().getLoadingChunks().size()),
-                            "{threads}", String.valueOf(Thread.getAllStackTraces().keySet().stream().filter(i -> i.getName().equalsIgnoreCase("NMinimapThread")
-                            ).count())
+                            "{threads}", String.valueOf(Thread.getAllStackTraces().keySet().stream().filter(i -> i.getName().equalsIgnoreCase("NMinimapThread")).count()),
+                            "{disk_total_space_g}", String.format("%.1f", (double) DiskCapacityUtil.getTotalSpace() / (1024L * 1024L * 1024L)),
+                            "{disk_free_space_g}", String.format("%.1f", (double) DiskCapacityUtil.getUsableSpace() / (1024L * 1024L * 1024L)),
+                            "{disk_total_space}", String.format("%.1f", (double) DiskCapacityUtil.getTotalSpace()),
+                            "{disk_free_space}", String.format("%.1f", (double) DiskCapacityUtil.getUsableSpace()),
+                            "{disk_is_full}", String.valueOf(NMinimap.getInstance().getChunkManager().getChunkCache().isDiskFull())
                     ).send(sender);
                     return;
                 }

@@ -81,6 +81,10 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 - `nminimap_stats_threads` - how many plugin's threads running right now, number
 - `nminimap_stats_loading_chunks` - how many chunks are being rendered right now, number
 - `nminimap_stats_render_queue` - how many chunks are waiting to be rendered, number
+- `nminimap_stats_disk_total_space_g` - total available disk space in gigabytes, number (double)
+- `nminimap_stats_disk_free_space_g` - free space on disk in gigabytes, number (double)
+- `nminimap_stats_disk_total_space` - total available disk space in bytes, number
+- `nminimap_stats_disk_free_space` - free space on disk in bytes, number
 
 ### Markers
 

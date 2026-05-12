@@ -26,11 +26,16 @@ public class SchedulerUtil {
         return scheduler;
     }
 
+    public static interface RunningTask {
+
+        public void cancel();
+    }
+
     public static interface Scheduler {
 
         public void cancelAllTasks();
 
-        public void async(Runnable run, long delay, long period);
+        public RunningTask async(Runnable run, long delay, long period);
 
         public void async(Runnable run, long delay);
 
@@ -48,8 +53,9 @@ public class SchedulerUtil {
         }
 
         @Override
-        public void async(Runnable run, long delay, long period) {
-            Bukkit.getScheduler().runTaskTimerAsynchronously(NMinimap.getInstance(), run, delay, period);
+        public RunningTask async(Runnable run, long delay, long period) {
+            var task = Bukkit.getScheduler().runTaskTimerAsynchronously(NMinimap.getInstance(), run, delay, period);
+            return task::cancel;
         }
 
         @Override
@@ -78,12 +84,13 @@ public class SchedulerUtil {
         }
 
         @Override
-        public void async(Runnable run, long delay, long period) {
-            Bukkit.getAsyncScheduler().runAtFixedRate(NMinimap.getInstance(), (ScheduledTask scheduledTask) -> {
+        public RunningTask async(Runnable run, long delay, long period) {
+            var task = Bukkit.getAsyncScheduler().runAtFixedRate(NMinimap.getInstance(), (ScheduledTask scheduledTask) -> {
                         run.run();
                     },
                     delay * 50L, period * 50L, TimeUnit.MILLISECONDS
             );
+            return task::cancel;
         }
 
         @Override

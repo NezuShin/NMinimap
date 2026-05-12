@@ -5,20 +5,28 @@ import com.google.gson.reflect.TypeToken;
 import org.bukkit.Bukkit;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.ChunkEntry;
+import su.nezushin.nminimap.util.DiskCapacityUtil;
+import su.nezushin.nminimap.util.MapDataUtil;
+import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 public class ChunkCache {
 
-    private Gson gson = new Gson();
-
-
     private Set<ChunkEntry> cachedFiles = ConcurrentHashMap.newKeySet();
 
+
+    private boolean isDiskFull;
 
     public ChunkCache() {
         if (!Config.allowFileCache)
@@ -27,10 +35,25 @@ public class ChunkCache {
     }
 
     public void loadCachedFiles() {
+        var deleted = 0;
+        NMinimap.getInstance().getLogger().info("Loading cache...");
+        var reportTask = SchedulerUtil.getScheduler().async(() -> reportCacheLoadingStatus(), 40, 40);
         for (var file : Config.cacheFolder.listFiles()) {
             String[] name = file.getName().split("\\.");
+            if (name[3].equalsIgnoreCase(".json")) {
+                file.delete();//old cache clear
+                deleted++;
+                continue;
+            }
             cachedFiles.add(new ChunkEntry(Bukkit.getWorld(name[0]), Integer.parseInt(name[1]), Integer.parseInt(name[2])));
         }
+        reportTask.cancel();
+        NMinimap.getInstance().getLogger().info("Cache init done! Loaded " + cachedFiles.size() + " tiles. Deleted " + deleted + " old cache files.");
+    }
+
+    private void reportCacheLoadingStatus() {
+        NMinimap.getInstance().getLogger().info("Loaded " + cachedFiles.size() + " tiles....");
+
     }
 
     public void removeFromCache(ChunkEntry chunk) {
@@ -50,8 +73,6 @@ public class ChunkCache {
         chunkManager.getLoadingChunks().add(chunk);
 
         NMinimap.async(() -> {
-
-
             var file = chunk.getAsFile();
             if (!file.exists()) {
                 cachedFiles.remove(chunk);
@@ -59,22 +80,16 @@ public class ChunkCache {
                 return;
             }
 
-            try (var reader = new FileReader(file)) {
-                var type = new TypeToken<Map<Integer, String>>() {
-                }.getType();
-
-                Map<Integer, String> map = gson.fromJson(reader, type);
-
-                Map<Integer, byte[]> scales = new HashMap<>();
-                map.forEach((a, b) -> {
-                    scales.put(a, Base64.getDecoder().decode(b));
-                });
+            try (var is = new GZIPInputStream(new FileInputStream(file))) {
+                var scales = MapDataUtil.readMap(is);
 
                 chunkManager.getLoadedTiles().put(chunk, scales);
                 chunkManager.getLoadingChunks().remove(chunk);
                 chunkManager.renderNextAwaitingChunk();
             } catch (Exception ex) {
-                ex.printStackTrace();
+                cachedFiles.remove(chunk);
+                NMinimap.getInstance().getChunkManager().getLoadingChunks().remove(chunk);
+                NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to load chunk tile from cache", ex);
             }
         });
     }
@@ -82,23 +97,27 @@ public class ChunkCache {
     public void saveToCache(ChunkEntry chunk, Map<Integer, byte[]> scales) {
         if (!Config.allowFileCache)
             return;
-        Map<Integer, String> map = new HashMap<>();
+        if (DiskCapacityUtil.getUsableSpace() < Config.availableDiskSpaceThreshold) {
+            isDiskFull = true;
+            return;
+        }
+        isDiskFull = false;
 
-        scales.forEach((a, b) -> {
-            map.put(a, Base64.getEncoder().encodeToString(b));
-        });
+        try (var os = new GZIPOutputStream(new FileOutputStream(chunk.getAsFile()))) {
+            MapDataUtil.saveMap(scales, os);
 
-
-        try (var writer = new FileWriter(chunk.getAsFile())) {
-
-            gson.toJson(map, writer);
             cachedFiles.add(chunk);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            cachedFiles.remove(chunk);
+            NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to save chunk tile to cache", ex);
         }
     }
 
     public Set<ChunkEntry> getCachedFiles() {
         return cachedFiles;
+    }
+
+    public boolean isDiskFull() {
+        return isDiskFull;
     }
 }

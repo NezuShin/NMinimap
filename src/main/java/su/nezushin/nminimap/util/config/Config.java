@@ -28,6 +28,8 @@ public class Config {
             disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar,
             packEnable1_21_11, packEnable26_1, packMcMetaChangeEnabled, checkForUpdates;
 
+    public static long availableDiskSpaceThreshold = 14L * 1024L * 1024L * 1024L;
+
     public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>(), defaultEnableBrands = new ArrayList<>();
 
     public static List<StaticMarker> staticMarkers = new ArrayList<>();
@@ -68,6 +70,16 @@ public class Config {
         allowFileCache = config.getBoolean("cache.allow-file-cache", true);
         maxTilesInRam = config.getInt("cache.max-tiles-in-ram", 9999);
         renderNewChunks = config.getBoolean("cache.render-new-chunks", false);
+        var diskStr = config.getString("cache.available-disk-space-threshold", "1G").toLowerCase();
+
+        availableDiskSpaceThreshold =
+                Long.parseLong(diskStr.replaceAll("\\D+", ""))
+                        * ((long) Math.pow(1024,
+                        diskStr.endsWith("g") ? 3 :
+                                (diskStr.endsWith("m") ? 2 :
+                                        (diskStr.endsWith("k") ? 1 : 0)
+                                )
+                ));
 
         mapId = config.getInt("map-id", 0);
 
@@ -126,7 +138,6 @@ public class Config {
         packEnable1_21_11 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-1-21-11", true);
         packEnable26_1 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-26-1", true);
         packMcMetaChangeEnabled = config.getBoolean("resourcepack.pack-mcmeta.enable");
-
 
         mapPixelSize = Math.max(Math.min(config.getInt("map-pixel-size", 127), 127), 10);
 

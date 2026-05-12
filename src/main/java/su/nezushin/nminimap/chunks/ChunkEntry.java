@@ -9,7 +9,7 @@ import java.io.File;
 public record ChunkEntry(World w, int x, int z) {
 
     public File getAsFile() {
-        return new File(Config.cacheFolder, w.getName() + "." + x + "." + z + ".json");
+        return new File(Config.cacheFolder, w.getName() + "." + x + "." + z + ".bin.gz");
     }
 
     public boolean isInsideWorldBorder() {

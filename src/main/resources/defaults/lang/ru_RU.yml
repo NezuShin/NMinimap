@@ -27,6 +27,9 @@ admin_stats:
   - "<reset><#08c0c2>Число активных потоков: <#008f9a>{threads}"
   - "<reset><#08c0c2>Размер очереди рендера: <#008f9a>{render_queue}"
   - "<reset><#08c0c2>Число загружаемых чанков сейчас: <#008f9a>{loading_chunks}"
+  - "<reset><#08c0c2>Ёмкость диска: <#008f9a>{disk_total_space_g} GB"
+  - "<reset><#08c0c2>Свободно пространства: <#008f9a>{disk_free_space_g} GB"
+  - "<reset><#08c0c2>Диск переполнен: <#008f9a>{disk_is_full}"
 
 side_left: "левой"
 side_right: "правой"

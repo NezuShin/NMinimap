@@ -1,13 +1,12 @@
 package su.nezushin.nminimap.papi;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.player.NMapPlayer;
+import su.nezushin.nminimap.util.DiskCapacityUtil;
 
 public class NMinimapPAPIExpansion extends PlaceholderExpansion {
     @Override
@@ -41,6 +40,14 @@ public class NMinimapPAPIExpansion extends PlaceholderExpansion {
             return String.valueOf(NMinimap.getInstance().getChunkManager().getLoadingChunks().size());
         } else if (params.equalsIgnoreCase("stats_render_queue")) {
             return String.valueOf(NMinimap.getInstance().getChunkManager().getAwaitingChunksSize());
+        } else if (params.equalsIgnoreCase("stats_disk_total_space_g")) {
+            return String.format("%.1f", (double) DiskCapacityUtil.getTotalSpace() / (1024L * 1024L * 1024L));
+        } else if (params.equalsIgnoreCase("stats_disk_free_space_g")) {
+            return String.format("%.1f", (double) DiskCapacityUtil.getUsableSpace() / (1024L * 1024L * 1024L));
+        } else if (params.equalsIgnoreCase("stats_disk_total_space")) {
+            return String.valueOf(DiskCapacityUtil.getTotalSpace());
+        } else if (params.equalsIgnoreCase("stats_disk_free_space")) {
+            return String.valueOf(DiskCapacityUtil.getUsableSpace());
         }
 
         var nminimapPlayer = NMinimap.getInstance().getPlayersWithMap().stream()

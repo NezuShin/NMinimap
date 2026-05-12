@@ -27,6 +27,9 @@ admin_stats:
   - "<reset><#08c0c2>Active threads count: <#008f9a>{threads}"
   - "<reset><#08c0c2>Render queue size: <#008f9a>{render_queue}"
   - "<reset><#08c0c2>Currently loading chunks size: <#008f9a>{loading_chunks}"
+  - "<reset><#08c0c2>Disk total space: <#008f9a>{disk_total_space_g} GB"
+  - "<reset><#08c0c2>Disk free space: <#008f9a>{disk_free_space_g} GB"
+  - "<reset><#08c0c2>Is disk full: <#008f9a>{disk_is_full}"
 
 side_left: "left"
 side_right: "right"
