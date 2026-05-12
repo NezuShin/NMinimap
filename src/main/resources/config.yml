@@ -62,7 +62,7 @@ resourcepack:
   #Copy the default pack.mcmeta and shader files to resourcepack folder. Files are only copied if they do not already exist
   copy-defaults: true
   #where to copy resourcepack folder after building font files?
-  copy-destinations:
+  copy-destinations: []
   #    - 'PackMerger/packs/nminimap'
   #    - 'C:\Users\nezushin\AppData\Roaming\.minecraft\resourcepacks\nminimap'
   zip-destinations:
