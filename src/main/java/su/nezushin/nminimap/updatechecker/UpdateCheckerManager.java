@@ -1,7 +1,6 @@
 package su.nezushin.nminimap.updatechecker;
 
 import de.clickism.modrinthupdatechecker.ModrinthUpdateChecker;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.util.config.Config;
@@ -40,14 +39,20 @@ public class UpdateCheckerManager {
 
         new ModrinthUpdateChecker("nminimap", "spigot", null)
                 .checkVersion(version -> {
-                    if (versionToInt(NMinimap.getInstance().getDescription().getVersion()) < versionToInt(version)) {
+                    if (versionToNumber(NMinimap.getInstance().getDescription().getVersion()) < versionToNumber(version)) {
                         newVersion = version;
                     }
                 });
     }
 
-    private int versionToInt(String version) {
-        return Integer.parseInt(version.replaceAll("\\D+", ""));
+    private int versionToNumber(String version) {
+        int quickfixNumber = 0;
+        if (version.contains("quickfix")) {
+            quickfixNumber = Integer.parseInt(version.substring(version.indexOf("quickfix")).replaceAll("\\D+", ""));
+            version = version.substring(0, version.indexOf("quickfix"));
+        }
+
+        return Integer.parseInt(version.replaceAll("\\D+", "")) * 100 + quickfixNumber;
     }
 
 

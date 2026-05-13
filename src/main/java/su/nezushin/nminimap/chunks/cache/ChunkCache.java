@@ -40,11 +40,13 @@ public class ChunkCache {
         var reportTask = SchedulerUtil.getScheduler().async(() -> reportCacheLoadingStatus(), 40, 40);
         for (var file : Config.cacheFolder.listFiles()) {
             String[] name = file.getName().split("\\.");
-            if (name[3].equalsIgnoreCase(".json")) {
+            if (name[3].equalsIgnoreCase("json")) {
                 file.delete();//old cache clear
                 deleted++;
                 continue;
             }
+            if (!file.getName().endsWith(".bin.gz"))
+                continue;
             cachedFiles.add(new ChunkEntry(Bukkit.getWorld(name[0]), Integer.parseInt(name[1]), Integer.parseInt(name[2])));
         }
         reportTask.cancel();
