@@ -17,11 +17,11 @@ public class PackMcMeta {
         this.overlays = overlays;
     }
 
-    public static record Pack(String description, int[] min_format, int[] max_format) {
+    public static record Pack(String description, int min_format, int max_format, int[] supported_formats) {
 
     }
 
-    public static record Overlay(String directory, int[] min_format, int[] max_format) {
+    public static record Overlay(String directory, int min_format, int max_format, int[] formats) {
 
     }
 

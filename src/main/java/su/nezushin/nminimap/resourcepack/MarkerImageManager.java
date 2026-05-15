@@ -89,13 +89,13 @@ public class MarkerImageManager {
             if (Config.packMcMetaChangeEnabled) {
                 List<PackMcMeta.Overlay> packOverlays = Lists.newArrayList();
                 if (Config.packEnable1_21_11)
-                    packOverlays.add(new PackMcMeta.Overlay("nminimap_1_21_11", new int[]{75, 0}, new int[]{84, 0}));
+                    packOverlays.add(new PackMcMeta.Overlay("nminimap_1_21_11", 75, 84, new int[]{75, 84}));
                 if (Config.packEnable26_1)
-                    packOverlays.add(new PackMcMeta.Overlay("nminimap_26_1", new int[]{84, 0}, new int[]{9999, 0}));
+                    packOverlays.add(new PackMcMeta.Overlay("nminimap_26_1", 84, 9999, new int[]{84, 9999}));
                 Files.write(new GsonBuilder().setPrettyPrinting().create().toJson(
                         new PackMcMeta(
                                 new PackMcMeta.Pack(Config.packDescription,
-                                        new int[]{75, 0}, new int[]{84, 0}),
+                                        75, 9999, new int[]{75, 9999}),
                                 new PackMcMeta.Overlays(packOverlays))
                 ).getBytes(StandardCharsets.UTF_8), new File(resourcepackDir, "pack.mcmeta"));
             }
