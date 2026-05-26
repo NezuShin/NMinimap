@@ -1,7 +1,6 @@
 package su.nezushin.nminimap.util.config;
 
 import com.google.common.collect.Lists;
-import com.tchristofferson.configupdater.ConfigUpdater;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -32,6 +31,8 @@ public class Config {
 
     public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>(), defaultEnableBrands = new ArrayList<>();
 
+    public static List<UndergroundLayer> undergroundLayers = new ArrayList<>();
+
     public static List<StaticMarker> staticMarkers = new ArrayList<>();
 
     public static String playerMarker, anotherPlayerMarker, mysqlHost, mysqlUser, mysqlPassword, mysqlDatabase, mysqlPlayersTableName, langName,
@@ -54,12 +55,6 @@ public class Config {
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
-            }
-        } else {
-            try {
-                ConfigUpdater.update(NMinimap.getInstance(), "config.yml", configFile);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
             }
         }
 
@@ -141,6 +136,8 @@ public class Config {
 
         mapPixelSize = Math.max(Math.min(config.getInt("map-pixel-size", 127), 127), 10);
 
+        undergroundLayers = loadUndergroundLayers(config);
+        
         staticMarkers = loadLocationMarkers(config);
 
         checkForUpdates = config.getBoolean("updates.check-for-updates", true);
@@ -221,6 +218,30 @@ public class Config {
                     i));
         }
 
+        return list;
+    }
+    
+    private static List<UndergroundLayer> loadUndergroundLayers(FileConfiguration config) {
+        var cs = config.getConfigurationSection("underground-layers");
+        if (cs == null)
+            return Lists.newArrayList();
+
+        List<UndergroundLayer> list = new ArrayList<>();
+        for (var key : cs.getKeys(false)) {
+            List<String> regions = config.getStringList("underground-layers." + key + ".wg-regions");
+            if (regions.isEmpty()) {
+                // Fallback to old wg-region-id for compatibility
+                String oldId = config.getString("underground-layers." + key + ".wg-region-id", key);
+                regions = Lists.newArrayList(oldId);
+            }
+            list.add(new UndergroundLayer(
+                    key,
+                    regions,
+                    config.getInt("underground-layers." + key + ".render-from-y", 64),
+                    config.getInt("underground-layers." + key + ".priority", 0),
+                    (float) config.getDouble("underground-layers." + key + ".darken", 0.5)
+            ));
+        }
         return list;
     }
 }

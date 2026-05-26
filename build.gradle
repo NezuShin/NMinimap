@@ -13,10 +13,11 @@ repositories {
         url = "https://repo.papermc.io/repository/maven-public/"
     }
     maven { url 'https://jitpack.io' }
-    maven { url 'https://maven.evokegames.gg/snapshots' }
     maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
     maven { url 'https://repo.extendedclip.com/releases/' }
     maven {url = 'https://hub.spigotmc.org/nexus/content/groups/public/'}
+    maven { url = "https://maven.enginehub.org/repo/" }
+    maven { url = 'https://jitpack.io' }
 }
 
 dependencies {
@@ -26,12 +27,14 @@ dependencies {
     compileOnly('com.github.maximjsx:PassengerAPI:1.5.1')
     compileOnly('me.clip:placeholderapi:2.12.2')
     compileOnly("com.github.retrooper:packetevents-spigot:2.11.2")
-    compileOnly(files("F:\\minecraft-servers\\v5-minimap-tests\\plugins\\AnvilORM.jar"))
+    compileOnly("com.github.NezuShin:AnvilORM:V1.0.1")
     //compileOnly('net.kyori:adventure-api:5.0.0')
     compileOnly('net.kyori:adventure-platform-bukkit:4.4.0')
     compileOnly('net.kyori:adventure-text-minimessage:4.23.0')
     compileOnly('com.tchristofferson:ConfigUpdater:2.2')
     compileOnly("de.clickism:modrinth-update-checker:1.0")
+    compileOnly('com.sk89q.worldguard:worldguard-bukkit:7.0.9')
+    compileOnly('com.sk89q.worldedit:worldedit-bukkit:7.2.14')
 }
 
 tasks {

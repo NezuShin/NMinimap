@@ -52,6 +52,26 @@ public class ColorUtil {
         return c;
     }
 
+    public static byte darken(byte mapColor, float darkenFactor) {
+        if (darkenFactor <= 0f) return mapColor;
+        
+        int index = mapColor & 0xFF;
+        if (index < 0 || index >= colors.length) return mapColor;
+        
+        Color base = colors[index];
+        if (base.asRGB() == 0) return mapColor;
+        
+        float factor = Math.max(0f, 1f - darkenFactor);
+        
+        Color newColor = Color.fromRGB(
+                Math.min(255, Math.max(0, (int) (base.getRed() * factor))),
+                Math.min(255, Math.max(0, (int) (base.getGreen() * factor))),
+                Math.min(255, Math.max(0, (int) (base.getBlue() * factor)))
+        );
+        
+        return getNearestColor(newColor);
+    }
+
     private static double getDistance(@NotNull Color c1, @NotNull Color c2) {
         // Paper start - Optimize color distance calculation by removing floating point math
         int rsum = c1.getRed() + c2.getRed(); // Use sum instead of mean for no division

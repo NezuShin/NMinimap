@@ -40,14 +40,31 @@ public class ChunkCache {
         var reportTask = SchedulerUtil.getScheduler().async(() -> reportCacheLoadingStatus(), 40, 40);
         for (var file : Config.cacheFolder.listFiles()) {
             String[] name = file.getName().split("\\.");
-            if (name[3].equalsIgnoreCase("json")) {
+            if (name.length >= 4 && name[3].equalsIgnoreCase("json")) {
                 file.delete();//old cache clear
                 deleted++;
                 continue;
             }
             if (!file.getName().endsWith(".bin.gz"))
                 continue;
-            cachedFiles.add(new ChunkEntry(Bukkit.getWorld(name[0]), Integer.parseInt(name[1]), Integer.parseInt(name[2])));
+                
+            int z;
+            su.nezushin.nminimap.util.config.UndergroundLayer layer = null;
+            int layerIndex = name[2].indexOf("_layer_");
+            if (layerIndex != -1) {
+                z = Integer.parseInt(name[2].substring(0, layerIndex));
+                String layerId = name[2].substring(layerIndex + "_layer_".length());
+                for (su.nezushin.nminimap.util.config.UndergroundLayer l : Config.undergroundLayers) {
+                    if (l.id().equals(layerId)) {
+                        layer = l;
+                        break;
+                    }
+                }
+            } else {
+                z = Integer.parseInt(name[2]);
+            }
+            
+            cachedFiles.add(new ChunkEntry(Bukkit.getWorld(name[0]), Integer.parseInt(name[1]), z, layer));
         }
         reportTask.cancel();
         NMinimap.getInstance().getLogger().info("Cache init done! Loaded " + cachedFiles.size() + " tiles. Deleted " + deleted + " old cache files.");

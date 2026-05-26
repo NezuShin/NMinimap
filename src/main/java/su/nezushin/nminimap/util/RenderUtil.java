@@ -71,8 +71,10 @@ public class RenderUtil {
     }
 
 
-    public static int getHighestNonTransparentBlockAt(ChunkSnapshot c, int x, int z, int minY, boolean hasCeiling) {
+    public static int getHighestNonTransparentBlockAt(ChunkSnapshot c, int x, int z, int minY, int maxY, boolean hasCeiling) {
         var y = c.getHighestBlockYAt(x, z);
+        
+        y = Math.min(y, maxY);
 
         if (Config.skipCeiling && hasCeiling && c.getBlockType(x, y, z) == Material.BEDROCK)//skip ceiling if needed
             while (y > minY && !isTransparent(c.getBlockType(x, y, z))) {
@@ -92,8 +94,8 @@ public class RenderUtil {
         return level - y;
     }
 
-    public static BlockDataInfo getHighestBlockDataAt(ChunkSnapshot c, int x, int z, int minY, boolean hasCeiling) {
-        var y = Math.max(getHighestNonTransparentBlockAt(c, x, z, minY, hasCeiling), minY);
+    public static BlockDataInfo getHighestBlockDataAt(ChunkSnapshot c, int x, int z, int minY, int maxY, boolean hasCeiling) {
+        var y = Math.max(getHighestNonTransparentBlockAt(c, x, z, minY, maxY, hasCeiling), minY);
 
         var blockData = c.getBlockData(x, y, z);
         var waterDepth = 0;
