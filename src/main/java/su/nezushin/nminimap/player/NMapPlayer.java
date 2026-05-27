@@ -72,7 +72,7 @@ public class NMapPlayer implements AnvilORMSerializable {
 
         var chunkSize = 16 / scale;
         var mapData = new byte[128 * 128];
-        var world = player.getWorld();
+        var worldName = player.getWorld().getName();
 
         for (var x = offsetX + 1; x < mapSizeX; x++) {
             for (var z = offsetZ + 1; z < mapSizeZ; z++) {
@@ -85,10 +85,10 @@ public class NMapPlayer implements AnvilORMSerializable {
                 var localX = Math.floorMod(wx, 16);
                 var localZ = Math.floorMod(wz, 16);
 
-                var chunk = new ChunkEntry(world, cx, cz);
+                var chunk = new ChunkEntry(worldName, cx, cz);
                 var bytes = chunkManager.getOrRenderChunk(chunk).get(scale);
 
-                chunkManager.getLastChunkUse().put(new ChunkEntry(world, cx, cz), System.currentTimeMillis());
+                chunkManager.getLastChunkUse().put(chunk, System.currentTimeMillis());
 
                 var indexXX = Math.floorDiv(localX, scale);
                 var indexZZ = Math.floorDiv(localZ, scale);

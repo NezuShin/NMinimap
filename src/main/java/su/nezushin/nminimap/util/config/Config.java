@@ -26,9 +26,10 @@ public class Config {
     public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true,
             scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated,
             disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar,
-            packEnable1_21_11, packEnable26_1, packMcMetaChangeEnabled, checkForUpdates;
+            packEnable1_21_11, packEnable26_1, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds;
 
-    public static long availableDiskSpaceThreshold = 14L * 1024L * 1024L * 1024L;
+    public static long availableDiskSpaceThreshold = 14L * 1024L * 1024L * 1024L,
+    cacheLoadDelay = 20;
 
     public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>(), defaultEnableBrands = new ArrayList<>();
 
@@ -70,8 +71,11 @@ public class Config {
         allowFileCache = config.getBoolean("cache.allow-file-cache", true);
         maxTilesInRam = config.getInt("cache.max-tiles-in-ram", 9999);
         renderNewChunks = config.getBoolean("cache.render-new-chunks", false);
-        var diskStr = config.getString("cache.available-disk-space-threshold", "1G").toLowerCase();
 
+        cacheValidateWorlds = config.getBoolean("cache.validate-worlds", false);
+        cacheLoadDelay = config.getInt("cache.load-delay", 0);
+
+        var diskStr = config.getString("cache.available-disk-space-threshold", "1G").toLowerCase();
         availableDiskSpaceThreshold =
                 Long.parseLong(diskStr.replaceAll("\\D+", ""))
                         * ((long) Math.pow(1024,
