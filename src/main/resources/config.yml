@@ -134,7 +134,7 @@ static-markers:
 # Configuration for underground layers (caves)
 # It uses WorldGuard regions.
 underground-layers:
-  # Examples:
+  # Example:
   # cave_layer_1:
   #   # List of WorldGuard region IDs where this layer is active
   #   wg-regions:

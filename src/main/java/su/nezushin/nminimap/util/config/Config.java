@@ -229,11 +229,6 @@ public class Config {
         List<UndergroundLayer> list = new ArrayList<>();
         for (var key : cs.getKeys(false)) {
             List<String> regions = config.getStringList("underground-layers." + key + ".wg-regions");
-            if (regions.isEmpty()) {
-                // Fallback to old wg-region-id for compatibility
-                String oldId = config.getString("underground-layers." + key + ".wg-region-id", key);
-                regions = Lists.newArrayList(oldId);
-            }
             list.add(new UndergroundLayer(
                     key,
                     regions,
