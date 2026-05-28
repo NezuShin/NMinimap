@@ -11,63 +11,70 @@ import java.util.*;
 
 public class RenderUtil {
 
-    private static final Set<Material> transparent = Sets.newHashSet(Material.BLUE_STAINED_GLASS_PANE, Material.OXIDIZED_COPPER_BARS,
-            Material.LIME_STAINED_GLASS, Material.WAXED_WEATHERED_COPPER_BARS, Material.ORANGE_STAINED_GLASS_PANE,
-            Material.ORANGE_STAINED_GLASS, Material.WHITE_STAINED_GLASS_PANE, Material.COPPER_BARS, Material.RED_STAINED_GLASS_PANE,
-            Material.CYAN_STAINED_GLASS, Material.LIGHT_BLUE_STAINED_GLASS, Material.CYAN_STAINED_GLASS_PANE,
-            Material.WEATHERED_COPPER_BARS, Material.MAGENTA_STAINED_GLASS_PANE, Material.WAXED_EXPOSED_COPPER_BARS,
-            Material.WHITE_STAINED_GLASS, Material.PURPLE_STAINED_GLASS_PANE, Material.BLACK_STAINED_GLASS,
-            Material.BROWN_STAINED_GLASS, Material.YELLOW_STAINED_GLASS, Material.BLUE_STAINED_GLASS, Material.BROWN_STAINED_GLASS_PANE,
-            Material.LIGHT_BLUE_STAINED_GLASS_PANE, Material.WAXED_OXIDIZED_COPPER_BARS, Material.IRON_BARS,
-            Material.PURPLE_STAINED_GLASS, Material.GLASS, Material.GREEN_STAINED_GLASS_PANE, Material.BLACK_STAINED_GLASS_PANE,
-            Material.LIGHT_GRAY_STAINED_GLASS, Material.WAXED_COPPER_BARS, Material.LIME_STAINED_GLASS_PANE, Material.GRAY_STAINED_GLASS,
-            Material.GLASS_PANE, Material.EXPOSED_COPPER_BARS, Material.PINK_STAINED_GLASS, Material.GREEN_STAINED_GLASS,
-            Material.GRAY_STAINED_GLASS_PANE, Material.TINTED_GLASS, Material.LIGHT_GRAY_STAINED_GLASS_PANE, Material.RED_STAINED_GLASS,
-            Material.PINK_STAINED_GLASS_PANE, Material.MAGENTA_STAINED_GLASS, Material.YELLOW_STAINED_GLASS_PANE);
+    private static final Set<Material> transparent;
+
+
+    static {
+        transparent = Sets.newHashSet();
+
+
+        //Version-safe transparent material list.
+        Sets.newHashSet("BLUE_STAINED_GLASS_PANE", "OXIDIZED_COPPER_BARS",
+                "LIME_STAINED_GLASS", "WAXED_WEATHERED_COPPER_BARS", "ORANGE_STAINED_GLASS_PANE",
+                "ORANGE_STAINED_GLASS", "WHITE_STAINED_GLASS_PANE", "COPPER_BARS", "RED_STAINED_GLASS_PANE",
+                "CYAN_STAINED_GLASS", "LIGHT_BLUE_STAINED_GLASS", "CYAN_STAINED_GLASS_PANE",
+                "WEATHERED_COPPER_BARS", "MAGENTA_STAINED_GLASS_PANE", "WAXED_EXPOSED_COPPER_BARS",
+                "WHITE_STAINED_GLASS", "PURPLE_STAINED_GLASS_PANE", "BLACK_STAINED_GLASS",
+                "BROWN_STAINED_GLASS", "YELLOW_STAINED_GLASS", "BLUE_STAINED_GLASS", "BROWN_STAINED_GLASS_PANE",
+                "LIGHT_BLUE_STAINED_GLASS_PANE", "WAXED_OXIDIZED_COPPER_BARS", "IRON_BARS",
+                "PURPLE_STAINED_GLASS", "GLASS", "GREEN_STAINED_GLASS_PANE", "BLACK_STAINED_GLASS_PANE",
+                "LIGHT_GRAY_STAINED_GLASS", "WAXED_COPPER_BARS", "LIME_STAINED_GLASS_PANE", "GRAY_STAINED_GLASS",
+                "GLASS_PANE", "EXPOSED_COPPER_BARS", "PINK_STAINED_GLASS", "GREEN_STAINED_GLASS",
+                "GRAY_STAINED_GLASS_PANE", "TINTED_GLASS", "LIGHT_GRAY_STAINED_GLASS_PANE", "RED_STAINED_GLASS",
+                "PINK_STAINED_GLASS_PANE", "MAGENTA_STAINED_GLASS", "YELLOW_STAINED_GLASS_PANE",
+                "ACACIA_BUTTON", "ACACIA_SAPLING", "ACTIVATOR_RAIL", "AIR",
+                "ALLIUM", "ATTACHED_MELON_STEM", "ATTACHED_PUMPKIN_STEM", "AZURE_BLUET",
+                "BARRIER", "BEETROOTS", "BIRCH_BUTTON", "BIRCH_SAPLING",
+                "BLACK_CARPET", "BLUE_CARPET", "BLUE_ORCHID", "BROWN_CARPET",
+                "BROWN_MUSHROOM", "CARROTS", "CAVE_AIR", "CHORUS_FLOWER",
+                "CHORUS_PLANT", "COCOA", "COMPARATOR", "CREEPER_HEAD",
+                "CREEPER_WALL_HEAD", "CYAN_CARPET", "DANDELION", "DARK_OAK_BUTTON",
+                "DARK_OAK_SAPLING", "DEAD_BUSH", "DETECTOR_RAIL", "DRAGON_HEAD",
+                "DRAGON_WALL_HEAD", "END_GATEWAY", "END_PORTAL", "END_ROD", "FERN",
+                "FIRE", "FLOWER_POT", "GRAY_CARPET", "GREEN_CARPET",
+                "JUNGLE_BUTTON", "JUNGLE_SAPLING", "LADDER", "LARGE_FERN", "LEVER",
+                "LIGHT_BLUE_CARPET", "LIGHT_GRAY_CARPET", "LILAC", "LILY_PAD",
+                "LIME_CARPET", "MAGENTA_CARPET", "MELON_STEM", "NETHER_PORTAL",
+                "NETHER_WART", "OAK_BUTTON", "OAK_SAPLING", "ORANGE_CARPET",
+                "ORANGE_TULIP", "OXEYE_DAISY", "PEONY", "PINK_CARPET", "PINK_TULIP",
+                "PLAYER_HEAD", "PLAYER_WALL_HEAD", "POPPY", "POTATOES",
+                "POTTED_ACACIA_SAPLING", "POTTED_ALLIUM", "POTTED_AZALEA_BUSH",
+                "POTTED_AZURE_BLUET", "POTTED_BIRCH_SAPLING", "POTTED_BLUE_ORCHID",
+                "POTTED_BROWN_MUSHROOM", "POTTED_CACTUS", "POTTED_DANDELION",
+                "POTTED_DARK_OAK_SAPLING", "POTTED_DEAD_BUSH", "POTTED_FERN",
+                "POTTED_FLOWERING_AZALEA_BUSH", "POTTED_JUNGLE_SAPLING", "POTTED_OAK_SAPLING",
+                "POTTED_ORANGE_TULIP", "POTTED_OXEYE_DAISY", "POTTED_PINK_TULIP",
+                "POTTED_POPPY", "POTTED_RED_MUSHROOM", "POTTED_RED_TULIP",
+                "POTTED_SPRUCE_SAPLING", "POTTED_WHITE_TULIP", "POWERED_RAIL",
+                "PUMPKIN_STEM", "PURPLE_CARPET", "RAIL", "REDSTONE_TORCH",
+                "REDSTONE_WALL_TORCH", "REDSTONE_WIRE", "RED_CARPET", "RED_MUSHROOM",
+                "RED_TULIP", "REPEATER", "ROSE_BUSH", "SHORT_GRASS",
+                "SKELETON_SKULL", "SKELETON_WALL_SKULL", "SNOW", "SPRUCE_BUTTON",
+                "SPRUCE_SAPLING", "STONE_BUTTON", "STRUCTURE_VOID", "SUGAR_CANE",
+                "SUNFLOWER", "TALL_GRASS", "TORCH", "TRIPWIRE", "TRIPWIRE_HOOK",
+                "VINE", "VOID_AIR", "WALL_TORCH", "WHEAT", "WHITE_CARPET",
+                "WHITE_TULIP", "WITHER_SKELETON_SKULL", "WITHER_SKELETON_WALL_SKULL",
+                "YELLOW_CARPET", "ZOMBIE_HEAD", "ZOMBIE_WALL_HEAD").forEach(i -> {
+            try {
+                transparent.add(Material.valueOf(i));
+            } catch (Exception ex) {
+                //:(
+            }
+        });
+    }
 
     public static boolean isTransparent(Material material) {
-        if (transparent.contains(material))
-            return true;
-        return switch (material) {
-            //<editor-fold defaultstate="collapsed" desc="isTransparent">
-            // Start generate - Material#isTransparent
-            case Material.ACACIA_BUTTON, Material.ACACIA_SAPLING, Material.ACTIVATOR_RAIL, Material.AIR,
-                 Material.ALLIUM, Material.ATTACHED_MELON_STEM, Material.ATTACHED_PUMPKIN_STEM, Material.AZURE_BLUET,
-                 Material.BARRIER, Material.BEETROOTS, Material.BIRCH_BUTTON, Material.BIRCH_SAPLING,
-                 Material.BLACK_CARPET, Material.BLUE_CARPET, Material.BLUE_ORCHID, Material.BROWN_CARPET,
-                 Material.BROWN_MUSHROOM, Material.CARROTS, Material.CAVE_AIR, Material.CHORUS_FLOWER,
-                 Material.CHORUS_PLANT, Material.COCOA, Material.COMPARATOR, Material.CREEPER_HEAD,
-                 Material.CREEPER_WALL_HEAD, Material.CYAN_CARPET, Material.DANDELION, Material.DARK_OAK_BUTTON,
-                 Material.DARK_OAK_SAPLING, Material.DEAD_BUSH, Material.DETECTOR_RAIL, Material.DRAGON_HEAD,
-                 Material.DRAGON_WALL_HEAD, Material.END_GATEWAY, Material.END_PORTAL, Material.END_ROD, Material.FERN,
-                 Material.FIRE, Material.FLOWER_POT, Material.GRAY_CARPET, Material.GREEN_CARPET,
-                 Material.JUNGLE_BUTTON, Material.JUNGLE_SAPLING, Material.LADDER, Material.LARGE_FERN, Material.LEVER,
-                 Material.LIGHT_BLUE_CARPET, Material.LIGHT_GRAY_CARPET, Material.LILAC, Material.LILY_PAD,
-                 Material.LIME_CARPET, Material.MAGENTA_CARPET, Material.MELON_STEM, Material.NETHER_PORTAL,
-                 Material.NETHER_WART, Material.OAK_BUTTON, Material.OAK_SAPLING, Material.ORANGE_CARPET,
-                 Material.ORANGE_TULIP, Material.OXEYE_DAISY, Material.PEONY, Material.PINK_CARPET, Material.PINK_TULIP,
-                 Material.PLAYER_HEAD, Material.PLAYER_WALL_HEAD, Material.POPPY, Material.POTATOES,
-                 Material.POTTED_ACACIA_SAPLING, Material.POTTED_ALLIUM, Material.POTTED_AZALEA_BUSH,
-                 Material.POTTED_AZURE_BLUET, Material.POTTED_BIRCH_SAPLING, Material.POTTED_BLUE_ORCHID,
-                 Material.POTTED_BROWN_MUSHROOM, Material.POTTED_CACTUS, Material.POTTED_DANDELION,
-                 Material.POTTED_DARK_OAK_SAPLING, Material.POTTED_DEAD_BUSH, Material.POTTED_FERN,
-                 Material.POTTED_FLOWERING_AZALEA_BUSH, Material.POTTED_JUNGLE_SAPLING, Material.POTTED_OAK_SAPLING,
-                 Material.POTTED_ORANGE_TULIP, Material.POTTED_OXEYE_DAISY, Material.POTTED_PINK_TULIP,
-                 Material.POTTED_POPPY, Material.POTTED_RED_MUSHROOM, Material.POTTED_RED_TULIP,
-                 Material.POTTED_SPRUCE_SAPLING, Material.POTTED_WHITE_TULIP, Material.POWERED_RAIL,
-                 Material.PUMPKIN_STEM, Material.PURPLE_CARPET, Material.RAIL, Material.REDSTONE_TORCH,
-                 Material.REDSTONE_WALL_TORCH, Material.REDSTONE_WIRE, Material.RED_CARPET, Material.RED_MUSHROOM,
-                 Material.RED_TULIP, Material.REPEATER, Material.ROSE_BUSH, Material.SHORT_GRASS,
-                 Material.SKELETON_SKULL, Material.SKELETON_WALL_SKULL, Material.SNOW, Material.SPRUCE_BUTTON,
-                 Material.SPRUCE_SAPLING, Material.STONE_BUTTON, Material.STRUCTURE_VOID, Material.SUGAR_CANE,
-                 Material.SUNFLOWER, Material.TALL_GRASS, Material.TORCH, Material.TRIPWIRE, Material.TRIPWIRE_HOOK,
-                 Material.VINE, Material.VOID_AIR, Material.WALL_TORCH, Material.WHEAT, Material.WHITE_CARPET,
-                 Material.WHITE_TULIP, Material.WITHER_SKELETON_SKULL, Material.WITHER_SKELETON_WALL_SKULL,
-                 Material.YELLOW_CARPET, Material.ZOMBIE_HEAD, Material.ZOMBIE_WALL_HEAD ->
-                //</editor-fold>
-                    true;
-            default -> false;
-        };
+        return transparent.contains(material);
     }
 
 

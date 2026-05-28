@@ -1,9 +1,11 @@
 package su.nezushin.nminimap.listeners;
 
+import com.destroystokyo.paper.event.player.PlayerPostRespawnEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.util.SchedulerUtil;
@@ -38,6 +40,20 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void teleport(PlayerTeleportEvent e) {
+        var p = e.getPlayer();
+
+        SchedulerUtil.getScheduler().async(() -> {
+            var player = NMinimap.getInstance().getPlayersWithMap().stream().filter(i -> i.getPlayer().equals(p)).findFirst().orElse(null);
+
+            if (player != null && player.isEnabled()) {
+                NMinimap.getInstance().getPacketManager().spawnEntities(p);
+            }
+        }, 4);
+    }
+
+
+    @EventHandler
+    public void respawn(PlayerRespawnEvent e){
         var p = e.getPlayer();
 
         SchedulerUtil.getScheduler().async(() -> {

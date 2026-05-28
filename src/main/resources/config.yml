@@ -86,6 +86,9 @@ resourcepack:
       enable-1-21-11: true
       enable-26-1: true
 
+    #add "formats" and "supported_formats" fields to pack.mcmeta? Needed for compatibility when merging with another resource packs or for an old minecraft versions
+    use-formats: false
+
 scale:
   #Max scale that can be selected using /map scale command.
   max-scale: 8
@@ -130,7 +133,7 @@ updates:
 #To remove any markers, write static-markers: {}
 static-markers:
   my-banner:
-    #Icon from ./icons directory
+    #Icon from ./markers directory
     icon: "white_banner"
     x: 0
     z: 0

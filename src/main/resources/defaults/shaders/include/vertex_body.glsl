@@ -1,8 +1,9 @@
 const vec2 corners[] = vec2[](vec2(0, 0), vec2(0, 1), vec2(1, 1), vec2(1, 0));
+vec2 corner = corners[gl_VertexID % 4];
 vec2 texSize = textureSize(Sampler0, 0);
 ivec2 uv = ivec2(UV0 * texSize);
 ivec2 mapUV = uv - ivec2(corners[(gl_VertexID + 1) % 4] * 128);
-vec4 tex = round(texture(Sampler0, UV0 - corners[(gl_VertexID) % 4] * vec2(0.5, 0.5) / texSize) * 255);
+vec4 tex = round(texture(Sampler0, UV0 - corner * vec2(0.5, 0.5) / texSize) * 255);
 int idTex = id(uv);
 
 custom = 0;
@@ -39,6 +40,7 @@ if (id(mapUV + ivec2(0)) == 0xFF0000 && id(mapUV + ivec2(1, 0)) == 0x597D27 && i
 }
 else if (texSize == vec2(256) && tex.a == 3 && ((idTex & 0xffff) == 0x0100)) //Markers
 {
+    vec2 scaleData = round(texelFetch(Sampler0, uv + ivec2(0, 1 - corner.y * 2), 0).rg * 255);
     bool isRight = idTex == 0x010100 || idTex == 0x030100;
     bool isRound = idTex == 0x030100 || idTex == 0x040100;
 
@@ -54,7 +56,7 @@ else if (texSize == vec2(256) && tex.a == 3 && ((idTex & 0xffff) == 0x0100)) //M
 
     float offset = isRound ? (1.0 + MAP_CROP_RADIUS) / 128.0 : 0.5;
 
-    vec2 map = rotAngle * (mat2_rotate_z(angle) * (corners[gl_VertexID % 4] - 0.5) / 64 * 5 + pos - 0.5) + offset;
+    vec2 map = rotAngle * (mat2_rotate_z(angle) * (corner - 0.5) / 64 * scaleData + pos - 0.5) + offset;
     map *= MAP_SIZE;
 
     if (isRight)
