@@ -13,6 +13,7 @@ public class ColorUtil {
     private static final Map<Integer, Byte> colorMap;
 
     private static final Map<Color, Byte> colorDistanceCache = new ConcurrentHashMap<>();
+    private static final Map<Integer, Byte> darkenCache = new ConcurrentHashMap<>();
 
 
     public static byte exactColor(@NotNull Color color) {
@@ -24,6 +25,7 @@ public class ColorUtil {
      */
     public static void clearColorCache(){
         colorDistanceCache.clear();
+        darkenCache.clear();
     }
 
     /**
@@ -54,22 +56,29 @@ public class ColorUtil {
 
     public static byte darken(byte mapColor, float darkenFactor) {
         if (darkenFactor <= 0f) return mapColor;
-        
+
+        int cacheKey = (mapColor << 16) | (Float.floatToIntBits(darkenFactor) & 0xFFFF);
+        if (darkenCache.containsKey(cacheKey)) {
+            return darkenCache.get(cacheKey);
+        }
+
         int index = mapColor & 0xFF;
         if (index < 0 || index >= colors.length) return mapColor;
-        
+
         Color base = colors[index];
         if (base.asRGB() == 0) return mapColor;
-        
+
         float factor = Math.max(0f, 1f - darkenFactor);
-        
+
         Color newColor = Color.fromRGB(
                 Math.min(255, Math.max(0, (int) (base.getRed() * factor))),
                 Math.min(255, Math.max(0, (int) (base.getGreen() * factor))),
                 Math.min(255, Math.max(0, (int) (base.getBlue() * factor)))
         );
-        
-        return getNearestColor(newColor);
+
+        byte result = getNearestColor(newColor);
+        darkenCache.put(cacheKey, result);
+        return result;
     }
 
     private static double getDistance(@NotNull Color c1, @NotNull Color c2) {

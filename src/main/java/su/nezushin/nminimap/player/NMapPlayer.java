@@ -58,13 +58,16 @@ public class NMapPlayer implements AnvilORMSerializable {
         if (!enabled)
             return;
         NMinimap.async(() -> {
-            updateActiveLayer();
             NMinimap.getInstance().getPacketManager().updateMap(player, prepareMap(), prepareMarkers());
         });
     }
-    
-    private void updateActiveLayer() {
-        this.activeLayer = WorldGuardManager.getActiveLayer(player.getLocation());
+
+    public void setActiveLayer(su.nezushin.nminimap.util.config.UndergroundLayer layer) {
+        this.activeLayer = layer;
+    }
+
+    public su.nezushin.nminimap.util.config.UndergroundLayer getActiveLayer() {
+        return this.activeLayer;
     }
 
     private byte[] prepareMap() {
@@ -107,7 +110,7 @@ public class NMapPlayer implements AnvilORMSerializable {
                 if (this.activeLayer != null) { 
                     double bX = wx; double bZ = wz;
                     // Check if block outside WG layer region
-                    if (!WorldGuardManager.isInsideLayer(new Location(world, bX, this.activeLayer.renderFromY(), bZ), this.activeLayer)) {
+                    if (!NMinimap.getInstance().getWorldGuardManager().isInsideLayer(new Location(world, bX, this.activeLayer.renderFromY(), bZ), this.activeLayer)) {
                         // Load normal surface chunk for outside region
                         var normalChunk = new ChunkEntry(world, cx, cz, null);
                         var normalBytes = chunkManager.getOrRenderChunk(normalChunk).get(scale);

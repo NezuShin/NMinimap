@@ -54,12 +54,10 @@ public class ChunkCache {
             if (layerIndex != -1) {
                 z = Integer.parseInt(name[2].substring(0, layerIndex));
                 String layerId = name[2].substring(layerIndex + "_layer_".length());
-                for (su.nezushin.nminimap.util.config.UndergroundLayer l : Config.undergroundLayers) {
-                    if (l.id().equals(layerId)) {
-                        layer = l;
-                        break;
-                    }
-                }
+                layer = Config.undergroundLayers.stream()
+                        .filter(i -> i.id().equalsIgnoreCase(layerId))
+                        .findFirst()
+                        .orElse(null);
             } else {
                 z = Integer.parseInt(name[2]);
             }

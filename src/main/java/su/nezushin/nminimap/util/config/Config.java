@@ -20,7 +20,7 @@ public class Config {
 
     public static FileConfiguration config;
 
-    public static int mapId, maxRenderThreads = 30, maxTilesInRam = 100, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval, mapPixelSize = 40;
+    public static int mapId, maxRenderThreads = 30, maxTilesInRam = 100, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval, mapPixelSize = 40, wgRegionUpdateInterval;
 
     public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true,
             scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated,
@@ -79,6 +79,8 @@ public class Config {
         mapId = config.getInt("map-id", 0);
 
         mapRenderInterval = config.getInt("player-render-interval", 1);
+
+        wgRegionUpdateInterval = config.getInt("worldguard-region-update-interval", 10);
 
         skipCeiling = config.getBoolean("skip-ceiling", true);
 
