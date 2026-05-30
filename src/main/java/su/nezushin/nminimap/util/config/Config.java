@@ -1,7 +1,6 @@
 package su.nezushin.nminimap.util.config;
 
 import com.google.common.collect.Lists;
-import com.tchristofferson.configupdater.ConfigUpdater;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -21,7 +20,7 @@ public class Config {
 
     public static FileConfiguration config;
 
-    public static int mapId, maxRenderThreads = 30, maxTilesInRam = 100, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval, mapPixelSize = 40;
+    public static int mapId, maxRenderThreads = 30, maxTilesInRam = 100, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval, mapPixelSize = 40, wgRegionUpdateInterval;
 
     public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true,
             scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated,
@@ -32,6 +31,8 @@ public class Config {
     cacheLoadDelay = 20;
 
     public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>(), defaultEnableBrands = new ArrayList<>();
+
+    public static List<UndergroundLayer> undergroundLayers = new ArrayList<>();
 
     public static List<StaticMarker> staticMarkers = new ArrayList<>();
 
@@ -55,12 +56,6 @@ public class Config {
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
-            }
-        } else {
-            try {
-                ConfigUpdater.update(NMinimap.getInstance(), "config.yml", configFile);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
             }
         }
 
@@ -88,6 +83,8 @@ public class Config {
         mapId = config.getInt("map-id", 0);
 
         mapRenderInterval = config.getInt("player-render-interval", 1);
+
+        wgRegionUpdateInterval = config.getInt("worldguard-region-update-interval", 10);
 
         skipCeiling = config.getBoolean("skip-ceiling", true);
 
@@ -146,6 +143,8 @@ public class Config {
 
         mapPixelSize = Math.max(Math.min(config.getInt("map-pixel-size", 127), 127), 10);
 
+        undergroundLayers = loadUndergroundLayers(config);
+        
         staticMarkers = loadLocationMarkers(config);
 
         checkForUpdates = config.getBoolean("updates.check-for-updates", true);
@@ -226,6 +225,25 @@ public class Config {
                     i));
         }
 
+        return list;
+    }
+    
+    private static List<UndergroundLayer> loadUndergroundLayers(FileConfiguration config) {
+        var cs = config.getConfigurationSection("underground-layers");
+        if (cs == null)
+            return Lists.newArrayList();
+
+        List<UndergroundLayer> list = new ArrayList<>();
+        for (var key : cs.getKeys(false)) {
+            List<String> regions = config.getStringList("underground-layers." + key + ".wg-regions");
+            list.add(new UndergroundLayer(
+                    key,
+                    regions,
+                    config.getInt("underground-layers." + key + ".render-from-y", 64),
+                    config.getInt("underground-layers." + key + ".priority", 0),
+                    (float) config.getDouble("underground-layers." + key + ".darken", 0.5)
+            ));
+        }
         return list;
     }
 }

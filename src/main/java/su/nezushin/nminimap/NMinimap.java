@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import su.nezushin.nminimap.bstats.Metrics;
 import su.nezushin.nminimap.command.MinimapCommand;
 import su.nezushin.nminimap.compatibility.ModCompatibilityManager;
+import su.nezushin.nminimap.compatibility.WorldGuardManager;
 import su.nezushin.nminimap.database.DatabaseManager;
 import su.nezushin.nminimap.listeners.BlockListener;
 import su.nezushin.nminimap.listeners.ChunkListener;
@@ -21,6 +22,7 @@ import su.nezushin.nminimap.updatechecker.UpdateCheckerManager;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
 import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
+import su.nezushin.nminimap.util.config.UndergroundLayer;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,11 +36,14 @@ public final class NMinimap extends JavaPlugin {
     private MarkerImageManager markerImageManager;
     private DatabaseManager databaseManager;
     private ModCompatibilityManager modCompatibilityManager;
+    private WorldGuardManager worldGuardManager;
     private UpdateCheckerManager updateCheckerManager;
 
     private NMinimapPAPIExpansion placeholderAPIExpansion;
 
     private final Set<NMapPlayer> playersWithMap = ConcurrentHashMap.newKeySet();//Collections.synchronizedList(new ArrayList<>());
+
+    private UndergroundLayer currentWgLayer = null;
 
     @Override
     public void onEnable() {
@@ -86,6 +91,10 @@ public final class NMinimap extends JavaPlugin {
         markerImageManager = new MarkerImageManager();
         databaseManager = new DatabaseManager();
         modCompatibilityManager = new ModCompatibilityManager();
+        worldGuardManager = new WorldGuardManager();
+        if(worldGuardManager.isEnabled()){
+            getLogger().info("WorldGuard compatibility is enabled, etc");
+        }
         updateCheckerManager = new UpdateCheckerManager();
 
         Config.validateLocationMarkers();
@@ -93,6 +102,18 @@ public final class NMinimap extends JavaPlugin {
         SchedulerUtil.getScheduler().async(() -> {
             playersWithMap.forEach(NMapPlayer::sendMap);
         }, 1, Config.mapRenderInterval);
+
+        SchedulerUtil.getScheduler().async(() -> {
+            if (worldGuardManager == null || !worldGuardManager.isEnabled()) return;
+
+            for (NMapPlayer mapPlayer : playersWithMap) {
+                var player = mapPlayer.getPlayer();
+                if (player == null || !player.isOnline()) continue;
+                var loc = player.getLocation();
+                var activeLayer = worldGuardManager.getActiveLayer(loc);
+                mapPlayer.setActiveLayer(activeLayer);
+            }
+        }, 10, Config.wgRegionUpdateInterval);
 
 
         Bukkit.getPluginManager().registerEvents(new MarkerListener(), getInstance());
@@ -169,6 +190,10 @@ public final class NMinimap extends JavaPlugin {
 
     public ModCompatibilityManager getModCompatibilityManager() {
         return modCompatibilityManager;
+    }
+
+    public WorldGuardManager getWorldGuardManager() {
+        return this.worldGuardManager;
     }
 
     public UpdateCheckerManager getUpdateCheckerManager() {

@@ -53,7 +53,20 @@ public class ChunkCache {
             }
             if (!file.getName().endsWith(".bin.gz"))
                 continue;
-
+                
+            int z;
+            su.nezushin.nminimap.util.config.UndergroundLayer layer = null;
+            int layerIndex = name[2].indexOf("_layer_");
+            if (layerIndex != -1) {
+                z = Integer.parseInt(name[2].substring(0, layerIndex));
+                String layerId = name[2].substring(layerIndex + "_layer_".length());
+                layer = Config.undergroundLayers.stream()
+                        .filter(i -> i.id().equalsIgnoreCase(layerId))
+                        .findFirst()
+                        .orElse(null);
+            } else {
+                z = Integer.parseInt(name[2]);
+            }
             if (Config.cacheValidateWorlds) {
                 if (Bukkit.getWorld(name[0]) == null) {
                     deletedInvalidWorlds++;
@@ -62,8 +75,7 @@ public class ChunkCache {
                 }
             }
 
-
-            cachedFiles.add(new ChunkEntry(name[0], Integer.parseInt(name[1]), Integer.parseInt(name[2])));
+            cachedFiles.add(new ChunkEntry(name[0], Integer.parseInt(name[1]), Integer.parseInt(name[2]), layer));
         }
         reportTask.cancel();
         NMinimap.getInstance().getLogger().info("Cache init done! Loaded " + cachedFiles.size() + " tiles. Deleted " + deletedOld + " old cache files and " + deletedInvalidWorlds + " invalid world files.");

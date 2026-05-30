@@ -16,6 +16,7 @@ softdepend:
   - PassengerAPI
   - AnvilORM
   - PlaceholderAPI
+  - WorldGuard
 
 
 folia-supported: true
