@@ -35,14 +35,16 @@ public class ChunkCache {
     }
 
     public void loadCachedFiles() {
-        var deleted = 0;
+        var deletedOld = 0;
+        var deletedInvalidWorlds = 0;
         NMinimap.getInstance().getLogger().info("Loading cache...");
         var reportTask = SchedulerUtil.getScheduler().async(() -> reportCacheLoadingStatus(), 40, 40);
+        this.cachedFiles.clear();
         for (var file : Config.cacheFolder.listFiles()) {
             String[] name = file.getName().split("\\.");
-            if (name.length >= 4 && name[3].equalsIgnoreCase("json")) {
+            if (file.getName().endsWith(".json")) {
                 file.delete();//old cache clear
-                deleted++;
+                deletedOld++;
                 continue;
             }
             if (!file.getName().endsWith(".bin.gz"))
@@ -61,8 +63,15 @@ public class ChunkCache {
             } else {
                 z = Integer.parseInt(name[2]);
             }
-            
-            cachedFiles.add(new ChunkEntry(Bukkit.getWorld(name[0]), Integer.parseInt(name[1]), z, layer));
+            if (Config.cacheValidateWorlds) {
+                if (Bukkit.getWorld(name[0]) == null) {
+                    deletedInvalidWorlds++;
+                    file.delete();
+                    continue;
+                }
+            }
+
+            cachedFiles.add(new ChunkEntry(name[0], Integer.parseInt(name[1]), Integer.parseInt(name[2]), layer));
         }
         reportTask.cancel();
         NMinimap.getInstance().getLogger().info("Cache init done! Loaded " + cachedFiles.size() + " tiles. Deleted " + deleted + " old cache files.");
