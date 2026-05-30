@@ -101,7 +101,7 @@ public class NMapPlayer implements AnvilORMSerializable {
                 var chunk = new ChunkEntry(world, cx, cz, this.activeLayer);
                 var bytes = chunkManager.getOrRenderChunk(chunk).get(scale);
 
-                chunkManager.getLastChunkUse().put(new ChunkEntry(world, cx, cz, this.activeLayer), System.currentTimeMillis());
+                chunkManager.getLastChunkUse().put(chunk, System.currentTimeMillis());
 
                 var indexXX = Math.floorDiv(localX, scale);
                 var indexZZ = Math.floorDiv(localZ, scale);
