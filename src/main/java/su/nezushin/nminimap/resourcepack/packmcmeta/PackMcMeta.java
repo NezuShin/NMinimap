@@ -17,7 +17,7 @@ public class PackMcMeta {
         this.overlays = overlays;
     }
 
-    public static record Pack(String description, int min_format, int max_format, int[] supported_formats) {
+    public static record Pack(String description, int min_format, int max_format, int pack_format, int[] supported_formats) {
 
     }
 

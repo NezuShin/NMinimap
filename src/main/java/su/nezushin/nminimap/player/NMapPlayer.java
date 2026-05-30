@@ -85,7 +85,7 @@ public class NMapPlayer implements AnvilORMSerializable {
 
         var chunkSize = 16 / scale;
         var mapData = new byte[128 * 128];
-        var world = player.getWorld();
+        var worldName = player.getWorld().getName();
 
         for (var x = offsetX + 1; x < mapSizeX; x++) {
             for (var z = offsetZ + 1; z < mapSizeZ; z++) {

@@ -31,7 +31,10 @@ public class ChunkCache {
     public ChunkCache() {
         if (!Config.allowFileCache)
             return;
-        loadCachedFiles();
+        if (Config.cacheLoadDelay <= 0)
+            loadCachedFiles();
+        else
+            SchedulerUtil.getScheduler().async(this::loadCachedFiles, Config.cacheLoadDelay);
     }
 
     public void loadCachedFiles() {
@@ -40,6 +43,7 @@ public class ChunkCache {
         NMinimap.getInstance().getLogger().info("Loading cache...");
         var reportTask = SchedulerUtil.getScheduler().async(() -> reportCacheLoadingStatus(), 40, 40);
         this.cachedFiles.clear();
+
         for (var file : Config.cacheFolder.listFiles()) {
             String[] name = file.getName().split("\\.");
             if (file.getName().endsWith(".json")) {
@@ -74,7 +78,7 @@ public class ChunkCache {
             cachedFiles.add(new ChunkEntry(name[0], Integer.parseInt(name[1]), Integer.parseInt(name[2]), layer));
         }
         reportTask.cancel();
-        NMinimap.getInstance().getLogger().info("Cache init done! Loaded " + cachedFiles.size() + " tiles. Deleted " + deleted + " old cache files.");
+        NMinimap.getInstance().getLogger().info("Cache init done! Loaded " + cachedFiles.size() + " tiles. Deleted " + deletedOld + " old cache files and " + deletedInvalidWorlds + " invalid world files.");
     }
 
     private void reportCacheLoadingStatus() {
