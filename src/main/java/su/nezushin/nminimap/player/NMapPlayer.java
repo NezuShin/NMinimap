@@ -85,6 +85,7 @@ public class NMapPlayer implements AnvilORMSerializable {
 
         var chunkSize = 16 / scale;
         var mapData = new byte[128 * 128];
+        var world = player.getWorld();
         var worldName = player.getWorld().getName();
 
         for (var x = offsetX + 1; x < mapSizeX; x++) {
@@ -98,7 +99,7 @@ public class NMapPlayer implements AnvilORMSerializable {
                 var localX = Math.floorMod(wx, 16);
                 var localZ = Math.floorMod(wz, 16);
 
-                var chunk = new ChunkEntry(world, cx, cz, this.activeLayer);
+                var chunk = new ChunkEntry(worldName, cx, cz, this.activeLayer);
                 var bytes = chunkManager.getOrRenderChunk(chunk).get(scale);
 
                 chunkManager.getLastChunkUse().put(chunk, System.currentTimeMillis());
@@ -112,7 +113,7 @@ public class NMapPlayer implements AnvilORMSerializable {
                     // Check if block outside WG layer region
                     if (!NMinimap.getInstance().getWorldGuardManager().isInsideLayer(new Location(world, bX, this.activeLayer.renderFromY(), bZ), this.activeLayer)) {
                         // Load normal surface chunk for outside region
-                        var normalChunk = new ChunkEntry(world, cx, cz, null);
+                        var normalChunk = new ChunkEntry(worldName, cx, cz, null);
                         var normalBytes = chunkManager.getOrRenderChunk(normalChunk).get(scale);
                         chunkManager.getLastChunkUse().put(normalChunk, System.currentTimeMillis());
                         
