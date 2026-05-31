@@ -93,7 +93,7 @@ public final class NMinimap extends JavaPlugin {
         modCompatibilityManager = new ModCompatibilityManager();
         worldGuardManager = new WorldGuardManager();
         if(worldGuardManager.isEnabled()){
-            getLogger().info("WorldGuard compatibility is enabled, etc");
+            getLogger().info("WorldGuard compatibility is enabled, underground layers will be supported");
         }
         updateCheckerManager = new UpdateCheckerManager();
 
