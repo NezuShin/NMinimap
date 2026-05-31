@@ -57,11 +57,11 @@ public class Config {
                 }
             }
         } else {
-            /*try {
+            try {
                 ConfigUpdater.update(NMinimap.getInstance(), "config.yml", configFile);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
-            }*/
+            }
         }
 
         config = YamlConfiguration.loadConfiguration(configFile);
