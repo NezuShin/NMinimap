@@ -36,13 +36,15 @@ public class ChunkRender {
             NMinimap.async(() -> {
                 var northChunk = new BlockDataInfo[(16) * (8)];
                 var currentChunk = new BlockDataInfo[(16) * (16)];
+                
+                int maxY = chunk.layer() != null ? chunk.layer().renderFromY() : Integer.MAX_VALUE;
 
                 for (var x = 0; x < 16; x++) {
                     for (var z = 0; z < 16; z++) {
                         if (z < 8) {
-                            northChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(northChunkSnapshot, x, 15 - z, minY, hasCeiling);
+                            northChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(northChunkSnapshot, x, 15 - z, minY, maxY, hasCeiling);
                         }
-                        currentChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(chunkSnapshot, x, z, minY, hasCeiling);
+                        currentChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(chunkSnapshot, x, z, minY, maxY, hasCeiling);
                     }
                 }
 

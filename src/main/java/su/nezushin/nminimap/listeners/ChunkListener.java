@@ -17,7 +17,7 @@ public class ChunkListener implements Listener {
         var chunk = e.getChunk();
         NMinimap.async(() -> {
             var chunkManager = NMinimap.getInstance().getChunkManager();
-            var entry = new ChunkEntry(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
+            var entry = new ChunkEntry(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), null);
 
             if (!chunkManager.getChunkCache().hasInCache(entry))
                 NMinimap.getInstance().getChunkManager().getOrRenderChunk(entry);
