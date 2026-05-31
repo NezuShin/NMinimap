@@ -17,7 +17,7 @@ public class ImageCanvasUtil {
      * @param outFile
      * @throws IOException
      */
-    public static void processPng(BufferedImage originalImage, Color color, File outFile) throws IOException {
+    public static void processPng(BufferedImage originalImage, Color color, File outFile, int[] markerSize) throws IOException {
 
         int width = originalImage.getWidth();
         int height = originalImage.getHeight();
@@ -35,11 +35,14 @@ public class ImageCanvasUtil {
         resultImage.setRGB(0, height - 1, color.getRGB());
         resultImage.setRGB(width + 1, height - 1, color.getRGB());
 
+        int newWidth = markerSize == null ? width + 2 : markerSize[0];
+        int newHeight = markerSize == null ? height : markerSize[1];
+
         //size info for shader
-        resultImage.setRGB(0, 1, new Color(((float) width) / 255.0f, ((float) (height)) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
-        resultImage.setRGB(width + 1, 1, new Color(((float) width) / 255.0f, ((float) (height)) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
-        resultImage.setRGB(0, height - 2, new Color(((float) width) / 255.0f, ((float) (height)) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
-        resultImage.setRGB(width + 1, height - 2, new Color(((float) width) / 255.0f, ((float) (height)) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
+        resultImage.setRGB(0, 1, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
+        resultImage.setRGB(width + 1, 1, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
+        resultImage.setRGB(0, height - 2, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
+        resultImage.setRGB(width + 1, height - 2, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
 
 
         ImageIO.write(resultImage, "png", outFile);

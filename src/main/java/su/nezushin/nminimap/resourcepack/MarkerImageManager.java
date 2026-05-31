@@ -125,7 +125,7 @@ public class MarkerImageManager {
                                 new Color(4.0f / 255.0f, 1.0f / 255.0f, 0.0f, 1.0f / 100f)),
                 }) {
                     var imgName = markerImageName + j.suffix();
-                    ImageCanvasUtil.processPng(img, j.color(), new File(texturesDir, imgName + ".png"));
+                    ImageCanvasUtil.processPng(img, j.color(), new File(texturesDir, imgName + ".png"), Config.getMarkerSize(markerImageName));
 
                     var symbol = String.valueOf((char) cache.getOrCreateFontImageId(imgName));
                     cache.getRegisteredCharIds().put(imgName, new BitmapFontImage(9, 8, "nminimap:font/" + imgName + ".png", symbol));
