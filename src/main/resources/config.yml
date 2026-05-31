@@ -59,6 +59,16 @@ markers:
   #Marker for another players in world on minimap. Leave empty brackets to disable
   another-players-marker: "player_small"
 
+  #You can enforce marker sizes for shader using this config section
+  sizes:
+    #NMinimap/markers/player.png
+    player:
+      #size in pixels
+      height: 5
+      width: 5
+
+
+
 #Supported languages: en_US, ru_RU
 #Lang file will be copied to NMinimap/lang/<name>.yml
 language: en_US

@@ -28,7 +28,7 @@ public class Config {
             packEnable1_21_11, packEnable26_1, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats;
 
     public static long availableDiskSpaceThreshold = 14L * 1024L * 1024L * 1024L,
-    cacheLoadDelay = 20;
+            cacheLoadDelay = 20;
 
     public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>(), defaultEnableBrands = new ArrayList<>();
 
@@ -183,6 +183,13 @@ public class Config {
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    public static int[] getMarkerSize(String marker) {
+        var width = config.getInt("markers.sizes." + marker + ".width", -999);
+        var height = config.getInt("markers.sizes." + marker + ".height", -999);
+
+        return (height == -999 || width == -999) ? null : new int[]{width, height};
     }
 
     public static List<File> getResourcepackCopyDestinationFiles() {

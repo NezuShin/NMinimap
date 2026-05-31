@@ -56,7 +56,7 @@ else if (texSize == vec2(256) && tex.a == 3 && ((idTex & 0xffff) == 0x0100)) //M
 
     float offset = isRound ? (1.0 + MAP_CROP_RADIUS) / 128.0 : 0.5;
 
-    vec2 map = rotAngle * (mat2_rotate_z(angle) * (corner - 0.5) / 64 * scaleData + pos - 0.5) + offset;
+    vec2 map = rotAngle * (mat2_rotate_z(angle) * ((corner - 0.5) / 64 * scaleData) + pos - 0.5) + offset;
     map *= MAP_SIZE;
 
     if (isRight)
