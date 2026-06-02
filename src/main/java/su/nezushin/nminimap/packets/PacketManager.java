@@ -100,14 +100,23 @@ public class PacketManager {
     }
 
     /**
-     * Update map and markers for player
+     * Update map data for player
+     *
      * @param p
      * @param mapData
+     */
+    public void sendMapData(Player p, byte[] mapData) {
+        entityHook.sendMapData(p, mapId, 0, mapData);
+    }
+
+
+    /**
+     * Update markers component for player
+     *
+     * @param p
      * @param markers
      */
-    public void updateMap(Player p, byte[] mapData, Component markers) {
-
-        entityHook.sendMapData(p, mapId, 0, mapData);
+    public void sendMarkerData(Player p, Component markers) {
         entityHook.sendMarkerData(p, markerEntityId, markers);
     }
 

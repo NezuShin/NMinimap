@@ -21,11 +21,13 @@ import su.nezushin.nminimap.util.config.Config;
 import su.nezushin.nminimap.util.config.UndergroundLayer;
 import su.nezushin.nminimap.util.ColorUtil;
 
+import java.util.Arrays;
+
 public class NMapPlayer implements AnvilORMSerializable {
 
 
     private Player player;
-    
+
     private transient UndergroundLayer activeLayer;
 
     @SqlColumn(type = SqlType.VARCHAR, flags = SqlFlag.PRIMARY_KEY)
@@ -37,6 +39,10 @@ public class NMapPlayer implements AnvilORMSerializable {
     private int scale = 1;
     @SqlColumn(type = SqlType.BOOLEAN)
     private boolean enabled = false, isRight, isRound;
+
+
+    private int lastSentMapHash;
+    private int lastSentMarkers;
 
 
     public NMapPlayer(Player player, boolean enabled) {
@@ -58,7 +64,21 @@ public class NMapPlayer implements AnvilORMSerializable {
         if (!enabled)
             return;
         NMinimap.async(() -> {
-            NMinimap.getInstance().getPacketManager().updateMap(player, prepareMap(), prepareMarkers());
+            var mapData = prepareMap();
+            var hashCode = Arrays.hashCode(mapData);
+            if (hashCode != lastSentMapHash) {
+                lastSentMapHash = hashCode;
+                NMinimap.getInstance().getPacketManager().sendMapData(player, mapData);
+            }
+
+
+            var markers = prepareMarkers();
+            hashCode = markers.hashCode();
+            if (hashCode != lastSentMarkers) {
+                lastSentMarkers = hashCode;
+                NMinimap.getInstance().getPacketManager().sendMarkerData(player, markers);
+            }
+
         });
     }
 
@@ -108,15 +128,16 @@ public class NMapPlayer implements AnvilORMSerializable {
                 var indexZZ = Math.floorDiv(localZ, scale);
 
                 var color = bytes != null ? bytes[indexXX + (indexZZ * chunkSize)] : 0;
-                if (this.activeLayer != null) { 
-                    double bX = wx; double bZ = wz;
+                if (this.activeLayer != null) {
+                    double bX = wx;
+                    double bZ = wz;
                     // Check if block outside WG layer region
                     if (!NMinimap.getInstance().getWorldGuardManager().isInsideLayer(new Location(world, bX, this.activeLayer.renderFromY(), bZ), this.activeLayer)) {
                         // Load normal surface chunk for outside region
                         var normalChunk = new ChunkEntry(worldName, cx, cz, null);
                         var normalBytes = chunkManager.getOrRenderChunk(normalChunk).get(scale);
                         chunkManager.getLastChunkUse().put(normalChunk, System.currentTimeMillis());
-                        
+
                         var normalColor = normalBytes != null ? normalBytes[indexXX + (indexZZ * chunkSize)] : 0;
                         color = normalColor != 0 ? su.nezushin.nminimap.util.ColorUtil.darken(normalColor, this.activeLayer.darken()) : 0;
                     }

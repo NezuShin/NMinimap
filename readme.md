@@ -199,6 +199,7 @@ public void drawMarker(AsyncMarkerRenderEvent e){
 - [NezuShin](https://github.com/NezuShin) - Plugin development
 - [DartCat25](https://github.com/DartCat25) - Shader development
 - [DEMEMZEA](https://github.com/DEMEMZEA) - Help with readme
+- [Meisosi](https://github.com/meisosi) - Plugin development, `underground-layers` feature
 
 
 ### Help and support

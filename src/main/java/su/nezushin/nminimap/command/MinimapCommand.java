@@ -27,11 +27,11 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
 
         NMinimap.async(() -> {
             if (args.length == 2 && args[0].equalsIgnoreCase("admin")) {
+                if (!Permission.admin.has(sender)) {
+                    Message.insufficient_permissions.send(sender);
+                    return;
+                }
                 if (args[1].equalsIgnoreCase("reload")) {
-                    if (!Permission.admin.has(sender)) {
-                        Message.insufficient_permissions.send(sender);
-                        return;
-                    }
                     Message.reload_start.send(sender);
                     try {
                         var nminimap = NMinimap.getInstance();
