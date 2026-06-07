@@ -74,6 +74,17 @@ markers:
       height: 5
       width: 5
 
+    player_small:
+      #size in pixels
+      height: 5
+      width: 5
+
+
+    white_banner:
+      #size in pixels
+      height: 5
+      width: 5
+
 
 
 #Supported languages: en_US, ru_RU

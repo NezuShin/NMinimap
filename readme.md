@@ -95,7 +95,7 @@ Markers are just font images with special marks on texture, so they have same li
 
 
 To add marker, drop your image to `markers` directory and type `/minimap admin reload`. New resourcepack will be generated. \
-You can make images smaller by increasing image size with same texture. Like in `player_small` default marker.
+You can make images smaller/bigger using `markers.sizes` config property. Like in `player_small` default marker.
 
 ### Compatibility 
 

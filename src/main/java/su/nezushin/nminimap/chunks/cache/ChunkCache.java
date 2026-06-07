@@ -41,7 +41,7 @@ public class ChunkCache {
         var deletedOld = 0;
         var deletedInvalidWorlds = 0;
         NMinimap.getInstance().getLogger().info("Loading cache...");
-        var reportTask = SchedulerUtil.getScheduler().async(() -> reportCacheLoadingStatus(), 40, 40);
+        var reportTask = SchedulerUtil.getScheduler().async(this::reportCacheLoadingStatus, 40, 40);
         this.cachedFiles.clear();
 
         for (var file : Config.cacheFolder.listFiles()) {
@@ -74,7 +74,6 @@ public class ChunkCache {
                     continue;
                 }
             }
-
             cachedFiles.add(new ChunkEntry(name[0], Integer.parseInt(name[1]), z, layer));
         }
         reportTask.cancel();
@@ -82,7 +81,7 @@ public class ChunkCache {
     }
 
     private void reportCacheLoadingStatus() {
-        NMinimap.getInstance().getLogger().info("Loaded " + cachedFiles.size() + " tiles....");
+        NMinimap.getInstance().getLogger().info("Loaded " + cachedFiles.size() + " tiles.");
     }
 
     public void removeFromCache(ChunkEntry chunk) {
