@@ -32,6 +32,11 @@ max-render-threads: 30
 # 1 = 20 updates per second; 2 = 10 updates; etc.
 player-render-interval: 1
 
+#How frequent update player's current worldguard region? Used by underground-layers.
+#In ticks. One second is 20 ticks
+# 1 = 20 updates per second; 2 = 10 updates; etc.
+worldguard-region-update-interval: 10
+
 #Map size in pixels. Minimum value is 10; Maximum is 127
 #The value is baked into shader, so changing it will require re-applying the resource pack.
 #Also, this setting will not apply if  resourcepack.copy-defaults set to false.
@@ -142,7 +147,6 @@ updates:
   check-for-updates: true
 
 #Static markers always displayed on map
-#To remove any markers, write static-markers: {}
 static-markers:
   my-banner:
     #Icon from ./markers directory
