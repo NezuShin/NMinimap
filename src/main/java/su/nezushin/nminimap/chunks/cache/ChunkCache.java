@@ -53,7 +53,7 @@ public class ChunkCache {
             }
             if (!file.getName().endsWith(".bin.gz"))
                 continue;
-                
+
             int z;
             su.nezushin.nminimap.util.config.UndergroundLayer layer = null;
             int layerIndex = name[2].indexOf("_layer_");
@@ -75,7 +75,7 @@ public class ChunkCache {
                 }
             }
 
-            cachedFiles.add(new ChunkEntry(name[0], Integer.parseInt(name[1]), Integer.parseInt(name[2]), layer));
+            cachedFiles.add(new ChunkEntry(name[0], Integer.parseInt(name[1]), z, layer));
         }
         reportTask.cancel();
         NMinimap.getInstance().getLogger().info("Cache init done! Loaded " + cachedFiles.size() + " tiles. Deleted " + deletedOld + " old cache files and " + deletedInvalidWorlds + " invalid world files.");
@@ -83,7 +83,6 @@ public class ChunkCache {
 
     private void reportCacheLoadingStatus() {
         NMinimap.getInstance().getLogger().info("Loaded " + cachedFiles.size() + " tiles....");
-
     }
 
     public void removeFromCache(ChunkEntry chunk) {
@@ -114,12 +113,20 @@ public class ChunkCache {
                 var scales = MapDataUtil.readMap(is);
 
                 chunkManager.getLoadedTiles().put(chunk, scales);
-                chunkManager.getLoadingChunks().remove(chunk);
                 chunkManager.renderNextAwaitingChunk();
             } catch (Exception ex) {
-                cachedFiles.remove(chunk);
-                NMinimap.getInstance().getChunkManager().getLoadingChunks().remove(chunk);
+                if (Config.cacheDeleteIfReadFailed) {
+                    try {
+                        file.delete();
+                    } catch (Exception ignore) {
+                        // :(
+                    }
+                }
+                cachedFiles.remove(chunk);//prevent another failed load try
                 NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to load chunk tile from cache", ex);
+            } finally {
+                chunkManager.getLoadingChunks().remove(chunk);
+
             }
         });
     }
@@ -132,12 +139,19 @@ public class ChunkCache {
             return;
         }
         isDiskFull = false;
-
-        try (var os = new GZIPOutputStream(new FileOutputStream(chunk.getAsFile()))) {
+        var file = chunk.getAsFile();
+        try (var os = new GZIPOutputStream(new FileOutputStream(file))) {
             MapDataUtil.saveMap(scales, os);
 
             cachedFiles.add(chunk);
         } catch (Exception ex) {
+            if (Config.cacheDeleteIfReadFailed) {
+                try {
+                    file.delete();
+                } catch (Exception ignore) {
+                    // :(
+                }
+            }
             cachedFiles.remove(chunk);
             NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to save chunk tile to cache", ex);
         }

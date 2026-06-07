@@ -1,6 +1,7 @@
 package su.nezushin.nminimap.util.config;
 
 import com.google.common.collect.Lists;
+import com.tchristofferson.configupdater.ConfigUpdater;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -25,7 +26,7 @@ public class Config {
     public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true,
             scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated,
             disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar,
-            packEnable1_21_11, packEnable26_1, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats;
+            packEnable1_21_11, packEnable26_1, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed;
 
     public static long availableDiskSpaceThreshold = 14L * 1024L * 1024L * 1024L,
             cacheLoadDelay = 20;
@@ -47,8 +48,11 @@ public class Config {
         if (!configFile.exists()) {
             plugin.getConfig().options().copyDefaults(true);
             plugin.saveDefaultConfig();
+
+
+            config = YamlConfiguration.loadConfiguration(configFile);
+
             if (!ChunkLoadingUtil.isPaper()) {
-                config = YamlConfiguration.loadConfiguration(configFile);
                 config.set("max-render-threads", 1);
                 config.set("scale.max-scale", 2);
                 try {
@@ -57,9 +61,18 @@ public class Config {
                     throw new RuntimeException(ex);
                 }
             }
-        }
+        } else {
+            config = YamlConfiguration.loadConfiguration(configFile);
 
-        config = YamlConfiguration.loadConfiguration(configFile);
+            if (config.getBoolean("config.allow-config-updates", true))
+                try {
+                    ConfigUpdater.update(NMinimap.getInstance(), "config.yml", configFile);
+
+                    config = YamlConfiguration.loadConfiguration(configFile);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+        }
 
         maxRenderThreads = config.getInt("max-render-threads", 30);
 
@@ -68,6 +81,8 @@ public class Config {
         renderNewChunks = config.getBoolean("cache.render-new-chunks", false);
 
         cacheValidateWorlds = config.getBoolean("cache.validate-worlds", false);
+        cacheDeleteIfReadFailed = config.getBoolean("cache.delete-if-read-failed", true);
+
         cacheLoadDelay = config.getInt("cache.load-delay", 0);
 
         var diskStr = config.getString("cache.available-disk-space-threshold", "1G").toLowerCase();
@@ -144,7 +159,7 @@ public class Config {
         mapPixelSize = Math.max(Math.min(config.getInt("map-pixel-size", 127), 127), 10);
 
         undergroundLayers = loadUndergroundLayers(config);
-        
+
         staticMarkers = loadLocationMarkers(config);
 
         checkForUpdates = config.getBoolean("updates.check-for-updates", true);
@@ -234,7 +249,7 @@ public class Config {
 
         return list;
     }
-    
+
     private static List<UndergroundLayer> loadUndergroundLayers(FileConfiguration config) {
         var cs = config.getConfigurationSection("underground-layers");
         if (cs == null)

@@ -20,6 +20,8 @@ cache:
   load-delay: 20
   #Delete cached tile if world not found
   validate-worlds: false
+  #Delete cached tile file if it is not readable?
+  delete-if-read-failed: true
 
 
 #How many chunks can be rendered simultaneously?
@@ -155,14 +157,19 @@ static-markers:
 # It uses WorldGuard regions.
 underground-layers:
   # Example:
-  # cave_layer_1:
-  #   # List of WorldGuard region IDs where this layer is active
-  #   wg-regions:
-  #     - "my_cave_1"
-  #     - "my_cave_2"
-  #   # Start render from this Y level downwards (hides the ceiling)
-  #   render-from-y: 50
-  #   # Priority if overlapping (higher wins)
-  #   priority: 1
-  #   # Darken factor for chunks OUTSIDE this region (0.0=none, 1.0=max)
-  #   darken: 0.5
+  cave_layer_1:
+    # List of WorldGuard region IDs where this layer is active
+    wg-regions:
+      - "my_cave_1"
+      - "my_cave_2"
+    # Start render from this Y level downwards (hides the ceiling)
+    render-from-y: 50
+    # Priority if overlapping (higher wins)
+    priority: 1
+    # Darken factor for chunks OUTSIDE this region (0.0=none, 1.0=max)
+    darken: 0.5
+
+
+config:
+  #Merge config with its new versions
+  allow-config-updates: true
