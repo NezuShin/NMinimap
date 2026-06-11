@@ -14,19 +14,18 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Config {
 
     public static FileConfiguration config;
 
-    public static int mapId, maxRenderThreads = 30, maxTilesInRam = 100, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval, mapPixelSize = 40, wgRegionUpdateInterval;
+    public static int mapId, maxRenderThreads = 30, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval, mapPixelSize = 40, wgRegionUpdateInterval;
 
     public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true,
             scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated,
             disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar,
-            packEnable1_21_11, packEnable26_1, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed;
+            packEnable1_21_11, packEnable26_1, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed, generateNewChunks;
 
     public static long availableDiskSpaceThreshold = 14L * 1024L * 1024L * 1024L,
             cacheLoadDelay = 20;
@@ -77,8 +76,8 @@ public class Config {
         maxRenderThreads = config.getInt("max-render-threads", 30);
 
         allowFileCache = config.getBoolean("cache.allow-file-cache", true);
-        maxTilesInRam = config.getInt("cache.max-tiles-in-ram", 9999);
         renderNewChunks = config.getBoolean("cache.render-new-chunks", false);
+        generateNewChunks = config.getBoolean("cache.generate-new-chunks", true);
 
         cacheValidateWorlds = config.getBoolean("cache.validate-worlds", false);
         cacheDeleteIfReadFailed = config.getBoolean("cache.delete-if-read-failed", true);

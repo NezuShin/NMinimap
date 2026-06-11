@@ -1,6 +1,5 @@
 package su.nezushin.nminimap.chunks;
 
-import org.bukkit.Bukkit;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.cache.ChunkCache;
 import su.nezushin.nminimap.chunks.renderer.ChunkRender;
@@ -36,16 +35,12 @@ public class ChunkManager {
     }
 
     private void removeOldChunks() {
-        var chunkCountToRemove = loadedTiles.size() - Config.maxTilesInRam;
-
-        if (chunkCountToRemove < 1)
-            return;
 
         var sortedEntries = new HashSet<>(lastChunkUse.entrySet()).stream()
                 .filter(i -> System.currentTimeMillis() - i.getValue() > 15000)
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).toList();
 
-        for (var i = 0; i < chunkCountToRemove && sortedEntries.size() > i; i++) {
+        for (var i = 0; sortedEntries.size() > i; i++) {
             var entry = sortedEntries.get(i);
 
             loadedTiles.remove(entry.getKey());
@@ -69,6 +64,8 @@ public class ChunkManager {
 
     public Map<Integer, byte[]> getOrRenderChunk(ChunkEntry chunk) {
         if (!chunk.isInsideWorldBorder())
+            return emptyMap;
+        if (!chunk.isGenerated() && !Config.generateNewChunks)
             return emptyMap;
 
         if (loadedTiles.containsKey(chunk))

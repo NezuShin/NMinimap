@@ -21,4 +21,8 @@ public record ChunkEntry(String world, int x, int z, UndergroundLayer layer) {
     public boolean isInsideWorldBorder() {
         return getWorld().getWorldBorder().isInside(new Location(getWorld(), x * 16, 0, z * 16));
     }
+
+    public boolean isGenerated(){
+        return getWorld().isChunkGenerated(x, z);
+    }
 }
