@@ -2,11 +2,13 @@ package su.nezushin.nminimap.command;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.generator.WorldInfo;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +28,7 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
 
 
         NMinimap.async(() -> {
-            if (args.length == 2 && args[0].equalsIgnoreCase("admin")) {
+            if (args.length >= 2 && args[0].equalsIgnoreCase("admin")) {
                 if (!Permission.admin.has(sender)) {
                     Message.insufficient_permissions.send(sender);
                     return;
@@ -57,6 +59,31 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                             "{disk_free_space}", String.format("%.1f", (double) DiskCapacityUtil.getUsableSpace()),
                             "{disk_is_full}", String.valueOf(NMinimap.getInstance().getChunkManager().getChunkCache().isDiskFull())
                     ).send(sender);
+                    return;
+                } else if (args[1].equalsIgnoreCase("clean-cache")) {
+
+                    var hasWorld = args.length > 2;
+
+
+                    if (hasWorld)
+                        Message.cache_clean_start_world.replace("{world}", args[2]).send(sender);
+                    else
+                        Message.cache_clean_start.send(sender);
+
+                    var hasExceptions = hasWorld ?
+                            NMinimap.getInstance().getChunkManager().getChunkCache().cleanCache(args[2])
+                            :
+                            NMinimap.getInstance().getChunkManager().getChunkCache().cleanCache();
+
+
+                    if (hasExceptions) {
+                        Message.cache_clean_failed.send(sender);
+                        return;
+                    }
+                    if (hasWorld)
+                        Message.cache_cleaned_world.replace("{world}", args[2]).send(sender);
+                    else
+                        Message.cache_cleaned.send(sender);
                     return;
                 }
             }
@@ -114,7 +141,8 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command
+            command, @NotNull String label, @NotNull String @NotNull [] args) {
         if (args.length == 1) {
             return Lists.newArrayList("scale", "style", "side", "enable", "disable", "admin")
                     .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[0])).toList();
@@ -129,8 +157,11 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                 return Lists.newArrayList("left", "right")
                         .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[1])).toList();
             else if (args[0].equalsIgnoreCase("admin"))
-                return Lists.newArrayList("reload", "stats")
+                return Lists.newArrayList("reload", "stats", "clean-cache")
                         .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[1])).toList();
+        } else if (args.length == 3) {
+            if (args[1].equalsIgnoreCase("clean-cache"))
+                return Bukkit.getWorlds().stream().map(WorldInfo::getName).filter(i -> StringUtil.startsWithIgnoreCase(i, args[2])).toList();
         }
         return List.of();
     }

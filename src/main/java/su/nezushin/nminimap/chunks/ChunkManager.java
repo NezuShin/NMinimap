@@ -48,6 +48,16 @@ public class ChunkManager {
         }
     }
 
+    public void clearWorldTiles(String world) {
+        for (var i : loadedTiles.keySet().stream().filter(i -> i.world().equalsIgnoreCase(world)).toList()) {
+            loadedTiles.remove(i);
+            lastChunkUse.remove(i);
+        }
+
+        loadingChunks.removeIf(i -> i.world().equalsIgnoreCase(world));
+        awaitingChunks.removeIf(i -> i.world().equalsIgnoreCase(world));
+    }
+
     public void renderNextAwaitingChunk() {
         while (loadingChunks.size() < Config.maxRenderThreads) {
             var chunk = awaitingChunks.poll();
@@ -65,8 +75,8 @@ public class ChunkManager {
     public Map<Integer, byte[]> getOrRenderChunk(ChunkEntry chunk) {
         if (!chunk.isInsideWorldBorder())
             return emptyMap;
-        if (!chunk.isGenerated() && !Config.generateNewChunks)
-            return emptyMap;
+        /*if (!chunk.isGenerated() && !Config.generateNewChunks)
+            return emptyMap;*/
 
         if (loadedTiles.containsKey(chunk))
             return loadedTiles.get(chunk);

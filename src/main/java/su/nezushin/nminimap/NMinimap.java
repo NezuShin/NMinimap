@@ -43,8 +43,6 @@ public final class NMinimap extends JavaPlugin {
 
     private final Set<NMapPlayer> playersWithMap = ConcurrentHashMap.newKeySet();//Collections.synchronizedList(new ArrayList<>());
 
-    private UndergroundLayer currentWgLayer = null;
-
     @Override
     public void onEnable() {
         instance = this;

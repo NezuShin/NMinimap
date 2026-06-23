@@ -61,7 +61,7 @@ public class NMapPlayer implements AnvilORMSerializable {
     }
 
     public void sendMap() {
-        if (!enabled)
+        if (!enabled || !player.isValid() || player.isDead())
             return;
         NMinimap.async(() -> {
             var mapData = prepareMap();
@@ -82,14 +82,6 @@ public class NMapPlayer implements AnvilORMSerializable {
         });
     }
 
-    public void setActiveLayer(su.nezushin.nminimap.util.config.UndergroundLayer layer) {
-        this.activeLayer = layer;
-    }
-
-    public su.nezushin.nminimap.util.config.UndergroundLayer getActiveLayer() {
-        return this.activeLayer;
-    }
-
     private byte[] prepareMap() {
         var chunkManager = NMinimap.getInstance().getChunkManager();
 
@@ -106,7 +98,7 @@ public class NMapPlayer implements AnvilORMSerializable {
         var chunkSize = 16 / scale;
         var mapData = new byte[128 * 128];
         var world = player.getWorld();
-        var worldName = player.getWorld().getName();
+        var worldName = world.getName();
 
         for (var x = offsetX + 1; x < mapSizeX; x++) {
             for (var z = offsetZ + 1; z < mapSizeZ; z++) {
@@ -129,10 +121,8 @@ public class NMapPlayer implements AnvilORMSerializable {
 
                 var color = bytes != null ? bytes[indexXX + (indexZZ * chunkSize)] : 0;
                 if (this.activeLayer != null) {
-                    double bX = wx;
-                    double bZ = wz;
                     // Check if block outside WG layer region
-                    if (!NMinimap.getInstance().getWorldGuardManager().isInsideLayer(new Location(world, bX, this.activeLayer.renderFromY(), bZ), this.activeLayer)) {
+                    if (!NMinimap.getInstance().getWorldGuardManager().isInsideLayer(new Location(world, wx, this.activeLayer.renderFromY(), wz), this.activeLayer)) {
                         // Load normal surface chunk for outside region
                         var normalChunk = new ChunkEntry(worldName, cx, cz, null);
                         var normalBytes = chunkManager.getOrRenderChunk(normalChunk).get(scale);
@@ -254,6 +244,14 @@ public class NMapPlayer implements AnvilORMSerializable {
     public void setRound(boolean round) {
         isRound = round;
         saveAsync();
+    }
+
+    public void setActiveLayer(su.nezushin.nminimap.util.config.UndergroundLayer layer) {
+        this.activeLayer = layer;
+    }
+
+    public su.nezushin.nminimap.util.config.UndergroundLayer getActiveLayer() {
+        return this.activeLayer;
     }
 
 

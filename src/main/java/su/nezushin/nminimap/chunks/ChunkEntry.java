@@ -18,11 +18,13 @@ public record ChunkEntry(String world, int x, int z, UndergroundLayer layer) {
     public World getWorld() {//fix for cases where world is not loaded when cache is already there
         return Bukkit.getWorld(world);
     }
+
     public boolean isInsideWorldBorder() {
-        return getWorld().getWorldBorder().isInside(new Location(getWorld(), x * 16, 0, z * 16));
+        var world = getWorld();
+        return world != null && world.getWorldBorder().isInside(new Location(world, x * 16, 0, z * 16));
     }
 
-    public boolean isGenerated(){
+    public boolean isGenerated() {
         return getWorld().isChunkGenerated(x, z);
     }
 }

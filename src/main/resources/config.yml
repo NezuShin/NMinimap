@@ -61,9 +61,9 @@ database:
       players: nminimap_players
 
 markers:
-  #Marker for player on minimap. Leave empty brackets to disable
+  #Marker for player on minimap. Leave empty quotes to disable
   player-marker: "player"
-  #Marker for another players in world on minimap. Leave empty brackets to disable
+  #Marker for another players in world on minimap. Leave empty quotes to disable
   another-players-marker: "player_small"
 
   #You can enforce marker sizes for shader using this config section

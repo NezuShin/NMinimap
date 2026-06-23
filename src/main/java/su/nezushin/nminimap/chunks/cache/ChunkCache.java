@@ -3,6 +3,7 @@ package su.nezushin.nminimap.chunks.cache;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.bukkit.Bukkit;
+import org.bukkit.scheduler.BukkitRunnable;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.ChunkEntry;
 import su.nezushin.nminimap.util.DiskCapacityUtil;
@@ -10,10 +11,7 @@ import su.nezushin.nminimap.util.MapDataUtil;
 import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,39 +41,44 @@ public class ChunkCache {
         NMinimap.getInstance().getLogger().info("Loading cache...");
         var reportTask = SchedulerUtil.getScheduler().async(this::reportCacheLoadingStatus, 40, 40);
         this.cachedFiles.clear();
-
-        for (var file : Config.cacheFolder.listFiles()) {
-            String[] name = file.getName().split("\\.");
-            if (file.getName().endsWith(".json")) {
-                file.delete();//old cache clear
-                deletedOld++;
-                continue;
-            }
-            if (!file.getName().endsWith(".bin.gz"))
-                continue;
-
-            int z;
-            su.nezushin.nminimap.util.config.UndergroundLayer layer = null;
-            int layerIndex = name[2].indexOf("_layer_");
-            if (layerIndex != -1) {
-                z = Integer.parseInt(name[2].substring(0, layerIndex));
-                String layerId = name[2].substring(layerIndex + "_layer_".length());
-                layer = Config.undergroundLayers.stream()
-                        .filter(i -> i.id().equalsIgnoreCase(layerId))
-                        .findFirst()
-                        .orElse(null);
-            } else {
-                z = Integer.parseInt(name[2]);
-            }
-            if (Config.cacheValidateWorlds) {
-                if (Bukkit.getWorld(name[0]) == null) {
-                    deletedInvalidWorlds++;
-                    file.delete();
+        try (var stream = Files.newDirectoryStream(Config.cacheFolder.toPath())) {
+            for (var path : stream) {
+                var file = path.toFile();
+                String[] name = file.getName().split("\\.");
+                if (file.getName().endsWith(".json")) {
+                    file.delete();//old cache clear
+                    deletedOld++;
                     continue;
                 }
+                if (!file.getName().endsWith(".bin.gz"))
+                    continue;
+
+                int z;
+                su.nezushin.nminimap.util.config.UndergroundLayer layer = null;
+                int layerIndex = name[2].indexOf("_layer_");
+                if (layerIndex != -1) {
+                    z = Integer.parseInt(name[2].substring(0, layerIndex));
+                    String layerId = name[2].substring(layerIndex + "_layer_".length());
+                    layer = Config.undergroundLayers.stream()
+                            .filter(i -> i.id().equalsIgnoreCase(layerId))
+                            .findFirst()
+                            .orElse(null);
+                } else {
+                    z = Integer.parseInt(name[2]);
+                }
+                if (Config.cacheValidateWorlds) {
+                    if (Bukkit.getWorld(name[0]) == null) {
+                        deletedInvalidWorlds++;
+                        file.delete();
+                        continue;
+                    }
+                }
+                cachedFiles.add(new ChunkEntry(name[0], Integer.parseInt(name[1]), z, layer));
             }
-            cachedFiles.add(new ChunkEntry(name[0], Integer.parseInt(name[1]), z, layer));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+
         reportTask.cancel();
         NMinimap.getInstance().getLogger().info("Cache init done! Loaded " + cachedFiles.size() + " tiles. Deleted " + deletedOld + " old cache files and " + deletedInvalidWorlds + " invalid world files.");
     }
@@ -155,6 +158,49 @@ public class ChunkCache {
             NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to save chunk tile to cache", ex);
         }
     }
+
+    public boolean cleanCache(String world) {
+        return cleanCache0(new ArrayList<>(cachedFiles.stream().filter(i -> i.world().equalsIgnoreCase(world)).toList()));
+    }
+
+
+    public boolean cleanCache() {
+        return cleanCache0(new ArrayList<>(cachedFiles));
+    }
+
+    private boolean cleanCache0(List<ChunkEntry> cache) {
+        NMinimap.getInstance().getLogger().info("Cleaning cache...");
+
+
+        var size = cachedFiles.size();
+
+
+        var runnable = new BukkitRunnable() {
+
+            public int cleaned = 0;
+
+            @Override
+            public void run() {
+                NMinimap.getInstance().getLogger().info("Deleted " + cleaned + " of " + size + " tiles");
+            }
+        };
+
+        runnable.runTaskTimerAsynchronously(NMinimap.getInstance(), 40, 40);
+        var hasExceptions = false;
+        for (var i : cache) {
+            try {
+                removeFromCache(i);
+                runnable.cleaned++;
+            } catch (Exception ex) {
+                hasExceptions = true;
+                NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to delete chunk tile from cache", ex);
+            }
+        }
+        runnable.cancel();
+        NMinimap.getInstance().getLogger().info("Cache cleaned!");
+        return hasExceptions;
+    }
+
 
     public Set<ChunkEntry> getCachedFiles() {
         return cachedFiles;
