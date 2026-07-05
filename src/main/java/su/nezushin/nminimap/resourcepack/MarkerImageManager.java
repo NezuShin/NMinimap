@@ -35,9 +35,9 @@ public class MarkerImageManager {
      * for round and square map
      *
      * @param suffix
-     * @param color
+     * @param colors - list of marker colors counterclockwise
      */
-    private record MarkerType(String suffix, Color color) {
+    private record MarkerType(String suffix, List<Integer> colors) {
 
     }
 
@@ -75,6 +75,11 @@ public class MarkerImageManager {
                     Config.copyDefaults("defaults/shaders/core/v26_1/rendertype_text.vsh", new File(resourcepackDir, "nminimap_26_1/assets/minecraft/shaders/core/rendertype_text.vsh"), true);
                 }
 
+                if (Config.packEnable26_2) {
+                    Config.copyDefaults("defaults/shaders/core/v26_2/text.fsh", new File(resourcepackDir, "nminimap_26_2/assets/minecraft/shaders/core/text.fsh"), true);
+                    Config.copyDefaults("defaults/shaders/core/v26_2/text.vsh", new File(resourcepackDir, "nminimap_26_2/assets/minecraft/shaders/core/text.vsh"), true);
+                }
+
 
                 //Config.copyDefaults("defaults/shaders/include/config.glsl", new File(niminimapShadersDir, "include/config.glsl"), true);
                 Config.copyDefaults("defaults/shaders/include/vertex_body.glsl", new File(niminimapShadersDir, "include/vertex_body.glsl"), true);
@@ -91,7 +96,9 @@ public class MarkerImageManager {
                 if (Config.packEnable1_21_11)
                     packOverlays.add(new PackMcMeta.Overlay("nminimap_1_21_11", 75, 84, Config.packUseFormats ? new int[]{75, 84} : null));
                 if (Config.packEnable26_1)
-                    packOverlays.add(new PackMcMeta.Overlay("nminimap_26_1", 84, 9999, Config.packUseFormats ? new int[]{84, 9999} : null));
+                    packOverlays.add(new PackMcMeta.Overlay("nminimap_26_1", 84, 88, Config.packUseFormats ? new int[]{84, 88} : null));
+                if (Config.packEnable26_2)
+                    packOverlays.add(new PackMcMeta.Overlay("nminimap_26_2", 88, 9999, Config.packUseFormats ? new int[]{88, 9999} : null));
                 Files.write(new GsonBuilder().setPrettyPrinting().create().toJson(
                         new PackMcMeta(
                                 new PackMcMeta.Pack(Config.packDescription,
@@ -107,25 +114,22 @@ public class MarkerImageManager {
                 var markerImageName = getNameWithoutExt(i);
                 var images = new String[4];
                 var k = 0;
+                //new Color(1.0f / 255.0f, 1.0f / 255.0f, 0.0f, 1.0f / 100f)
                 for (var j : new MarkerType[]{
                         //right for square map
-                        new MarkerType("_r",
-                                new Color(1.0f / 255.0f, 1.0f / 255.0f, 0.0f, 1.0f / 100f)),
+                        new MarkerType("_r", Lists.newArrayList(1, 2, 3, 4)),
 
                         //left for square map
-                        new MarkerType("_l",
-                                new Color(2.0f / 255.0f, 1.0f / 255.0f, 0.0f, 1.0f / 100f)),
+                        new MarkerType("_l", Lists.newArrayList(5, 6, 7, 8)),
 
                         //left for round map
-                        new MarkerType("_r_round",
-                                new Color(3.0f / 255.0f, 1.0f / 255.0f, 0.0f, 1.0f / 100f)),
+                        new MarkerType("_r_round", Lists.newArrayList(9, 10, 11, 12)),
 
                         //right for round map
-                        new MarkerType("_l_round",
-                                new Color(4.0f / 255.0f, 1.0f / 255.0f, 0.0f, 1.0f / 100f)),
+                        new MarkerType("_l_round", Lists.newArrayList(13, 14, 15, 16))
                 }) {
                     var imgName = markerImageName + j.suffix();
-                    ImageCanvasUtil.processPng(img, j.color(), new File(texturesDir, imgName + ".png"), Config.getMarkerSize(markerImageName));
+                    ImageCanvasUtil.processPng(img, j.colors(), new File(texturesDir, imgName + ".png"), Config.getMarkerSize(markerImageName));
 
                     var symbol = String.valueOf((char) cache.getOrCreateFontImageId(imgName));
                     cache.getRegisteredCharIds().put(imgName, new BitmapFontImage(9, 8, "nminimap:font/" + imgName + ".png", symbol));

@@ -75,8 +75,6 @@ public class ChunkManager {
     public Map<Integer, byte[]> getOrRenderChunk(ChunkEntry chunk) {
         if (!chunk.isInsideWorldBorder())
             return emptyMap;
-        /*if (!chunk.isGenerated() && !Config.generateNewChunks)
-            return emptyMap;*/
 
         if (loadedTiles.containsKey(chunk))
             return loadedTiles.get(chunk);

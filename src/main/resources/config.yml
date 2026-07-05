@@ -12,8 +12,6 @@ cache:
   available-disk-space-threshold: "10G"
   #Render chunk before it is needed? Useful if you are pre-generating your world using Chunky
   render-new-chunks: true
-  #Generate new chunks if it is needed for map render. If false - there will be empty areas on map
-  generate-new-chunks: true
   #Delay cache load (for cases where additional worlds not being loaded on enable).
   #0 for instant cache loading
   #In ticks. 1 second = 20 ticks

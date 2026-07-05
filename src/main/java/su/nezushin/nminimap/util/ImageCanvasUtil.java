@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public class ImageCanvasUtil {
 
@@ -13,11 +14,11 @@ public class ImageCanvasUtil {
      * Prepare image to be marker. Add 4 pixels with specific at the corners
      *
      * @param originalImage
-     * @param color
+     * @param colors
      * @param outFile
      * @throws IOException
      */
-    public static void processPng(BufferedImage originalImage, Color color, File outFile, int[] markerSize) throws IOException {
+    public static void processPng(BufferedImage originalImage, List<Integer> colors, File outFile, int[] markerSize) throws IOException {
 
         int width = originalImage.getWidth();
         int height = originalImage.getHeight();
@@ -30,10 +31,10 @@ public class ImageCanvasUtil {
         g2d.dispose();
 
         //markers in corners
-        resultImage.setRGB(0, 0, color.getRGB());
-        resultImage.setRGB(width + 1, 0, color.getRGB());
-        resultImage.setRGB(0, height - 1, color.getRGB());
-        resultImage.setRGB(width + 1, height - 1, color.getRGB());
+        resultImage.setRGB(0, 0, new Color(((float) colors.get(0)) / 255.0f, 1.0f / 255.0f, 0.0f, 1.0f / 100f).getRGB());
+        resultImage.setRGB(0, height - 1, new Color(((float) colors.get(1)) / 255.0f, 1.0f / 255.0f, 0.0f, 1.0f / 100f).getRGB());
+        resultImage.setRGB(width + 1, height - 1, new Color(((float) colors.get(2)) / 255.0f, 1.0f / 255.0f, 0.0f, 1.0f / 100f).getRGB());
+        resultImage.setRGB(width + 1, 0, new Color(((float) colors.get(3)) / 255.0f, 1.0f / 255.0f, 0.0f, 1.0f / 100f).getRGB());
 
         int newWidth = markerSize == null ? width + 2 : markerSize[0];
         int newHeight = markerSize == null ? height : markerSize[1];

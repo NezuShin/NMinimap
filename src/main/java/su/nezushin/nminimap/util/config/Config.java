@@ -25,7 +25,7 @@ public class Config {
     public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true,
             scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated,
             disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar,
-            packEnable1_21_11, packEnable26_1, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed, generateNewChunks;
+            packEnable1_21_11, packEnable26_1, packEnable26_2, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed;
 
     public static long availableDiskSpaceThreshold = 14L * 1024L * 1024L * 1024L,
             cacheLoadDelay = 20;
@@ -77,7 +77,6 @@ public class Config {
 
         allowFileCache = config.getBoolean("cache.allow-file-cache", true);
         renderNewChunks = config.getBoolean("cache.render-new-chunks", false);
-        generateNewChunks = config.getBoolean("cache.generate-new-chunks", true);
 
         cacheValidateWorlds = config.getBoolean("cache.validate-worlds", false);
         cacheDeleteIfReadFailed = config.getBoolean("cache.delete-if-read-failed", true);
@@ -152,6 +151,9 @@ public class Config {
         packDescription = config.getString("resourcepack.pack-mcmeta.description", "NMinimap pack");
         packEnable1_21_11 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-1-21-11", true);
         packEnable26_1 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-26-1", true);
+        packEnable26_2 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-26-2", true);
+
+
         packMcMetaChangeEnabled = config.getBoolean("resourcepack.pack-mcmeta.enable");
         packUseFormats = config.getBoolean("resourcepack.pack-mcmeta.use-formats", false);
 
