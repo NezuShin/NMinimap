@@ -111,6 +111,7 @@ resourcepack:
       #Enable shader for 1.21.11?
       enable-1-21-11: true
       enable-26-1: true
+      enable-26-2: true
 
     #add "formats" and "supported_formats" fields to pack.mcmeta? Needed for compatibility when merging with another resource packs or for an old minecraft versions
     use-formats: false

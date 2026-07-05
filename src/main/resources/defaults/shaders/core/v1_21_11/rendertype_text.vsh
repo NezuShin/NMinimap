@@ -1,5 +1,7 @@
 #version 330
 
+#define MARKER_DEPTH 0.0
+
 #moj_import <nminimap:config.glsl>
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:dynamictransforms.glsl>

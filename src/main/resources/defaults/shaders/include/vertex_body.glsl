@@ -2,10 +2,10 @@ vec2 texSize = textureSize(Sampler0, 0);
 ivec2 uv = ivec2(UV0 * texSize);
 
 const vec2 corners[] = vec2[](vec2(0, 0), vec2(0, 1), vec2(1, 1), vec2(1, 0));
-#ifdef UNREL_ID
-    #ifdef GL_ARB_shader_draw_parameters
+#ifdef UNREL_ID //We can't rely on gl_VertexID as is cause of merged buffer
+    #ifdef GL_ARB_shader_draw_parameters //Take a shortcut if gpu can do it
 int idx = gl_VertexID - gl_BaseVertexARB;
-    #else
+    #else //Take by uv
 int idx = 0;
 if (texSize != vec2(256))
 {
@@ -60,7 +60,7 @@ if (id(mapUV + ivec2(0)) == 0xFF0000 && id(mapUV + ivec2(1, 0)) == 0x597D27 && i
 }
 else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xffff) == 0x0100)) //Markers
 {
-#ifndef GL_ARB_shader_draw_parameters
+#ifndef GL_ARB_shader_draw_parameters //Checking color if GPU doesn't have extension
     idx = int(round(testColor.r * 255)) - 1;
     corner = corners[idx % 4];
 #endif
@@ -85,15 +85,11 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     map *= MAP_SIZE;
 
     if (isRight)
-    #ifndef FLIP
-        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x, 0);
-    #else
         map = map + MAP_OFFSET - vec2(MAP_SIZE.x, 0);
-    #endif
     else
         map = map + MAP_OFFSET;
 
-    gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), 0.7, 1);
+    gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), MARKER_DEPTH, 1);
     vertexColor = vec4(1);
     
     sphericalVertexDistance = 0;

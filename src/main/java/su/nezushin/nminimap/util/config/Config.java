@@ -1,7 +1,6 @@
 package su.nezushin.nminimap.util.config;
 
 import com.google.common.collect.Lists;
-import com.tchristofferson.configupdater.ConfigUpdater;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -9,6 +8,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.markers.impl.LocationMarker;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
+import su.nezushin.nminimap.util.config.updater.ConfigUpdater;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -65,7 +65,8 @@ public class Config {
 
             if (config.getBoolean("config.allow-config-updates", true))
                 try {
-                    ConfigUpdater.update(NMinimap.getInstance(), "config.yml", configFile);
+                    ConfigUpdater.update(NMinimap.getInstance(), "config.yml", configFile,
+                            "static-markers", "underground-layers", "markers.sizes");
 
                     config = YamlConfiguration.loadConfiguration(configFile);
                 } catch (IOException ex) {

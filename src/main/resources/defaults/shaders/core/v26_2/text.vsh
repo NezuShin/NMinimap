@@ -1,6 +1,6 @@
 #version 430
 #define UNREL_ID
-#define FLIP
+#define MARKER_DEPTH 0.7
 
 #ifdef GL_ARB_shader_draw_parameters
 #extension GL_ARB_shader_draw_parameters : require

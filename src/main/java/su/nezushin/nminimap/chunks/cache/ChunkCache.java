@@ -181,7 +181,7 @@ public class ChunkCache {
 
             @Override
             public void run() {
-                NMinimap.getInstance().getLogger().info("Deleted " + cleaned + " of " + size + " tiles");
+                NMinimap.getInstance().getLogger().info("Deleted " + cleaned + " of " + size + " tiles (" + (Math.floor(100 * ((double) cleaned) / ((double) size))) + "%)");
             }
         };
 
