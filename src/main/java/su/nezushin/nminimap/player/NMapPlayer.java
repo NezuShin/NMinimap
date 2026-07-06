@@ -15,11 +15,9 @@ import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.api.events.AsyncMapRenderEvent;
 import su.nezushin.nminimap.api.events.AsyncMarkerRenderEvent;
 import su.nezushin.nminimap.chunks.ChunkEntry;
-import su.nezushin.nminimap.compatibility.WorldGuardManager;
-import su.nezushin.nminimap.markers.impl.LocationMarker;
+import su.nezushin.nminimap.util.DisallowedWorldsUtil;
 import su.nezushin.nminimap.util.config.Config;
 import su.nezushin.nminimap.util.config.UndergroundLayer;
-import su.nezushin.nminimap.util.ColorUtil;
 
 import java.util.Arrays;
 
@@ -42,13 +40,16 @@ public class NMapPlayer implements AnvilORMSerializable {
 
 
     private int lastSentMapHash;
-    private int lastSentMarkers;
+    private int lastSentMarkersHash;
+    private int lastWorldHash;
+
+    private boolean worldAllowed, entitiesSpawned;
 
 
     public NMapPlayer(Player player, boolean enabled) {
         this.setPlayer(player);
         this.enabled = enabled;
-        NMinimap.getInstance().getPacketManager().spawnEntities(this.player);
+        checkWorldAllowed();
     }
 
     public NMapPlayer() {
@@ -63,6 +64,10 @@ public class NMapPlayer implements AnvilORMSerializable {
     public void sendMap() {
         if (!enabled || !player.isValid() || player.isDead())
             return;
+
+        if (!checkWorldAllowed())
+            return;
+
         NMinimap.async(() -> {
             var mapData = prepareMap();
             var hashCode = Arrays.hashCode(mapData);
@@ -74,12 +79,33 @@ public class NMapPlayer implements AnvilORMSerializable {
 
             var markers = prepareMarkers();
             hashCode = markers.hashCode();
-            if (hashCode != lastSentMarkers) {
-                lastSentMarkers = hashCode;
+            if (hashCode != lastSentMarkersHash) {
+                lastSentMarkersHash = hashCode;
                 NMinimap.getInstance().getPacketManager().sendMarkerData(player, markers);
             }
 
         });
+    }
+
+    //Spawn/remove item frame and text display for player
+    public void respawnEntities(boolean force) {
+        if (entitiesSpawned && (!enabled || !worldAllowed)) {
+            NMinimap.getInstance().getPacketManager().removeEntities(player);
+            entitiesSpawned = false;
+        } else if ((!entitiesSpawned || force) && enabled && worldAllowed) {
+            NMinimap.getInstance().getPacketManager().spawnEntities(player);
+            entitiesSpawned = true;
+        }
+    }
+
+    private boolean checkWorldAllowed() {
+        if (player.getWorld().getName().hashCode() == lastWorldHash)
+            return worldAllowed;
+
+        worldAllowed = DisallowedWorldsUtil.isAllowed(player.getWorld());
+        lastWorldHash = player.getWorld().getName().hashCode();
+        respawnEntities(false);
+        return worldAllowed;
     }
 
     private byte[] prepareMap() {
@@ -181,12 +207,8 @@ public class NMapPlayer implements AnvilORMSerializable {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-        if (this.enabled) {
-            NMinimap.getInstance().getPacketManager().spawnEntities(player);
-        } else {
-            NMinimap.getInstance().getPacketManager().removeEntities(player);
-        }
 
+        respawnEntities(false);
         handleModMinimap();
         saveAsync();
     }

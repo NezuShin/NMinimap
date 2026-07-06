@@ -83,7 +83,18 @@ markers:
       height: 5
       width: 5
 
+disallowed-worlds:
+  #Regex pattern for advanced users. Usable when you have short-living worlds such as boss arenas
+  #Left empty to disable regex checks
+  #Examples:
+  # Block all worlds with name starts with "my_world_" (my_world_1, my_world_etc): "^(my_world_).*$"
+  # Same as above but ends with "_my_world" (1_my_world, etc_my_world): "^.*(_my_world)$"
+  # Block all world except one with name "world": "^(?!world$).*"
+  regex: ""
 
+  #Simple list of worlds where map disallowed
+  blacklist:
+    - "my_world_with_disallowed_minimap"
 
 #Supported languages: en_US, ru_RU
 #Lang file will be copied to NMinimap/lang/<name>.yml

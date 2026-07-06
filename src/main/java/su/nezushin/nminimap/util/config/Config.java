@@ -14,7 +14,10 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public class Config {
 
@@ -25,7 +28,8 @@ public class Config {
     public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true,
             scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated,
             disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar,
-            packEnable1_21_11, packEnable26_1, packEnable26_2, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed;
+            packEnable1_21_11, packEnable26_1, packEnable26_2, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed,
+            useDisallowedWorldsRegex;
 
     public static long availableDiskSpaceThreshold = 14L * 1024L * 1024L * 1024L,
             cacheLoadDelay = 20;
@@ -36,8 +40,12 @@ public class Config {
 
     public static List<StaticMarker> staticMarkers = new ArrayList<>();
 
+    public static Set<String> disallowedWorlds = new HashSet<>();
+
     public static String playerMarker, anotherPlayerMarker, mysqlHost, mysqlUser, mysqlPassword, mysqlDatabase, mysqlPlayersTableName, langName,
             packDescription;
+
+    public static Pattern disallowedWorldsRegex;
 
     public static File cacheFolder;
 
@@ -159,6 +167,16 @@ public class Config {
         packUseFormats = config.getBoolean("resourcepack.pack-mcmeta.use-formats", false);
 
         mapPixelSize = Math.max(Math.min(config.getInt("map-pixel-size", 127), 127), 10);
+
+        var worldBlacklistRegexString = config.getString("disallowed-worlds.regex", "");
+
+        useDisallowedWorldsRegex = !worldBlacklistRegexString.isEmpty();
+        if (useDisallowedWorldsRegex) {
+            disallowedWorldsRegex = Pattern.compile(worldBlacklistRegexString);
+        }
+
+        disallowedWorlds = new HashSet<>(config.getStringList("disallowed-worlds.blacklist"));
+
 
         undergroundLayers = loadUndergroundLayers(config);
 

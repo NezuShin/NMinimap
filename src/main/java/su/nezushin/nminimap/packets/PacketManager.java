@@ -12,6 +12,7 @@ import su.nezushin.nminimap.packets.hooks.PassengerHook;
 import su.nezushin.nminimap.packets.hooks.impl.PacketEventsEntityHook;
 import su.nezushin.nminimap.packets.hooks.impl.PacketEventsPassengerHook;
 import su.nezushin.nminimap.packets.hooks.impl.PassengerAPIPassengerHook;
+import su.nezushin.nminimap.player.NMapPlayer;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
 import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.SpigotEntityIdUtil;
@@ -68,8 +69,7 @@ public class PacketManager {
                 SchedulerUtil.getScheduler().async(this::foliaTickTrackedPlayers, 20, 20);
 
             if (!ChunkLoadingUtil.isPaper())
-                for (var p : trackedPlayers)
-                    spawnEntities(p);
+                NMinimap.getInstance().getPlayersWithMap().forEach(i -> i.respawnEntities(true));
         };
         if (!ChunkLoadingUtil.isPaper())
             SchedulerUtil.getScheduler().sync(run);
@@ -140,7 +140,7 @@ public class PacketManager {
     private void foliaTickTrackedPlayers() {
         for (var p : trackedPlayers) {
             if (!p.getWorld().equals(foliaWorldMap.get(p))) {
-                spawnEntities(p);
+                NMinimap.getInstance().getPlayersWithMap().stream().filter(i -> i.getPlayer().equals(p)).findFirst().ifPresent(i -> i.respawnEntities(true));
                 foliaWorldMap.put(p, p.getWorld());
             }
         }

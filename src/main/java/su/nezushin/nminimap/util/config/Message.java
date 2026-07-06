@@ -8,8 +8,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import su.nezushin.nminimap.NMinimap;
+import su.nezushin.nminimap.util.config.updater.ConfigUpdater;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,11 +47,19 @@ public enum Message {
 
     private static File getLangFile(String lang) {
         var file = new File(NMinimap.getInstance().getDataFolder(), "lang/" + lang + ".yml");
+        var resourcePath = "defaults/lang/" + lang + ".yml";
         if (!file.exists()) {
             try {
-                Config.copyDefaults("defaults/lang/" + lang + ".yml", file, false);
+                Config.copyDefaults(resourcePath, file, false);
             } catch (IllegalArgumentException ex) {
                 return null;
+
+            }
+        } else {
+            try {
+                ConfigUpdater.update(NMinimap.getInstance(), resourcePath, file);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
 

@@ -8,6 +8,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import su.nezushin.nminimap.NMinimap;
+import su.nezushin.nminimap.player.NMapPlayer;
 import su.nezushin.nminimap.util.SchedulerUtil;
 
 public class PlayerListener implements Listener {
@@ -43,25 +44,17 @@ public class PlayerListener implements Listener {
         var p = e.getPlayer();
 
         SchedulerUtil.getScheduler().async(() -> {
-            var player = NMinimap.getInstance().getPlayersWithMap().stream().filter(i -> i.getPlayer().equals(p)).findFirst().orElse(null);
-
-            if (player != null && player.isEnabled()) {
-                NMinimap.getInstance().getPacketManager().spawnEntities(p);
-            }
+            NMinimap.getInstance().getPlayersWithMap().stream().filter(i -> i.getPlayer().equals(p)).findFirst().ifPresent(i -> i.respawnEntities(true));
         }, 4);
     }
 
 
     @EventHandler
-    public void respawn(PlayerRespawnEvent e){
+    public void respawn(PlayerRespawnEvent e) {
         var p = e.getPlayer();
 
         SchedulerUtil.getScheduler().async(() -> {
-            var player = NMinimap.getInstance().getPlayersWithMap().stream().filter(i -> i.getPlayer().equals(p)).findFirst().orElse(null);
-
-            if (player != null && player.isEnabled()) {
-                NMinimap.getInstance().getPacketManager().spawnEntities(p);
-            }
+            NMinimap.getInstance().getPlayersWithMap().stream().filter(i -> i.getPlayer().equals(p)).findFirst().ifPresent(i -> i.respawnEntities(true));
         }, 4);
     }
 
