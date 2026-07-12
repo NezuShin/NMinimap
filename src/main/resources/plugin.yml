@@ -1,5 +1,5 @@
 name: NMinimap
-version: '1.0.6'
+version: '1.0.6-quickfix-1'
 main: su.nezushin.nminimap.NMinimap
 api-version: '1.21'
 

@@ -85,7 +85,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     map *= MAP_SIZE;
 
     if (isRight)
-        map = map + MAP_OFFSET - vec2(MAP_SIZE.x, 0);
+        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x, 0);
     else
         map = map + MAP_OFFSET;
 
