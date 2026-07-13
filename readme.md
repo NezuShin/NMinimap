@@ -101,10 +101,10 @@ You can make images smaller/bigger using `markers.sizes` config property. Like i
 
 #### Core shaders and another plugins
 Plugin uses `rendertype_text` shader, so shaders for hud or text decorations may not be compatible. In most plugins you must 
-disable text decorations for NMinimap work. \
+disable text decorations for NMinimap work.\
 Patched shader for BetterHUD is already [provided](betterhud-patching.md). If you are developer you can add compatibility with your plugin using this example easily
 
-#### Mods
+#### Minimap Mods
 
 Plugin can turn off some mod-driven minimaps at all or while serverside minimap enabled:
 
@@ -117,8 +117,9 @@ Supported mods:
 - [JourneyMap](https://modrinth.com/mod/journeymap)
 - Another mods do not have such functionality, or it is not documented. 
 
-#### Known incompatibilities 
-- [ImmediatelyFast](https://modrinth.com/mod/immediatelyfast) - Stores all maps to one atlas, which breaks shader logic
+#### Iris/OptiFine shaders incompatibility
+
+Compatibility cannot be added because Iris don't use core shaders. You can disable NMinimap for users with Iris using [NMinimapIrisBlocker](https://github.com/NezuShin/NMinimapIrisBlocker)  
 
 ### How does it work?
 
