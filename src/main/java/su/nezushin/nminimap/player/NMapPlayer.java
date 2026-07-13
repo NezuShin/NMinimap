@@ -115,21 +115,17 @@ public class NMapPlayer implements AnvilORMSerializable {
         var pz = player.getLocation().getBlockZ();
         var fullMapSize = 128;
 
-        var offsetX = isRight ? 128 - Config.mapPixelSize : 0;
-        var offsetZ = 0;
-
-        var mapSizeX = isRight ? 128 : Config.mapPixelSize + 1;
-        var mapSizeZ = Config.mapPixelSize + 1;
+        var mapSize = Config.mapPixelSize + 1;
 
         var chunkSize = 16 / scale;
         var mapData = new byte[128 * 128];
         var world = player.getWorld();
         var worldName = world.getName();
 
-        for (var x = offsetX + 1; x < mapSizeX; x++) {
-            for (var z = offsetZ + 1; z < mapSizeZ; z++) {
-                var wx = px + (x - mapSizeX / 2) * scale;
-                var wz = pz + (z - mapSizeZ / 2) * scale;
+        for (var x = 1; x < mapSize; x++) {
+            for (var z = 1; z < mapSize; z++) {
+                var wx = px + (x - mapSize / 2) * scale;
+                var wz = pz + (z - mapSize / 2) * scale;
 
                 var cx = Math.floorDiv(wx, 16);
                 var cz = Math.floorDiv(wz, 16);
@@ -198,7 +194,7 @@ public class NMapPlayer implements AnvilORMSerializable {
                                 isRound ?
                                         TextColor.color(markerX - 128, markerZ - 128, rotation)//
                                         :
-                                        TextColor.color(markerX + (isRight ? -Config.mapPixelSize : Config.mapPixelSize + 2), markerZ + Config.mapPixelSize + 2, rotation)));
+                                        TextColor.color(markerX + Config.mapPixelSize + 2, markerZ + Config.mapPixelSize + 2, rotation)));
             }
         }
 

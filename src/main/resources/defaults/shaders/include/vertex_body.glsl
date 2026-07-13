@@ -47,7 +47,7 @@ if (id(mapUV + ivec2(0)) == 0xFF0000 && id(mapUV + ivec2(1, 0)) == 0x597D27 && i
     map *= MAP_SIZE;
 
     if (isRight)
-        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x, 0);
+        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x - MAP_CROP_RADIUS/256.0, 0);
     else
         map = map + MAP_OFFSET;
     gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), 0.6, 1);
@@ -85,7 +85,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     map *= MAP_SIZE;
 
     if (isRight)
-        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x, 0);
+        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x - MAP_CROP_RADIUS/256.0, 0);
     else
         map = map + MAP_OFFSET;
 
