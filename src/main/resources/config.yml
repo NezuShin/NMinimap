@@ -63,6 +63,56 @@ markers:
   player-marker: "player"
   #Marker for another players in world on minimap. Leave empty quotes to disable
   another-players-marker: "player_small"
+  another-players-settings:
+    #List of possible values: https://jd.papermc.io/paper/26.2/org/bukkit/GameMode.html
+    hide-in-game-modes:
+      - SPECTATOR
+    #Hide players with invisibility potion effect?
+    hide-with-invisibility: true
+    #Hide far away players?
+    hide-outside-radius:
+      #Set 0 to disable
+      xz: 100
+      y: 0
+    #Hide player with permission nminimap.hide-on-map?
+    hide-permission: false
+
+  mob-radar:
+    enable: true
+    hide-outside-radius:
+      #Set 0 to disable
+      xz: 200
+      y: 30
+    #How frequent update mob list? In ticks. One second is 20 ticks
+    update-interval: 10
+    #Leave empty to allow all mobs
+    allowed-mobs: []
+    #Always hidden even if allowed-mobs is empty. EntityType names: https://jd.papermc.io/paper/26.2/org/bukkit/entity/EntityType.html
+    disallowed-mobs:
+      - ITEM
+      - ITEM_FRAME
+      - GLOW_ITEM_FRAME
+      - PAINTING
+      - EXPERIENCE_ORB
+      - ARROW
+      - SPECTRAL_ARROW
+      - TRIDENT
+      - AREA_EFFECT_CLOUD
+      - MARKER
+    default-marker:
+        icon: red_marker
+        allow-rotation: true
+    mob-markers:
+      zombie:
+        icon: zombie
+        allow-rotation: false
+      skeleton:
+        icon: skeleton
+        allow-rotation: false
+      spider:
+        icon: spider
+        allow-rotation: false
+
 
   #You can enforce marker sizes for shader using this config section
   sizes:
@@ -77,10 +127,24 @@ markers:
       height: 5
       width: 5
 
-
     white_banner:
       #size in pixels
       height: 5
+      width: 5
+
+    zombie:
+      #size in pixels
+      height: 4
+      width: 5
+
+    skeleton:
+      #size in pixels
+      height: 4
+      width: 5
+
+    spider:
+      #size in pixels
+      height: 4
       width: 5
 
 disallowed-worlds:

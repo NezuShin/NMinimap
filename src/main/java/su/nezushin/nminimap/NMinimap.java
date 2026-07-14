@@ -17,6 +17,7 @@ import su.nezushin.nminimap.packets.PacketManager;
 import su.nezushin.nminimap.papi.NMinimapPAPIExpansion;
 import su.nezushin.nminimap.player.NMapPlayer;
 import su.nezushin.nminimap.chunks.ChunkManager;
+import su.nezushin.nminimap.radar.MobRadarManager;
 import su.nezushin.nminimap.resourcepack.MarkerImageManager;
 import su.nezushin.nminimap.updatechecker.UpdateCheckerManager;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
@@ -38,6 +39,7 @@ public final class NMinimap extends JavaPlugin {
     private ModCompatibilityManager modCompatibilityManager;
     private WorldGuardManager worldGuardManager;
     private UpdateCheckerManager updateCheckerManager;
+    private MobRadarManager mobRadarManager;
 
     private NMinimapPAPIExpansion placeholderAPIExpansion;
 
@@ -94,6 +96,7 @@ public final class NMinimap extends JavaPlugin {
             getLogger().info("WorldGuard compatibility is enabled, underground layers will be supported");
         }
         updateCheckerManager = new UpdateCheckerManager();
+        mobRadarManager = new MobRadarManager();
 
         Config.validateLocationMarkers();
 
@@ -196,6 +199,10 @@ public final class NMinimap extends JavaPlugin {
 
     public UpdateCheckerManager getUpdateCheckerManager() {
         return updateCheckerManager;
+    }
+
+    public MobRadarManager getMobRadarManager() {
+        return mobRadarManager;
     }
 
     public static NMinimap getInstance() {

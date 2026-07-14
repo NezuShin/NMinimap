@@ -2,9 +2,12 @@ package su.nezushin.nminimap.util.config;
 
 import com.google.common.collect.Lists;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
+import org.bukkit.util.NumberConversions;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.markers.impl.LocationMarker;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
@@ -13,23 +16,20 @@ import su.nezushin.nminimap.util.config.updater.ConfigUpdater;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class Config {
 
     public static FileConfiguration config;
 
-    public static int mapId, maxRenderThreads = 30, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval, mapPixelSize = 40, wgRegionUpdateInterval;
+    public static int mapId, maxRenderThreads = 30, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval, mapPixelSize = 40, wgRegionUpdateInterval, mobRadarUpdateInterval;
 
     public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true,
             scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated,
             disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar,
             packEnable1_21_11, packEnable26_1, packEnable26_2, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed,
-            useDisallowedWorldsRegex;
+            useDisallowedWorldsRegex, anotherPlayerMarkerHideInvisibilityPotionEffect, anotherPlayerMarkerHidePermission, allowMobRadar;
 
     public static long availableDiskSpaceThreshold = 14L * 1024L * 1024L * 1024L,
             cacheLoadDelay = 20;
@@ -40,7 +40,12 @@ public class Config {
 
     public static List<StaticMarker> staticMarkers = new ArrayList<>();
 
-    public static Set<String> disallowedWorlds = new HashSet<>();
+    public static Set<String> disallowedWorlds;
+
+    public static Set<GameMode> anotherPlayerMarkerHideGameModes = EnumSet.noneOf(GameMode.class);
+
+    public static Set<EntityType> mobRadarAllowedEntities = EnumSet.noneOf(EntityType.class),
+            mobRadarDisallowedEntities = EnumSet.noneOf(EntityType.class);
 
     public static String playerMarker, anotherPlayerMarker, mysqlHost, mysqlUser, mysqlPassword, mysqlDatabase, mysqlPlayersTableName, langName,
             packDescription;
@@ -48,6 +53,12 @@ public class Config {
     public static Pattern disallowedWorldsRegex;
 
     public static File cacheFolder;
+
+    public static double anotherPlayerMarkerHideRadiusXZ, anotherPlayerMarkerHideRadiusY, mobRadarHideRadiusXZ, mobRadarHideRadiusY;
+
+    public static MobRadarMarkerSettings mobRadarDefaultMarker = new MobRadarMarkerSettings("red_marker", true);
+
+    public static Map<EntityType, MobRadarMarkerSettings> mobRadarEntityIcons = new HashMap<>();
 
     public static void init() {
         var plugin = NMinimap.getInstance();
@@ -74,7 +85,10 @@ public class Config {
             if (config.getBoolean("config.allow-config-updates", true))
                 try {
                     ConfigUpdater.update(NMinimap.getInstance(), "config.yml", configFile,
-                            "static-markers", "underground-layers", "markers.sizes");
+                            "static-markers",
+                            "underground-layers",
+                            "markers.sizes",
+                            "markers.mob-radar.mob-markers");
 
                     config = YamlConfiguration.loadConfiguration(configFile);
                 } catch (IOException ex) {
@@ -121,7 +135,36 @@ public class Config {
         mysqlPlayersTableName = config.getString("database.mysql.table-names.players", "nminimap_players");
 
         playerMarker = config.getString("markers.player-marker", "");
+
         anotherPlayerMarker = config.getString("markers.another-players-marker", "");
+        anotherPlayerMarkerHideGameModes = loadEnumSet(GameMode.class, config.getStringList("markers.another-players-settings.hide-in-game-modes"), "GameMode");
+        anotherPlayerMarkerHideInvisibilityPotionEffect = config.getBoolean("markers.another-players-settings.hide-with-invisibility", true);
+        anotherPlayerMarkerHidePermission = config.getBoolean("markers.another-players-settings.hide-permission", false);
+        anotherPlayerMarkerHideRadiusXZ = config.getDouble("markers.another-players-settings.hide-outside-radius.xz", 0);
+        anotherPlayerMarkerHideRadiusY = config.getDouble("markers.another-players-settings.hide-outside-radius.y", 0);
+
+        allowMobRadar = config.getBoolean("markers.mob-radar.enable");
+        mobRadarHideRadiusXZ = config.getDouble("markers.mob-radar.hide-outside-radius.xz", 100);
+        mobRadarHideRadiusY = config.getDouble("markers.mob-radar.hide-outside-radius.y", 20);
+        mobRadarAllowedEntities = loadEnumSet(EntityType.class, config.getStringList("markers.mob-radar.allowed-mobs"), "EntityType");
+        mobRadarDisallowedEntities = loadEnumSet(EntityType.class, config.getStringList("markers.mob-radar.disallowed-mobs"), "EntityType");
+        mobRadarUpdateInterval = config.getInt("markers.mob-radar.update-interval", 10);
+
+        mobRadarDefaultMarker = loadMobRadarMarkerSettings(config, "markers.mob-radar.default-marker", "red_marker", true);
+        mobRadarEntityIcons.clear();
+        {
+            var cs = config.getConfigurationSection("markers.mob-radar.mob-markers");
+            if (cs != null)
+                for (var entityType : cs.getKeys(false)) {
+                    try {
+                        mobRadarEntityIcons.put(EntityType.valueOf(entityType.toUpperCase(Locale.ROOT)),
+                                loadMobRadarMarkerSettings(config, "markers.mob-radar.mob-markers." + entityType, mobRadarDefaultMarker.icon(), mobRadarDefaultMarker.allowRotation()));
+                    } catch (IllegalArgumentException ex) {
+                        NMinimap.getInstance().getLogger().severe("Unknown EntityType \"" + entityType + "\" in markers.mob-radar.mob-markers!");
+                    }
+                }
+        }
+
 
         resourcepackCopyDestinations = config.getStringList("resourcepack.copy-destinations");
         resourcepackZipDestinations = config.getStringList("resourcepack.zip-destinations");
@@ -243,6 +286,43 @@ public class Config {
             }
             return false;
         });
+
+        new HashSet<>(mobRadarEntityIcons.entrySet()).forEach((marker) -> {
+            if (NMinimap.getInstance().getMarkerImageManager().getMarkerImages().containsKey(marker.getValue().icon()))
+                return;
+            NMinimap.getInstance().getLogger().severe("Icon " + marker.getValue().icon() + " is not found for entity " + marker.getKey() + "!");
+            mobRadarEntityIcons.remove(marker.getKey());
+        });
+
+        if (!NMinimap.getInstance().getMarkerImageManager().getMarkerImages().containsKey(mobRadarDefaultMarker.icon())) {
+            NMinimap.getInstance().getLogger().severe("Icon " + mobRadarDefaultMarker.icon() + " is not found for mob-radar!");
+        }
+    }
+
+    public static MobRadarMarkerSettings getMobRadarMarker(EntityType type) {
+        return mobRadarEntityIcons.getOrDefault(type, mobRadarDefaultMarker);
+    }
+
+    private static <E extends Enum<E>> Set<E> loadEnumSet(Class<E> enumClass, List<String> values, String typeName) {
+        Set<E> set = EnumSet.noneOf(enumClass);
+        for (String value : values) {
+            try {
+                set.add(Enum.valueOf(enumClass, value.toUpperCase()));
+            } catch (IllegalArgumentException ex) {
+                NMinimap.getInstance().getLogger().severe("Unknown " + typeName + " \"" + value + "\" in config!");
+            }
+        }
+        return set;
+    }
+
+    private static MobRadarMarkerSettings loadMobRadarMarkerSettings(FileConfiguration config, String path, String defaultIcon, boolean defaultAllowRotation) {
+        if (config.isConfigurationSection(path)) {
+            return new MobRadarMarkerSettings(
+                    config.getString(path + ".icon", defaultIcon),
+                    config.getBoolean(path + ".allow-rotation", defaultAllowRotation)
+            );
+        }
+        return new MobRadarMarkerSettings(config.getString(path, defaultIcon), defaultAllowRotation);
     }
 
     private static List<StaticMarker> loadLocationMarkers(FileConfiguration config) {
@@ -287,5 +367,15 @@ public class Config {
             ));
         }
         return list;
+    }
+
+    public static boolean isInRadius(Location loc, Location loc2, double radiusXZ, double radiusY) {
+        return (
+                radiusXZ == 0 ||
+                        Math.sqrt(NumberConversions.square(loc.getX() - loc2.getX())
+                                + NumberConversions.square(loc.getZ() - loc.getZ())) < radiusXZ)
+                &&
+                (radiusY == 0 || Math.sqrt(NumberConversions.square(loc.getY() - loc2.getY())) < radiusY);
+
     }
 }

@@ -1,14 +1,19 @@
 package su.nezushin.nminimap.util.config;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 public enum Permission {
 
-    admin;
+    admin("admin"),
+    hide_on_map("hide-on-map");
 
+    private final String node;
+
+    Permission(String node) {
+        this.node = node;
+    }
 
     public boolean has(CommandSender p) {
-        return p.hasPermission("nminimap." + this.name());
+        return p.hasPermission("nminimap." + node);
     }
 }

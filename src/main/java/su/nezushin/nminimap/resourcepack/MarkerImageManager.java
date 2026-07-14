@@ -58,9 +58,8 @@ public class MarkerImageManager {
 
 
             if (Config.resourcepackCopyDefaults) {
-                Config.copyDefaults("defaults/markers/player.png", new File(markersDir, "player.png"), false);
-                Config.copyDefaults("defaults/markers/player_small.png", new File(markersDir, "player_small.png"), false);
-                Config.copyDefaults("defaults/markers/white_banner.png", new File(markersDir, "white_banner.png"), false);
+                for (var i : new String[]{"player", "player_small", "white_banner", "red_marker", "skeleton", "spider", "zombie"})
+                    Config.copyDefaults("defaults/markers/" + i + ".png", new File(markersDir, i + ".png"), false);
 
                 var niminimapShadersDir = new File(namespaceDir, "shaders");
 

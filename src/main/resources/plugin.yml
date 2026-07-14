@@ -21,6 +21,21 @@ softdepend:
 
 folia-supported: true
 
+permissions:
+  nminimap.admin:
+    description: Access to admin commands
+  nminimap.hide-on-map:
+    description: Hide this player from other players' minimaps when hide-permission is enabled
+  nminimap.scale.1:
+    description: Allow using /mm scale 1 when scale.use-permission is enabled
+  nminimap.scale.2:
+    description: Allow using /mm scale 2 when scale.use-permission is enabled
+  nminimap.scale.4:
+    description: Allow using /mm scale 4 when scale.use-permission is enabled
+  nminimap.scale.8:
+    description: Allow using /mm scale 8 when scale.use-permission is enabled
+
+
 libraries:
   - net.kyori:adventure-text-minimessage:4.23.0
   - net.kyori:adventure-platform-bukkit:4.4.0
