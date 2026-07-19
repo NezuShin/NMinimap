@@ -203,6 +203,11 @@ public void drawMarker(AsyncMarkerRenderEvent e){
 - [Meisosi](https://github.com/meisosi) - Plugin development, `underground-layers` feature
 
 
+###  Looking for affordable and powerful Server hosting?
+![](https://dash.galeniusnodes.com/templates/lagom2/assets/img/logo/logo_big_inverse.1453033100.png)
+Make sure to check out [GaleniusNodes](https://dash.galeniusnodes.com/index.php?ref=nmap)! Starting at 3€/month.\
+[With my link you can get 20% off Your first month](https://dash.galeniusnodes.com/index.php?ref=nmap)
+
 ### Help and support
 
 If you have questions, want ask for a feature or report a bug - feel free to [open issue](https://github.com/NezuShin/NMinimap/issues),\
