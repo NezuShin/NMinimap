@@ -160,7 +160,7 @@ disallowed-worlds:
   blacklist:
     - "my_world_with_disallowed_minimap"
 
-#Supported languages: en_US, ru_RU
+#Supported languages: en_US, ru_RU, el_GR
 #Lang file will be copied to NMinimap/lang/<name>.yml
 language: en_US
 
