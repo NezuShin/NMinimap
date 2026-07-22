@@ -5,7 +5,6 @@ import org.bukkit.ChunkSnapshot;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import su.nezushin.nminimap.chunks.BlockDataInfo;
-import su.nezushin.nminimap.util.config.Config;
 
 import java.util.*;
 
@@ -78,12 +77,12 @@ public class RenderUtil {
     }
 
 
-    public static int getHighestNonTransparentBlockAt(ChunkSnapshot c, int x, int z, int minY, int maxY, boolean hasCeiling) {
+    public static int getHighestNonTransparentBlockAt(ChunkSnapshot c, int x, int z, int minY, int maxY, boolean hasCeiling, boolean skipCeiling, Set<Material> ceilingBlocks) {
         var y = c.getHighestBlockYAt(x, z);
-        
+
         y = Math.min(y, maxY);
 
-        if (Config.skipCeiling && hasCeiling && c.getBlockType(x, y, z) == Material.BEDROCK)//skip ceiling if needed
+        if (skipCeiling && hasCeiling && ceilingBlocks.contains(c.getBlockType(x, y, z)))//skip ceiling if needed
             while (y > minY && !isTransparent(c.getBlockType(x, y, z))) {
                 y--;
             }
@@ -101,8 +100,8 @@ public class RenderUtil {
         return level - y;
     }
 
-    public static BlockDataInfo getHighestBlockDataAt(ChunkSnapshot c, int x, int z, int minY, int maxY, boolean hasCeiling) {
-        var y = Math.max(getHighestNonTransparentBlockAt(c, x, z, minY, maxY, hasCeiling), minY);
+    public static BlockDataInfo getHighestBlockDataAt(ChunkSnapshot c, int x, int z, int minY, int maxY, boolean hasCeiling, boolean skipCeiling, Set<Material> ceilingBlocks) {
+        var y = Math.max(getHighestNonTransparentBlockAt(c, x, z, minY, maxY, hasCeiling, skipCeiling, ceilingBlocks), minY);
 
         var blockData = c.getBlockData(x, y, z);
         var waterDepth = 0;

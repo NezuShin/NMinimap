@@ -55,26 +55,22 @@ public class PacketManager {
         this.mapId = Config.mapId;
 
 
-        Runnable run = () -> {
-            this.markerEntityId = SpigotEntityIdUtil.nextEntityId();
-            this.upItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
-            this.downItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
-            this.facingItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
+        SchedulerUtil.getScheduler().sync(() -> {
+                    this.markerEntityId = SpigotEntityIdUtil.nextEntityId();
+                    this.upItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
+                    this.downItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
+                    this.facingItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
 
-            mapItem = VanillaMapUtil.createItem(mapId);
+                    mapItem = VanillaMapUtil.createItem(mapId);
 
 
-            SchedulerUtil.getScheduler().async(this::tickTrackedPlayers, 1, 1);
-            if (SchedulerUtil.getScheduler().isFolia())
-                SchedulerUtil.getScheduler().async(this::foliaTickTrackedPlayers, 20, 20);
+                    SchedulerUtil.getScheduler().async(this::tickTrackedPlayers, 1, 1);
+                    if (SchedulerUtil.getScheduler().isFolia())
+                        SchedulerUtil.getScheduler().async(this::foliaTickTrackedPlayers, 20, 20);
 
-            if (!ChunkLoadingUtil.isPaper())
-                NMinimap.getInstance().getPlayersWithMap().forEach(i -> i.respawnEntities(true));
-        };
-        if (!ChunkLoadingUtil.isPaper())
-            SchedulerUtil.getScheduler().sync(run);
-        else
-            run.run();
+                    if (!ChunkLoadingUtil.isPaper())
+                        NMinimap.getInstance().getPlayersWithMap().forEach(i -> i.respawnEntities(true));
+                });
     }
 
     public boolean isReady() {

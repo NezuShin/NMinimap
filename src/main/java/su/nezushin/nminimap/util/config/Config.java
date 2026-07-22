@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
@@ -11,6 +12,7 @@ import org.bukkit.util.NumberConversions;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.markers.impl.LocationMarker;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
+import su.nezushin.nminimap.util.PerWorldSettingsUtil;
 import su.nezushin.nminimap.util.config.updater.ConfigUpdater;
 
 import java.io.*;
@@ -39,6 +41,8 @@ public class Config {
     public static List<UndergroundLayer> undergroundLayers = new ArrayList<>();
 
     public static List<StaticMarker> staticMarkers = new ArrayList<>();
+
+    public static List<PerWorldSettings> perWorldSettings = new ArrayList<>();
 
     public static Set<String> disallowedWorlds;
 
@@ -87,6 +91,7 @@ public class Config {
                     ConfigUpdater.update(NMinimap.getInstance(), "config.yml", configFile,
                             "static-markers",
                             "underground-layers",
+                            "per-world-settings",
                             "markers.sizes",
                             "markers.mob-radar.mob-markers");
 
@@ -224,6 +229,9 @@ public class Config {
         undergroundLayers = loadUndergroundLayers(config);
 
         staticMarkers = loadLocationMarkers(config);
+
+        perWorldSettings = loadPerWorldSettings(config);
+        PerWorldSettingsUtil.clearCache();
 
         checkForUpdates = config.getBoolean("updates.check-for-updates", true);
 
@@ -364,6 +372,38 @@ public class Config {
                     config.getInt("underground-layers." + key + ".render-from-y", 64),
                     config.getInt("underground-layers." + key + ".priority", 0),
                     (float) config.getDouble("underground-layers." + key + ".darken", 0.5)
+            ));
+        }
+        return list;
+    }
+
+    private static List<PerWorldSettings> loadPerWorldSettings(FileConfiguration config) {
+        var cs = config.getConfigurationSection("per-world-settings");
+        if (cs == null)
+            return Lists.newArrayList();
+
+        List<PerWorldSettings> list = new ArrayList<>();
+        for (var key : cs.getKeys(false)) {
+            var path = "per-world-settings." + key;
+            var regexString = config.getString(path + ".regex", "");
+            Pattern regex = null;
+            if (regexString != null && !regexString.isEmpty()) {
+                regex = Pattern.compile(regexString);
+            }
+
+            Set<Material> ceilingBlocks = null;
+            if (config.contains(path + ".ceiling-blocks")) {
+                ceilingBlocks = loadEnumSet(Material.class, config.getStringList(path + ".ceiling-blocks"), "Material");
+            }
+
+            list.add(new PerWorldSettings(
+                    key,
+                    config.contains(path + ".max-y") ? config.getInt(path + ".max-y") : null,
+                    config.contains(path + ".min-y") ? config.getInt(path + ".min-y") : null,
+                    config.contains(path + ".skip-ceiling") ? config.getBoolean(path + ".skip-ceiling") : null,
+                    ceilingBlocks,
+                    new HashSet<>(config.getStringList(path + ".worlds")),
+                    regex
             ));
         }
         return list;

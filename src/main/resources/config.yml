@@ -160,6 +160,27 @@ disallowed-worlds:
   blacklist:
     - "my_world_with_disallowed_minimap"
 
+#Per-world settings. You can set only properties you need, others will have default value
+per-world-settings:
+  your_arbitrary_name_here:
+    #Max Y level for renderer. From what height start to render?
+    max-y: 120
+    #On what height renderer should stop?
+    min-y: 0
+    #Works same as global setting.
+    skip-ceiling: true
+
+    ceiling-blocks:
+      - BEDROCK
+    #Simple list of worlds where to apply these settings
+    worlds:
+      - my_world
+
+    #Regex pattern for advanced users. Usable when you have short-living worlds such as boss arenas
+    #Left empty to disable regex checks
+    #Example: "^(my_world_).*$" - this settings will apply for every world with name starts with "my_world_"
+    regex: ""
+
 #Supported languages: en_US, ru_RU, el_GR
 #Lang file will be copied to NMinimap/lang/<name>.yml
 language: en_US

@@ -201,6 +201,7 @@ public void drawMarker(AsyncMarkerRenderEvent e){
 - [DartCat25](https://github.com/DartCat25) - Shader development
 - [DEMEMZEA](https://github.com/DEMEMZEA) - Help with readme
 - [Meisosi](https://github.com/meisosi) - Plugin development, `underground-layers` feature
+- [RBLKtenarios](https://github.com/RBLKtenarios) - Greek translation
 
 
 ###  Looking for affordable and powerful Server hosting?

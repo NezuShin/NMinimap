@@ -1,15 +1,18 @@
 package su.nezushin.nminimap.chunks.renderer;
 
 import org.bukkit.Chunk;
+import org.bukkit.Material;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.BlockDataInfo;
 import su.nezushin.nminimap.chunks.ChunkEntry;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
 import su.nezushin.nminimap.util.ColorUtil;
+import su.nezushin.nminimap.util.PerWorldSettingsUtil;
 import su.nezushin.nminimap.util.RenderUtil;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class ChunkRender {
@@ -28,7 +31,9 @@ public class ChunkRender {
             Chunk cNorth = futureSecondChunk.join();
 
             var hasCeiling = c.getWorld().hasCeiling();
-            int minY = c.getWorld().getMinHeight();
+            int minY = PerWorldSettingsUtil.getMinY(c.getWorld());
+            boolean skipCeiling = PerWorldSettingsUtil.getSkipCeiling(c.getWorld());
+            Set<Material> ceilingBlocks = PerWorldSettingsUtil.getCeilingBlocks(c.getWorld());
             var chunkSnapshot = c.getChunkSnapshot(true, false, false);
             var northChunkSnapshot = cNorth.getChunkSnapshot(true, false, false);
 
@@ -36,15 +41,17 @@ public class ChunkRender {
             NMinimap.async(() -> {
                 var northChunk = new BlockDataInfo[(16) * (8)];
                 var currentChunk = new BlockDataInfo[(16) * (16)];
-                
-                int maxY = chunk.layer() != null ? chunk.layer().renderFromY() : Integer.MAX_VALUE;
+
+                int maxY = PerWorldSettingsUtil.getMaxY(c.getWorld());
+                if (chunk.layer() != null)
+                    maxY = Math.min(maxY, chunk.layer().renderFromY());
 
                 for (var x = 0; x < 16; x++) {
                     for (var z = 0; z < 16; z++) {
                         if (z < 8) {
-                            northChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(northChunkSnapshot, x, 15 - z, minY, maxY, hasCeiling);
+                            northChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(northChunkSnapshot, x, 15 - z, minY, maxY, hasCeiling, skipCeiling, ceilingBlocks);
                         }
-                        currentChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(chunkSnapshot, x, z, minY, maxY, hasCeiling);
+                        currentChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(chunkSnapshot, x, z, minY, maxY, hasCeiling, skipCeiling, ceilingBlocks);
                     }
                 }
 

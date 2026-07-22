@@ -11,7 +11,7 @@ import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.ChunkEntry;
-import su.nezushin.nminimap.util.config.Config;
+import su.nezushin.nminimap.util.PerWorldSettingsUtil;
 
 import java.util.Set;
 
@@ -34,7 +34,7 @@ public class BlockListener implements Listener {
     }
 
     public void update(Block b) {
-        if (b.getLightFromSky() == 15 || (b.getWorld().hasCeiling() && Config.skipCeiling))
+        if (b.getLightFromSky() == 15 || (b.getWorld().hasCeiling() && PerWorldSettingsUtil.getSkipCeiling(b.getWorld())))
             NMinimap.async(() -> {
                 NMinimap.getInstance().getChunkManager().reRenderChunk(new ChunkEntry(b.getWorld().getName(), Math.floorDiv(b.getX(), 16), Math.floorDiv(b.getZ(), 16), null));
             });
