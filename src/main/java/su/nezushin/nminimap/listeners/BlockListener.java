@@ -34,6 +34,8 @@ public class BlockListener implements Listener {
     }
 
     public void update(Block b) {
+        if (b == null)
+            return;
         if (b.getLightFromSky() == 15 || (b.getWorld().hasCeiling() && PerWorldSettingsUtil.getSkipCeiling(b.getWorld())))
             NMinimap.async(() -> {
                 NMinimap.getInstance().getChunkManager().reRenderChunk(new ChunkEntry(b.getWorld().getName(), Math.floorDiv(b.getX(), 16), Math.floorDiv(b.getZ(), 16), null));

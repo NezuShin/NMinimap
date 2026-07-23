@@ -1,13 +1,17 @@
 package su.nezushin.nminimap.util.config;
 
 import com.google.common.collect.Lists;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import su.nezushin.nminimap.NMinimap;
+import su.nezushin.nminimap.util.ChunkLoadingUtil;
 import su.nezushin.nminimap.util.config.updater.ConfigUpdater;
 
 import java.io.File;
@@ -20,21 +24,10 @@ public enum Message {
     map_enabled, map_disabled, scale_set, style_set, side_set, side_left, side_right, style_round, style_square, help, incorrect_scale, insufficient_permissions, reload_complete, reload_failed, reload_start, admin_stats, you_cannot_use_this_scale,
     new_version_found, cache_cleaned, cache_cleaned_world, cache_clean_failed, cache_clean_start, cache_clean_start_world;
 
-    private static BukkitAudiences adventure;
-
-    public static BukkitAudiences getAdventure() {
-        if (adventure == null) {
-            adventure = BukkitAudiences.create(NMinimap.getInstance());
-        }
-        return adventure;
-    }
-
     private List<String> message;
 
 
     public static void load() {
-        getAdventure();
-
         var file = getLangFile(Config.langName);
 
         if (file == null) {
@@ -95,6 +88,19 @@ public enum Message {
         return String.join("\n", message);
     }
 
+    private static void sendComponent(CommandSender sender, Component component) {
+        if (ChunkLoadingUtil.isPaper()) {
+            sender.sendMessage(component);
+            return;
+        }
+
+        if (sender instanceof Player player) {
+            player.spigot().sendMessage(ComponentSerializer.parse(GsonComponentSerializer.gson().serialize(component)));
+        } else {
+            sender.sendMessage(LegacyComponentSerializer.legacySection().serialize(component));
+        }
+    }
+
     public static class Sender {
 
         private List<String> message;
@@ -119,14 +125,8 @@ public enum Message {
         }
 
         public Sender send(CommandSender p) {
-            var adventureSender = adventure.sender(p);
-
-
             for (var msg : message)
-                adventureSender.sendMessage(MiniMessage.miniMessage().deserialize(msg));
-
-            //for (var msg : message)
-            //p.sendMessage(MiniMessage.miniMessage().deserialize(msg));
+                sendComponent(p, MiniMessage.miniMessage().deserialize(msg));
             return this;
         }
 
