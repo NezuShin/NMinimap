@@ -65,9 +65,13 @@ public final class NMinimap extends JavaPlugin {
         //Fix to display both messages about AnvilORM and Packetevents
         boolean shouldExit = false;
 
-        if (!Bukkit.getPluginManager().isPluginEnabled("AnvilORM")) {
+        var anvilOrm = Bukkit.getPluginManager().getPlugin("AnvilORM");
+        if (anvilOrm == null || !anvilOrm.isEnabled()) {
             shouldExit = true;
             this.getLogger().severe("AnvilORM plugin is not found. It is mandatory dependency. Please download it from https://github.com/NezuShin/AnvilORM/releases/");
+        } else if (UpdateCheckerManager.versionToNumber(anvilOrm.getDescription().getVersion()) < UpdateCheckerManager.versionToNumber("1.0.2")) {
+            shouldExit = true;
+            this.getLogger().severe("AnvilORM version " + anvilOrm.getDescription().getVersion() + " is too old. NMinimap requires AnvilORM 1.0.2 or newer. Please download it from https://github.com/NezuShin/AnvilORM/releases/");
         }
 
         if (!this.packetManager.isReady()) {
@@ -151,6 +155,7 @@ public final class NMinimap extends JavaPlugin {
                 player.setRight(Config.defaultRightSide);
                 player.setRound(Config.defaultRound);
                 player.setScale(Config.defaultScale);
+                player.setRadarEnabled(Config.defaultEnableMobRadar);
 
                 player.saveAsync();
             }

@@ -34,6 +34,8 @@ permissions:
     description: Allow using /mm scale 4 when scale.use-permission is enabled
   nminimap.scale.8:
     description: Allow using /mm scale 8 when scale.use-permission is enabled
+  nminimap.allow-radar:
+    description: Allow using /mm radar enable when markers.mob-radar.use-permission is enabled
 
 
 libraries:

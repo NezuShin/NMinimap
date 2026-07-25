@@ -5,7 +5,8 @@ import org.bukkit.command.CommandSender;
 public enum Permission {
 
     admin("admin"),
-    hide_on_map("hide-on-map");
+    hide_on_map("hide-on-map"),
+    allow_radar("allow-radar");
 
     private final String node;
 

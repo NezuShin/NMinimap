@@ -1,5 +1,7 @@
 map_enabled: "<#08c0c2>Мини-карта <#008f9a>включена"
 map_disabled: "<#08c0c2>Мини-карта <#008f9a>выключена"
+radar_enabled: "<#08c0c2>Радар <#008f9a>включен"
+radar_disabled: "<#08c0c2>Радар <#008f9a>выключен"
 scale_set: "<#08c0c2>Масштаб мини-карты:<#008f9a> {scale}"
 style_set: "<#08c0c2>Мини-карта теперь<#008f9a> {style}"
 side_set: "<#08c0c2>Мини-карта теперь расположена на <#008f9a>{side}<#08c0c2> стороне экрана"
@@ -8,6 +10,8 @@ help:
   - '<reset><gray>------------------<#008f9a>Помощь по NMinimap<reset><gray>-------------------'
   - "<reset><#08c0c2><click:suggest_command:'/mm enable'>/mm <#08c0c2>enable <#008f9a>включить мини-карту"
   - "<reset><#08c0c2><click:suggest_command:'/mm disable'>/mm <#08c0c2>disable <#008f9a>выключить мини-карту"
+  - "<reset><#08c0c2><click:suggest_command:'/mm radar enable'>/mm <#08c0c2>radar enable <#008f9a>включить радар мобов"
+  - "<reset><#08c0c2><click:suggest_command:'/mm radar disable'>/mm <#08c0c2>radar disable <#008f9a>выключить радар мобов"
   - "<reset><#08c0c2><click:suggest_command:'/mm scale '>/mm <#08c0c2>scale 1/2/4/8<#008f9a> задать масштаб мини-карты"
   - "<reset><#08c0c2><click:suggest_command:'/mm style '>/mm <#08c0c2>style left/square<#008f9a> установить круглый или квадратный стиль мини-карты"
   - "<reset><#08c0c2><click:suggest_command:'/mm side '>/mm <#08c0c2>side right/left<#008f9a> установить положение мини-карты на экране"
@@ -15,6 +19,7 @@ help:
 incorrect_scale: "<red>Неправильный масштаб!<#08c0c2> Поддерживаемые масштабы: <#008f9a>1<#08c0c2>, <#008f9a>2<#08c0c2>, <#008f9a>4<#08c0c2>, <#008f9a>8"
 insufficient_permissions: "<red>У вас нет прав на использование этой команды!"
 you_cannot_use_this_scale: "<red>Вы не можете использовать этот масштаб!"
+you_cannot_use_radar: "<red>Вы не можете использовать радар!"
 
 reload_start: "<#008f9a>Перезагрузка..."
 reload_complete: "<#008f9a>Перезагрузка завершена!"
@@ -30,6 +35,10 @@ admin_stats:
   - "<reset><#08c0c2>Ёмкость диска: <#008f9a>{disk_total_space_g} GB"
   - "<reset><#08c0c2>Свободно пространства: <#008f9a>{disk_free_space_g} GB"
   - "<reset><#08c0c2>Диск переполнен: <#008f9a>{disk_is_full}"
+  - "<reset><#08c0c2>Использовано ОЗУ: <#008f9a>{memory_used_g} GB"
+  - "<reset><#08c0c2>Доступно ОЗУ: <#008f9a>{memory_available_g} GB"
+  - "<reset><#08c0c2>ОЗУ NMinimap: <#008f9a>{memory_nminimap_g} GB ({memory_nminimap} bytes)"
+  - "<reset><#08c0c2>Мало ОЗУ: <#008f9a>{ram_is_low}"
 
 side_left: "левой"
 side_right: "правой"

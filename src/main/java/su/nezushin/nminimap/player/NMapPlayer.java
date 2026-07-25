@@ -36,7 +36,7 @@ public class NMapPlayer implements AnvilORMSerializable {
     @SqlColumn(type = SqlType.INT)
     private int scale = 1;
     @SqlColumn(type = SqlType.BOOLEAN)
-    private boolean enabled = false, isRight, isRound;
+    private boolean enabled = false, isRight, isRound, radarEnabled = true;
 
 
     private int lastSentMapHash;
@@ -117,6 +117,8 @@ public class NMapPlayer implements AnvilORMSerializable {
 
         var mapSize = Config.mapPixelSize + 1;
 
+        // Capture once — this.scale can change concurrently via setScale()
+        final int scale = normalizeScale(this.scale);
         var chunkSize = 16 / scale;
         var mapData = new byte[128 * 128];
         var world = player.getWorld();
@@ -141,7 +143,7 @@ public class NMapPlayer implements AnvilORMSerializable {
                 var indexXX = Math.floorDiv(localX, scale);
                 var indexZZ = Math.floorDiv(localZ, scale);
 
-                var color = bytes != null ? bytes[indexXX + (indexZZ * chunkSize)] : 0;
+                var color = colorAt(bytes, indexXX, indexZZ, chunkSize);
                 if (this.activeLayer != null) {
                     // Check if block outside WG layer region
                     if (!NMinimap.getInstance().getWorldGuardManager().isInsideLayer(new Location(world, wx, this.activeLayer.renderFromY(), wz), this.activeLayer)) {
@@ -150,7 +152,7 @@ public class NMapPlayer implements AnvilORMSerializable {
                         var normalBytes = chunkManager.getOrRenderChunk(normalChunk).get(scale);
                         chunkManager.getLastChunkUse().put(normalChunk, System.currentTimeMillis());
 
-                        var normalColor = normalBytes != null ? normalBytes[indexXX + (indexZZ * chunkSize)] : 0;
+                        var normalColor = colorAt(normalBytes, indexXX, indexZZ, chunkSize);
                         color = normalColor != 0 ? su.nezushin.nminimap.util.ColorUtil.darken(normalColor, this.activeLayer.darken()) : 0;
                     }
                 }
@@ -238,12 +240,26 @@ public class NMapPlayer implements AnvilORMSerializable {
     }
 
     public int getScale() {
-        return scale;
+        return normalizeScale(scale);
     }
 
     public void setScale(int scale) {
-        this.scale = scale;
+        this.scale = normalizeScale(scale);
         saveAsync();
+    }
+
+    /** Supported zoom levels only (must divide 16). Invalid DB/config values fall back to 1. */
+    private static int normalizeScale(int scale) {
+        return scale == 2 || scale == 4 || scale == 8 ? scale : 1;
+    }
+
+    private static byte colorAt(byte[] bytes, int indexXX, int indexZZ, int chunkSize) {
+        if (bytes == null)
+            return 0;
+        var index = indexXX + (indexZZ * chunkSize);
+        if (index < 0 || index >= bytes.length)
+            return 0;
+        return bytes[index];
     }
 
     public boolean isRight() {
@@ -261,6 +277,15 @@ public class NMapPlayer implements AnvilORMSerializable {
 
     public void setRound(boolean round) {
         isRound = round;
+        saveAsync();
+    }
+
+    public boolean isRadarEnabled() {
+        return radarEnabled;
+    }
+
+    public void setRadarEnabled(boolean radarEnabled) {
+        this.radarEnabled = radarEnabled;
         saveAsync();
     }
 

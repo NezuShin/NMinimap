@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.player.NMapPlayer;
 import su.nezushin.nminimap.util.DiskCapacityUtil;
+import su.nezushin.nminimap.util.RamCapacityUtil;
 import su.nezushin.nminimap.util.config.Config;
 import su.nezushin.nminimap.util.config.Message;
 import su.nezushin.nminimap.util.config.Permission;
@@ -47,17 +48,28 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                     }
                     return;
                 } else if (args[1].equalsIgnoreCase("stats")) {
-                    Message.admin_stats.replace("{loaded_tiles}", String.valueOf(NMinimap.getInstance().getChunkManager().getLoadedTiles().size()),
-                            "{cache_size}", String.valueOf(NMinimap.getInstance().getChunkManager().getChunkCache().getCachedFiles().size()),
+                    var chunkManager = NMinimap.getInstance().getChunkManager();
+                    var memoryUsed = RamCapacityUtil.getUsedMemory();
+                    var memoryAvailable = RamCapacityUtil.getAvailableMemory();
+                    var memoryNminimap = RamCapacityUtil.estimatePluginMemory(chunkManager);
+                    Message.admin_stats.replace("{loaded_tiles}", String.valueOf(chunkManager.getLoadedTiles().size()),
+                            "{cache_size}", String.valueOf(chunkManager.getChunkCache().getCachedFiles().size()),
                             "{enabled_maps}", String.valueOf(NMinimap.getInstance().getPlayersWithMap().stream().filter(NMapPlayer::isEnabled).count()),
-                            "{render_queue}", String.valueOf(NMinimap.getInstance().getChunkManager().getAwaitingChunksSize()),
-                            "{loading_chunks}", String.valueOf(NMinimap.getInstance().getChunkManager().getLoadingChunks().size()),
+                            "{render_queue}", String.valueOf(chunkManager.getAwaitingChunksSize()),
+                            "{loading_chunks}", String.valueOf(chunkManager.getLoadingChunks().size()),
                             "{threads}", String.valueOf(Thread.getAllStackTraces().keySet().stream().filter(i -> i.getName().equalsIgnoreCase("NMinimapThread")).count()),
-                            "{disk_total_space_g}", String.format("%.1f", (double) DiskCapacityUtil.getTotalSpace() / (1024L * 1024L * 1024L)),
-                            "{disk_free_space_g}", String.format("%.1f", (double) DiskCapacityUtil.getUsableSpace() / (1024L * 1024L * 1024L)),
-                            "{disk_total_space}", String.format("%.1f", (double) DiskCapacityUtil.getTotalSpace()),
-                            "{disk_free_space}", String.format("%.1f", (double) DiskCapacityUtil.getUsableSpace()),
-                            "{disk_is_full}", String.valueOf(NMinimap.getInstance().getChunkManager().getChunkCache().isDiskFull())
+                            "{disk_total_space_g}", RamCapacityUtil.formatGb(DiskCapacityUtil.getTotalSpace()),
+                            "{disk_free_space_g}", RamCapacityUtil.formatGb(DiskCapacityUtil.getUsableSpace()),
+                            "{disk_total_space}", String.valueOf(DiskCapacityUtil.getTotalSpace()),
+                            "{disk_free_space}", String.valueOf(DiskCapacityUtil.getUsableSpace()),
+                            "{disk_is_full}", String.valueOf(chunkManager.getChunkCache().isDiskFull()),
+                            "{memory_used}", String.valueOf(memoryUsed),
+                            "{memory_used_g}", RamCapacityUtil.formatGb(memoryUsed),
+                            "{memory_available}", String.valueOf(memoryAvailable),
+                            "{memory_available_g}", RamCapacityUtil.formatGb(memoryAvailable),
+                            "{memory_nminimap}", String.valueOf(memoryNminimap),
+                            "{memory_nminimap_g}", RamCapacityUtil.formatGb(memoryNminimap),
+                            "{ram_is_low}", String.valueOf(chunkManager.isRamLow())
                     ).send(sender);
                     return;
                 } else if (args[1].equalsIgnoreCase("clean-cache")) {
@@ -131,6 +143,20 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                     player.setRight(args[1].equalsIgnoreCase("right"));
                     Message.side_set.replace("{side}", player.isRight() ? Message.side_right.asString() : Message.side_left.asString()).send(p);
                     return;
+                } else if (args[0].equalsIgnoreCase("radar")) {
+                    if (args[1].equalsIgnoreCase("enable")) {
+                        if (Config.mobRadarUsePermission && !Permission.allow_radar.has(p)) {
+                            Message.you_cannot_use_radar.send(p);
+                            return;
+                        }
+                        player.setRadarEnabled(true);
+                        Message.radar_enabled.send(p);
+                        return;
+                    } else if (args[1].equalsIgnoreCase("disable")) {
+                        player.setRadarEnabled(false);
+                        Message.radar_disabled.send(p);
+                        return;
+                    }
                 }
             }
             Message.help.send(p);
@@ -144,7 +170,7 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command
             command, @NotNull String label, @NotNull String @NotNull [] args) {
         if (args.length == 1) {
-            return Lists.newArrayList("scale", "style", "side", "enable", "disable", "admin")
+            return Lists.newArrayList("scale", "style", "side", "radar", "enable", "disable", "admin")
                     .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[0])).toList();
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("scale"))
@@ -155,6 +181,9 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                         .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[1])).toList();
             else if (args[0].equalsIgnoreCase("side"))
                 return Lists.newArrayList("left", "right")
+                        .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[1])).toList();
+            else if (args[0].equalsIgnoreCase("radar"))
+                return Lists.newArrayList("enable", "disable")
                         .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[1])).toList();
             else if (args[0].equalsIgnoreCase("admin"))
                 return Lists.newArrayList("reload", "stats", "clean-cache")

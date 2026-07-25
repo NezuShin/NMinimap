@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.player.NMapPlayer;
 import su.nezushin.nminimap.util.DiskCapacityUtil;
+import su.nezushin.nminimap.util.RamCapacityUtil;
 
 public class NMinimapPAPIExpansion extends PlaceholderExpansion {
     @Override
@@ -41,13 +42,25 @@ public class NMinimapPAPIExpansion extends PlaceholderExpansion {
         } else if (params.equalsIgnoreCase("stats_render_queue")) {
             return String.valueOf(NMinimap.getInstance().getChunkManager().getAwaitingChunksSize());
         } else if (params.equalsIgnoreCase("stats_disk_total_space_g")) {
-            return String.format("%.1f", (double) DiskCapacityUtil.getTotalSpace() / (1024L * 1024L * 1024L));
+            return RamCapacityUtil.formatGb(DiskCapacityUtil.getTotalSpace());
         } else if (params.equalsIgnoreCase("stats_disk_free_space_g")) {
-            return String.format("%.1f", (double) DiskCapacityUtil.getUsableSpace() / (1024L * 1024L * 1024L));
+            return RamCapacityUtil.formatGb(DiskCapacityUtil.getUsableSpace());
         } else if (params.equalsIgnoreCase("stats_disk_total_space")) {
             return String.valueOf(DiskCapacityUtil.getTotalSpace());
         } else if (params.equalsIgnoreCase("stats_disk_free_space")) {
             return String.valueOf(DiskCapacityUtil.getUsableSpace());
+        } else if (params.equalsIgnoreCase("stats_memory_used")) {
+            return String.valueOf(RamCapacityUtil.getUsedMemory());
+        } else if (params.equalsIgnoreCase("stats_memory_used_g")) {
+            return RamCapacityUtil.formatGb(RamCapacityUtil.getUsedMemory());
+        } else if (params.equalsIgnoreCase("stats_memory_available")) {
+            return String.valueOf(RamCapacityUtil.getAvailableMemory());
+        } else if (params.equalsIgnoreCase("stats_memory_available_g")) {
+            return RamCapacityUtil.formatGb(RamCapacityUtil.getAvailableMemory());
+        } else if (params.equalsIgnoreCase("stats_memory_nminimap")) {
+            return String.valueOf(RamCapacityUtil.estimatePluginMemory(NMinimap.getInstance().getChunkManager()));
+        } else if (params.equalsIgnoreCase("stats_memory_nminimap_g")) {
+            return RamCapacityUtil.formatGb(RamCapacityUtil.estimatePluginMemory(NMinimap.getInstance().getChunkManager()));
         }
 
         var nminimapPlayer = NMinimap.getInstance().getPlayersWithMap().stream()
@@ -59,6 +72,8 @@ public class NMinimapPAPIExpansion extends PlaceholderExpansion {
 
         if (params.equalsIgnoreCase("enabled")) {
             return String.valueOf(nminimapPlayer.isEnabled());
+        } else if (params.equalsIgnoreCase("radar")) {
+            return String.valueOf(nminimapPlayer.isRadarEnabled());
         } else if (params.equalsIgnoreCase("scale")) {
             return String.valueOf(nminimapPlayer.getScale());
         } else if (params.equalsIgnoreCase("side")) {

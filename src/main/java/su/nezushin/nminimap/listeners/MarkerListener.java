@@ -33,7 +33,7 @@ public class MarkerListener implements Listener {
         e.getMarkers().add(new PositionMarker(Config.playerMarker, 0, 0, (int) (((Math.floorMod((int) player.getPlayer().getLocation().getYaw() - 2, 360) / 360.0f) * 256.0) - 127)));
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.LOW)
     public void anotherPlayers(AsyncMarkerRenderEvent e) {
         var player = e.getPlayer();
         var p = player.getPlayer();
@@ -52,7 +52,7 @@ public class MarkerListener implements Listener {
                 });
     }
 
-    @EventHandler(priority = EventPriority.HIGH)//to insure player's marker always higher than static markers
+    @EventHandler(priority = EventPriority.LOW)//to insure player's marker always higher than static markers
     public void staticMarkers(AsyncMarkerRenderEvent e) {
         var player = e.getPlayer();
         var p = player.getPlayer();
@@ -62,11 +62,13 @@ public class MarkerListener implements Listener {
 
     Map<World, Collection<Entity>> entityList = new ConcurrentHashMap<>();
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.LOW)
     public void entityRadar(AsyncMarkerRenderEvent e) {
         if (!Config.allowMobRadar)
             return;
         var player = e.getPlayer();
+        if (!player.isRadarEnabled())
+            return;
         var p = player.getPlayer();
 
         NMinimap.getInstance().getMobRadarManager().getEntities(p.getWorld()).stream().filter(i ->

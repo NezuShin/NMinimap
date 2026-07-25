@@ -10,6 +10,10 @@ cache:
   #Setting 10G will leave free 10 gigabytes of space and then stop writing to cache
   #You can use G for gigabytes, M for megabytes and K for Kilobytes.
   available-disk-space-threshold: "10G"
+
+  #Threshold for available RAM to stop rendering and loading tiles.
+  #You can use G for gigabytes, M for megabytes and K for Kilobytes.
+  available-ram-threshold: "1G"
   #Render chunk before it is needed? Useful if you are pre-generating your world using Chunky
   render-new-chunks: true
   #Delay cache load (for cases where additional worlds not being loaded on enable).
@@ -99,6 +103,11 @@ markers:
       - TRIDENT
       - AREA_EFFECT_CLOUD
       - MARKER
+
+
+    #Allow radar enable only for players with nminimap.allow-radar permission
+    use-permission: true
+
     default-marker:
         icon: red_marker
         allow-rotation: true
@@ -126,6 +135,11 @@ markers:
       #size in pixels
       height: 5
       width: 5
+
+    red_marker:
+      #size in pixels
+      height: 2
+      width: 2
 
     white_banner:
       #size in pixels
@@ -230,6 +244,8 @@ default-settings:
   side: left
   #round or square
   style: square
+  #Enable mob-radar by default? markers.mob-radar.enable should be true to apply
+  enable-mob-radar: true
 
 #Currently works with VoxelMap and Xaero's Minimap
 mods-compatibility:

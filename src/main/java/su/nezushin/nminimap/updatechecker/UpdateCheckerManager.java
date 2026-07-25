@@ -45,7 +45,7 @@ public class UpdateCheckerManager {
                 });
     }
 
-    private int versionToNumber(String version) {
+    public static int versionToNumber(String version) {
         int quickfixNumber = 0;
         if (version.contains("quickfix")) {
             quickfixNumber = Integer.parseInt(version.substring(version.indexOf("quickfix")).replaceAll("\\D+", ""));

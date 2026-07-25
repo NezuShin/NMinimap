@@ -35,7 +35,7 @@ Serverside minimap based on core shaders
 
 ### Dependencies
 
-- [AnvilORM](https://github.com/NezuShin/AnvilORM/releases/)
+- [AnvilORM](https://github.com/NezuShin/AnvilORM/releases/) 1.0.2 or newer
 - [Packet events](https://www.spigotmc.org/resources/packetevents-api.80279/)
 - [PassengerAPI](https://www.spigotmc.org/resources/passengerapi-entity-passenger-bug-fixes-more.117017/) (Optional; Needed for compatibility with another plugins)
 - [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) (Optional; If you need placeholders)
@@ -53,6 +53,7 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 
 - `nminimap.admin` - access for `/minimap admin` command
 - `nminimap.scale.1/2/4/8` - access for `/minimap scale` command (if enabled in config)
+- `nminimap.allow-radar` - access for `/minimap radar enable` command (if enabled in config)
 - Another minimap commands can be accessed without any premissions
 
 ### Admin commands
@@ -64,12 +65,14 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 - `/minimap scale 1/2/4/8` - set map scale. 1 - one block per pixel, 2 - four blocks per pixel (2x2 zone), etc
 - `/minimap side left/right` - set side of the screen where map will be displayed
 - `/minimap style round/square` - set map round or square
-- `/minmap disable/enable` - disable or enable map
+- `/minimap disable/enable` - disable or enable map
+- `/minimap radar disable/enable` - disable or enable mob radar
 
 ### PlaceholderAPI Placeholders
 
 #### Player related:
 - `nminimap_enabled` - true or false
+- `nminimap_radar` - true or false
 - `nminimap_scale` - 1, 2, 4, 8
 - `nminimap_side` - right or left
 - `nminimap_style` - round or square
@@ -85,6 +88,12 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 - `nminimap_stats_disk_free_space_g` - free space on disk in gigabytes, number (double)
 - `nminimap_stats_disk_total_space` - total available disk space in bytes, number
 - `nminimap_stats_disk_free_space` - free space on disk in bytes, number
+- `nminimap_stats_memory_used` - JVM heap memory used in bytes, number
+- `nminimap_stats_memory_used_g` - JVM heap memory used in gigabytes, number (double)
+- `nminimap_stats_memory_available` - JVM heap memory available until max (`-Xmx`) in bytes, number
+- `nminimap_stats_memory_available_g` - JVM heap memory available until max (`-Xmx`) in gigabytes, number (double)
+- `nminimap_stats_memory_nminimap` - estimated NMinimap tile memory usage in bytes, number
+- `nminimap_stats_memory_nminimap_g` - estimated NMinimap tile memory usage in gigabytes, number (double)
 
 ### Markers
 

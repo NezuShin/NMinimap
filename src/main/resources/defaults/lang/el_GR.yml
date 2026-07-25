@@ -1,52 +1,60 @@
 map_enabled: <#08c0c2>Minimap<#008f9a> Ενεργό
 map_disabled: <#08c0c2>Minimap<#008f9a> Ανενεργό
-scale_set: <#08c0c2>Minimap μέγεθος:<#008f9a> {scale}
-style_set: <#08c0c2>Minimap style:<#008f9a> {style}
-side_set: <#08c0c2> Το Minimap τώρα στην <#008f9a>{side}<#08c0c2> πλευρά της οθόνης
+radar_enabled: <#08c0c2>Radar<#008f9a> Ενεργό
+radar_disabled: <#08c0c2>Radar<#008f9a> Ανενεργό
+scale_set: <#08c0c2>Κλίμακα minimap:<#008f9a> {scale}
+style_set: <#08c0c2>Στυλ minimap:<#008f9a> {style}
+side_set: <#08c0c2>Το Minimap τώρα στην <#008f9a>{side}<#08c0c2> πλευρά της οθόνης
 
 help:
-- <reset><gray>----------------<#008f9a>NMinimap help<reset><gray>---------------
-- <reset><#08c0c2><click:suggest_command:'/mm enable'>/mm <#08c0c2>ενεργοποίησε <#008f9a> Ενεργοποιήσε το minimap
-- <reset><#08c0c2><click:suggest_command:'/mm disable'>/mm <#08c0c2>απενεργοποίησε <#008f9a> απενεργοποίησε το minimap
-- <reset><#08c0c2><click:suggest_command:'/mm scale'>/mm <#08c0c2>σκέλος 1/2/4/8 <#008f9a>set
-  minimap scale
-- <reset><#08c0c2><click:suggest_command:'/mm style '>/mm <#08c0c2>scale κυκλικό/τετραγωνικό
-  <#008f9a>Κάνε το minimap κυκλικό ή τετραγωνικό
-- <reset><#08c0c2><click:suggest_command:'/mm side '>/mm <#08c0c2>side αριστερά/δεξιία
-  <#008f9a>τοποθέτηση του minimap στην οθόνη
-incorrect_scale: '<red>Incorrect scale!<#08c0c2> Υποστιριζόμενα σκέλη: <#008f9a>1<#08c0c2>,
+- <reset><gray>----------------<#008f9a>Βοήθεια NMinimap<reset><gray>---------------
+- <reset><#08c0c2><click:suggest_command:'/mm enable'>/mm <#08c0c2>enable <#008f9a>ενεργοποίηση του minimap
+- <reset><#08c0c2><click:suggest_command:'/mm disable'>/mm <#08c0c2>disable <#008f9a>απενεργοποίηση του minimap
+- <reset><#08c0c2><click:suggest_command:'/mm radar enable'>/mm <#08c0c2>radar enable <#008f9a>ενεργοποίηση radar
+- <reset><#08c0c2><click:suggest_command:'/mm radar disable'>/mm <#08c0c2>radar disable <#008f9a>απενεργοποίηση radar
+- <reset><#08c0c2><click:suggest_command:'/mm scale '>/mm <#08c0c2>scale 1/2/4/8 <#008f9a>ορισμός κλίμακας minimap
+- <reset><#08c0c2><click:suggest_command:'/mm style '>/mm <#08c0c2>style round/square
+  <#008f9a>ορισμός κυκλικού ή τετράγωνου minimap
+- <reset><#08c0c2><click:suggest_command:'/mm side '>/mm <#08c0c2>side left/right
+  <#008f9a>θέση του minimap στην οθόνη
+incorrect_scale: '<red>Λάθος κλίμακα!<#08c0c2> Υποστηριζόμενες κλίμακες: <#008f9a>1<#08c0c2>,
   <#008f9a>2<#08c0c2>, <#008f9a>4<#08c0c2>, <#008f9a>8'
 insufficient_permissions: <red>Δεν έχεις τα κατάλληλα δικαιώματα!
-you_cannot_use_this_scale: <red>Δεν μπορείς να χρησημοποιήσεις αυτό το σκέλος!
+you_cannot_use_this_scale: <red>Δεν μπορείς να χρησιμοποιήσεις αυτή την κλίμακα!
+you_cannot_use_radar: <red>Δεν μπορείς να χρησιμοποιήσεις το radar!
 
-reload_start: <#008f9a>επανεκκίνηση...
+reload_start: <#008f9a>Επανεκκίνηση...
 reload_complete: <#008f9a>Η επανεκκίνηση τελείωσε!
-reload_failed: <#008f9a>Η επανεκκίνηση απέτυχε! Δες την κονσολά για το ακριβές πρόβλημα
+reload_failed: <#008f9a>Η επανεκκίνηση απέτυχε! Δες την κονσόλα για το ακριβές πρόβλημα
 
 admin_stats:
-- '<reset><#08c0c2>Tiles στην ram: <#008f9a>{loaded_tiles}'
+- '<reset><#08c0c2>Πλακίδια στη RAM: <#008f9a>{loaded_tiles}'
 - '<reset><#08c0c2>Μέγεθος της προσωρινής μνήμης: <#008f9a>{cache_size}'
-- '<reset><#08c0c2>Παίχτες με ενεργούς χάρτες: <#008f9a>{enabled_maps}'
+- '<reset><#08c0c2>Παίκτες με ενεργούς χάρτες: <#008f9a>{enabled_maps}'
 - '<reset><#08c0c2>Ενεργά νήματα: <#008f9a>{threads}'
 - '<reset><#08c0c2>Μέγεθος ουράς απόδοσης: <#008f9a>{render_queue}'
-- '<reset><#08c0c2>Αυτή τη στιγμή φορτώνεται το μέγεθος των τμημάτων: <#008f9a>{loading_chunks}'
-- '<reset><#08c0c2>Συνολικός χ΄χρος του δίσκου: <#008f9a>{disk_total_space_g} GB'
+- '<reset><#08c0c2>Τμήματα που φορτώνονται αυτή τη στιγμή: <#008f9a>{loading_chunks}'
+- '<reset><#08c0c2>Συνολικός χώρος δίσκου: <#008f9a>{disk_total_space_g} GB'
 - '<reset><#08c0c2>Ελεύθερος χώρος αποθήκευσης: <#008f9a>{disk_free_space_g} GB'
-- '<reset><#08c0c2>Ο δισκός είναι γεμάτος: <#008f9a>{disk_is_full}'
+- '<reset><#08c0c2>Ο δίσκος είναι γεμάτος: <#008f9a>{disk_is_full}'
+- '<reset><#08c0c2>Χρησιμοποιημένη μνήμη: <#008f9a>{memory_used_g} GB'
+- '<reset><#08c0c2>Διαθέσιμη μνήμη: <#008f9a>{memory_available_g} GB'
+- '<reset><#08c0c2>Μνήμη NMinimap: <#008f9a>{memory_nminimap_g} GB ({memory_nminimap} bytes)'
+- '<reset><#08c0c2>Χαμηλή RAM: <#008f9a>{ram_is_low}'
 
-side_left: αριστερά
-side_right: δεξιία
+side_left: αριστερή
+side_right: δεξιά
 style_round: κύκλος
 style_square: τετράγωνο
 
 
 new_version_found:
-- '<reset><#08c0c2>Νέα έκδωση του NMinimap βρέθηκε: <#008f9a>{version}'
+- '<reset><#08c0c2>Νέα έκδοση του NMinimap βρέθηκε: <#008f9a>{version}'
 - <reset><click:open_url:'https://modrinth.com/plugin/nminimap'><#08c0c2>[<#008f9a>Modrinth<#08c0c2>]</click>
   <click:open_url:'https://github.com/NezuShin/NMinimap/releases/'>[<#008f9a>Github<#08c0c2>]</click>
 
-cache_cleaned: <#008f9a>Η προσωρινή μνήμη καθαρήστηκε!
-cache_cleaned_world: <#008f9a>Η προσωρινή μνήμη καθαρήστηκε για τον κόσμο <#08c0c2>{world}!
+cache_cleaned: <#008f9a>Η προσωρινή μνήμη καθαρίστηκε!
+cache_cleaned_world: <#008f9a>Η προσωρινή μνήμη καθαρίστηκε για τον κόσμο <#08c0c2>{world}!
 cache_clean_failed: <#008f9a>Ο καθαρισμός της προσωρινής μνήμης απέτυχε! Ελέγξτε την κονσόλα για να δείτε το λεπτομερές σφάλμα.
-cache_clean_start: <#008f9a>καθαρισμός της προσωρινής μνήμης...
-cache_clean_start_world: <#008f9a>καθαρισμός της προσωρινής μνήμης για τον κόσμο <#08c0c2>{world}<#008f9a>...
+cache_clean_start: <#008f9a>Καθαρισμός της προσωρινής μνήμης...
+cache_clean_start_world: <#008f9a>Καθαρισμός της προσωρινής μνήμης για τον κόσμο <#08c0c2>{world}<#008f9a>...

@@ -28,12 +28,13 @@ public class Config {
     public static int mapId, maxRenderThreads = 30, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval, mapPixelSize = 40, wgRegionUpdateInterval, mobRadarUpdateInterval;
 
     public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true,
-            scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, renderNewChunks, disableModMapActivated,
+            scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, defaultEnableMobRadar, renderNewChunks, disableModMapActivated,
             disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar,
             packEnable1_21_11, packEnable26_1, packEnable26_2, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed,
-            useDisallowedWorldsRegex, anotherPlayerMarkerHideInvisibilityPotionEffect, anotherPlayerMarkerHidePermission, allowMobRadar;
+            useDisallowedWorldsRegex, anotherPlayerMarkerHideInvisibilityPotionEffect, anotherPlayerMarkerHidePermission, allowMobRadar, mobRadarUsePermission;
 
     public static long availableDiskSpaceThreshold = 14L * 1024L * 1024L * 1024L,
+            availableRamThreshold = 10L * 1024L * 1024L * 1024L,
             cacheLoadDelay = 20;
 
     public static List<String> resourcepackCopyDestinations = new ArrayList<>(), resourcepackZipDestinations = new ArrayList<>(), defaultEnableBrands = new ArrayList<>();
@@ -93,7 +94,8 @@ public class Config {
                             "underground-layers",
                             "per-world-settings",
                             "markers.sizes",
-                            "markers.mob-radar.mob-markers");
+                            "markers.mob-radar.mob-markers"
+                            );
 
                     config = YamlConfiguration.loadConfiguration(configFile);
                 } catch (IOException ex) {
@@ -111,15 +113,8 @@ public class Config {
 
         cacheLoadDelay = config.getInt("cache.load-delay", 0);
 
-        var diskStr = config.getString("cache.available-disk-space-threshold", "1G").toLowerCase();
-        availableDiskSpaceThreshold =
-                Long.parseLong(diskStr.replaceAll("\\D+", ""))
-                        * ((long) Math.pow(1024,
-                        diskStr.endsWith("g") ? 3 :
-                                (diskStr.endsWith("m") ? 2 :
-                                        (diskStr.endsWith("k") ? 1 : 0)
-                                )
-                ));
+        availableDiskSpaceThreshold = parseSize(config.getString("cache.available-disk-space-threshold", "1G"));
+        availableRamThreshold = parseSize(config.getString("cache.available-ram-threshold", "10G"));
 
         mapId = config.getInt("map-id", 0);
 
@@ -149,6 +144,7 @@ public class Config {
         anotherPlayerMarkerHideRadiusY = config.getDouble("markers.another-players-settings.hide-outside-radius.y", 0);
 
         allowMobRadar = config.getBoolean("markers.mob-radar.enable");
+        mobRadarUsePermission = config.getBoolean("markers.mob-radar.use-permission", false);
         mobRadarHideRadiusXZ = config.getDouble("markers.mob-radar.hide-outside-radius.xz", 100);
         mobRadarHideRadiusY = config.getDouble("markers.mob-radar.hide-outside-radius.y", 20);
         mobRadarAllowedEntities = loadEnumSet(EntityType.class, config.getStringList("markers.mob-radar.allowed-mobs"), "EntityType");
@@ -183,8 +179,11 @@ public class Config {
         defaultEnableBrands = config.getStringList("default-settings.enable-if-brand-is");
         defaultEnableAnyway = config.getBoolean("default-settings.enable-anyway", false);
         defaultScale = config.getInt("default-settings.scale", 1);
+        if (defaultScale != 1 && defaultScale != 2 && defaultScale != 4 && defaultScale != 8)
+            defaultScale = 1;
         defaultRightSide = config.getString("default-settings.side", "left").equalsIgnoreCase("right");
         defaultRound = config.getString("default-settings.style", "square").equalsIgnoreCase("round");
+        defaultEnableMobRadar = config.getBoolean("default-settings.enable-mob-radar", true);
 
         var modsCompatibilityMode = config.getInt("mods-compatibility.mode", 2);
 
@@ -407,6 +406,17 @@ public class Config {
             ));
         }
         return list;
+    }
+
+    private static long parseSize(String raw) {
+        var str = raw.toLowerCase();
+        return Long.parseLong(str.replaceAll("\\D+", ""))
+                * ((long) Math.pow(1024,
+                str.endsWith("g") ? 3 :
+                        (str.endsWith("m") ? 2 :
+                                (str.endsWith("k") ? 1 : 0)
+                        )
+        ));
     }
 
     public static boolean isInRadius(Location loc, Location loc2, double radiusXZ, double radiusY) {

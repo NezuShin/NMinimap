@@ -4,6 +4,7 @@ import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.cache.ChunkCache;
 import su.nezushin.nminimap.chunks.renderer.ChunkRender;
 import su.nezushin.nminimap.util.MapDataUtil;
+import su.nezushin.nminimap.util.RamCapacityUtil;
 import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
 
@@ -21,6 +22,8 @@ public class ChunkManager {
     private final Queue<ChunkEntry> awaitingChunks = new ConcurrentLinkedQueue<>();
 
     private final Map<Integer, byte[]> emptyMap = MapDataUtil.prepareEmptyMap();
+
+    private volatile boolean ramLow;
 
 
     private ChunkCache chunkCache;
@@ -46,6 +49,8 @@ public class ChunkManager {
             loadedTiles.remove(entry.getKey());
             lastChunkUse.remove(entry.getKey());
         }
+
+        renderNextAwaitingChunk();
     }
 
     public void clearWorldTiles(String world) {
@@ -59,6 +64,12 @@ public class ChunkManager {
     }
 
     public void renderNextAwaitingChunk() {
+        if (RamCapacityUtil.getAvailableMemory() < Config.availableRamThreshold) {
+            ramLow = true;
+            return;
+        }
+        ramLow = false;
+
         while (loadingChunks.size() < Config.maxRenderThreads) {
             var chunk = awaitingChunks.poll();
             if (chunk == null)
@@ -115,6 +126,14 @@ public class ChunkManager {
 
     public Map<ChunkEntry, Long> getLastChunkUse() {
         return lastChunkUse;
+    }
+
+    public Map<Integer, byte[]> getEmptyMap() {
+        return emptyMap;
+    }
+
+    public boolean isRamLow() {
+        return ramLow;
     }
 
 
