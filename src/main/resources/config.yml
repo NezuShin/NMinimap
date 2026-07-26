@@ -106,7 +106,7 @@ markers:
 
 
     #Allow radar enable only for players with nminimap.allow-radar permission
-    use-permission: true
+    use-permission: false
 
     default-marker:
         icon: red_marker

@@ -124,6 +124,7 @@ public class PacketManager {
     public void removeEntities(Player p) {
         entityHook.removeEntities(p, upItemFrameEntityId, downItemFrameEntityId, facingItemFrameEntityId, markerEntityId);
         this.trackedPlayers.remove(p);
+        this.foliaWorldMap.remove(p);
     }
 
 

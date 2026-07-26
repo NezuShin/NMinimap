@@ -145,6 +145,10 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                     return;
                 } else if (args[0].equalsIgnoreCase("radar")) {
                     if (args[1].equalsIgnoreCase("enable")) {
+                        if (!Config.allowMobRadar) {
+                            Message.radar_disabled_on_server.send(p);
+                            return;
+                        }
                         if (Config.mobRadarUsePermission && !Permission.allow_radar.has(p)) {
                             Message.you_cannot_use_radar.send(p);
                             return;

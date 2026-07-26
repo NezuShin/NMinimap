@@ -20,6 +20,7 @@ Serverside minimap based on core shaders
 - Map size up tp 127 x 127 pixels
 - Automatic resource pack build
 - Supported minecraft versions from 1.21.11 to 26.2
+- Configurable mob and player radar
 
 ### Supported server platforms
 - [Papermc](https://papermc.io/software/paper/)
@@ -45,20 +46,22 @@ Serverside minimap based on core shaders
 - Install all [dependencies](#dependencies)
 - Download jar from releases and put it to the server's plugins directory.
 - Restart the server
+- Install resource pack from `NMinimap/built-pack.zip`
 
 Also, you can configure [PackMerger](https://www.spigotmc.org/resources/packmerger.132700/)
-or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-manager.118574/) for resource pack merge and distribution
+or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-manager.118574/) for automatic resource pack merge and distribution
 
 ### Permissions
 
 - `nminimap.admin` - access for `/minimap admin` command
 - `nminimap.scale.1/2/4/8` - access for `/minimap scale` command (if enabled in config)
 - `nminimap.allow-radar` - access for `/minimap radar enable` command (if enabled in config)
-- Another minimap commands can be accessed without any premissions
+- Another minimap commands can be accessed without any permissions
 
 ### Admin commands
 - `/minimap admin reload` - reload config
-- `/minimap admin stats` - get statistics info 
+- `/minimap admin stats` - get statistics info
+- `/minimap admin clean-cahced` - clean cached tiles of map
 
 ### User commands
 
@@ -129,6 +132,9 @@ Supported mods:
 #### Iris/OptiFine shaders incompatibility
 
 Compatibility cannot be added because Iris don't use core shaders. You can disable NMinimap for users with Iris using [NMinimapIrisBlocker](https://github.com/NezuShin/NMinimapIrisBlocker)  
+
+
+![](images/iris_blocker_showcase.png)
 
 ### How does it work?
 

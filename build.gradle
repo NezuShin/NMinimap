@@ -27,7 +27,7 @@ dependencies {
     compileOnly('com.github.maximjsx:PassengerAPI:1.5.1')
     compileOnly('me.clip:placeholderapi:2.12.2')
     compileOnly("com.github.retrooper:packetevents-spigot:2.11.2")
-    compileOnly("com.github.NezuShin:AnvilORM:V1.0.1")
+    compileOnly("com.github.NezuShin:AnvilORM:V1.0.2")
     compileOnly('net.kyori:adventure-text-minimessage:4.23.0')
     compileOnly('net.kyori:adventure-text-serializer-gson:4.23.0')
     compileOnly('net.kyori:adventure-text-serializer-legacy:4.23.0')

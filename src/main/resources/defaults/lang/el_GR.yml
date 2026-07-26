@@ -2,6 +2,7 @@ map_enabled: <#08c0c2>Minimap<#008f9a> Ενεργό
 map_disabled: <#08c0c2>Minimap<#008f9a> Ανενεργό
 radar_enabled: <#08c0c2>Radar<#008f9a> Ενεργό
 radar_disabled: <#08c0c2>Radar<#008f9a> Ανενεργό
+radar_disabled_on_server: <red>Το radar είναι απενεργοποιημένο στον διακομιστή
 scale_set: <#08c0c2>Κλίμακα minimap:<#008f9a> {scale}
 style_set: <#08c0c2>Στυλ minimap:<#008f9a> {style}
 side_set: <#08c0c2>Το Minimap τώρα στην <#008f9a>{side}<#08c0c2> πλευρά της οθόνης

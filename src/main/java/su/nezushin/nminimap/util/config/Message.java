@@ -21,7 +21,7 @@ import java.util.List;
 
 public enum Message {
 
-    map_enabled, map_disabled, radar_enabled, radar_disabled, scale_set, style_set, side_set, side_left, side_right, style_round, style_square, help, incorrect_scale, insufficient_permissions, reload_complete, reload_failed, reload_start, admin_stats, you_cannot_use_this_scale, you_cannot_use_radar,
+    map_enabled, map_disabled, radar_enabled, radar_disabled, radar_disabled_on_server, scale_set, style_set, side_set, side_left, side_right, style_round, style_square, help, incorrect_scale, insufficient_permissions, reload_complete, reload_failed, reload_start, admin_stats, you_cannot_use_this_scale, you_cannot_use_radar,
     new_version_found, cache_cleaned, cache_cleaned_world, cache_clean_failed, cache_clean_start, cache_clean_start_world;
 
     private List<String> message;
