@@ -13,6 +13,7 @@ import su.nezushin.nminimap.util.config.Config;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -48,6 +49,11 @@ public class ChunkCache {
                 if (file.getName().endsWith(".json")) {
                     file.delete();//old cache clear
                     deletedOld++;
+                    continue;
+                }
+                if (file.getName().contains(".tmp.")) {
+                    // Broken files
+                    file.delete();
                     continue;
                 }
                 if (!file.getName().endsWith(".bin.gz"))
@@ -116,12 +122,15 @@ public class ChunkCache {
 
                 chunkManager.getLoadedTiles().put(chunk, scales);
                 chunkManager.renderNextAwaitingChunk();
+            } catch (FileNotFoundException ex) {//?!
+                cachedFiles.remove(chunk);
             } catch (Exception ex) {
                 if (Config.cacheDeleteIfReadFailed) {
                     try {
-                        file.delete();
-                    } catch (Exception ignore) {
-                        // :(
+                        if (file.exists())
+                            file.delete();
+                    } catch (Exception ex2) {
+                        NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to delete broken cache file" + file, ex2);
                     }
                 }
                 cachedFiles.remove(chunk);//prevent another failed load try
@@ -142,20 +151,39 @@ public class ChunkCache {
         }
         isDiskFull = false;
         var file = chunk.getAsFile();
-        try (var os = new GZIPOutputStream(new FileOutputStream(file))) {
-            MapDataUtil.saveMap(scales, os);
+        var parent = file.getParentFile();
+        if (parent != null)
+            parent.mkdirs();
+
+        var tmpDir = parent != null ? parent : Config.cacheFolder;
+        var tmpFile = new File(tmpDir, file.getName() + ".tmp." + UUID.randomUUID());
+
+        try {
+            cachedFiles.remove(chunk);//prevent load from cache if file is being written right now
+            try (var os = new GZIPOutputStream(new FileOutputStream(tmpFile))) {
+                MapDataUtil.saveMap(scales, os);
+            }
+
+            try {
+                Files.move(tmpFile.toPath(), file.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.ATOMIC_MOVE);
+            } catch (java.nio.file.AtomicMoveNotSupportedException ex) {
+                Files.move(tmpFile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
 
             cachedFiles.add(chunk);
         } catch (Exception ex) {
-            if (Config.cacheDeleteIfReadFailed) {
-                try {
-                    file.delete();
-                } catch (Exception ignore) {
-                    // :(
-                }
-            }
             cachedFiles.remove(chunk);
             NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to save chunk tile to cache", ex);
+        } finally {
+            // If the move failed, remove the tmp file.
+            try {
+                if (tmpFile.exists())
+                    tmpFile.delete();
+            } catch (Exception ex) {
+                NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to delete tmp cache file" + tmpFile, ex);
+            }
         }
     }
 

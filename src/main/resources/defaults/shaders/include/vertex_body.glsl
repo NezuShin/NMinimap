@@ -43,14 +43,15 @@ if (id(mapUV + ivec2(0)) == 0xFF0000 && id(mapUV + ivec2(1, 0)) == 0x597D27 && i
 
 
     float rot_offset = (MAP_CROP_RADIUS + 1) / 128.0;
+    float mapExtent = (MAP_CONTENT_SIZE + 1.0) / 128.0 * MAP_SIZE.x;
     vec2 map = rotAngle * (corner2 - rot_offset) + rot_offset;
     map *= MAP_SIZE;
 
     if (isRight)
-        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x, 0);
+        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(mapExtent, 0);
     else
         map = map + MAP_OFFSET;
-    gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), 0.6, 1);
+    gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), MAP_DEPTH, 1);
     vertexColor = vec4(1);
     custom = isRound ? 2 : 1;
     uvCoord = corner2 * 128;
@@ -80,12 +81,13 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     float angle = -Color.b * 2 * PI;
 
     float offset = isRound ? (1.0 + MAP_CROP_RADIUS) / 128.0 : 0.5;
+    float mapExtent = (MAP_CONTENT_SIZE + 1.0) / 128.0 * MAP_SIZE.x;
 
     vec2 map = rotAngle * (mat2_rotate_z(angle) * ((corner - 0.5) / 64 * scaleData) + pos - 0.5) + offset;
     map *= MAP_SIZE;
 
     if (isRight)
-        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x, 0);
+        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(mapExtent, 0);
     else
         map = map + MAP_OFFSET;
 
