@@ -28,6 +28,7 @@ cache:
 
 #How many chunks can be rendered simultaneously?
 #Recommended to set this property to 1 if you are using spigot as server platform because it is not supports async chink loading
+#This is a soft limit. You can see more threads in /mm admin stats. That's expected.
 max-render-threads: 30
 
 #How frequent update player's map? In ticks. One second is 20 ticks

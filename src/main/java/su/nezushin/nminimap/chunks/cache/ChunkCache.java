@@ -1,7 +1,5 @@
 package su.nezushin.nminimap.chunks.cache;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import su.nezushin.nminimap.NMinimap;
@@ -107,37 +105,35 @@ public class ChunkCache {
 
     public void loadFromCache(ChunkEntry chunk) {
         var chunkManager = NMinimap.getInstance().getChunkManager();
-        chunkManager.getLoadingChunks().add(chunk);
 
         NMinimap.async(() -> {
             var file = chunk.getAsFile();
-            if (!file.exists()) {
-                cachedFiles.remove(chunk);
-                NMinimap.getInstance().getChunkManager().getLoadingChunks().remove(chunk);
-                return;
-            }
-
-            try (var is = new GZIPInputStream(new FileInputStream(file))) {
-                var scales = MapDataUtil.readMap(is);
-
-                chunkManager.getLoadedTiles().put(chunk, scales);
-                chunkManager.renderNextAwaitingChunk();
-            } catch (FileNotFoundException ex) {//?!
-                cachedFiles.remove(chunk);
-            } catch (Exception ex) {
-                if (Config.cacheDeleteIfReadFailed) {
-                    try {
-                        if (file.exists())
-                            file.delete();
-                    } catch (Exception ex2) {
-                        NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to delete broken cache file" + file, ex2);
-                    }
+            try {
+                if (!file.exists()) {
+                    cachedFiles.remove(chunk);
+                    return;
                 }
-                cachedFiles.remove(chunk);//prevent another failed load try
-                NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to load chunk tile from cache", ex);
-            } finally {
-                chunkManager.getLoadingChunks().remove(chunk);
 
+                try (var is = new GZIPInputStream(new FileInputStream(file))) {
+                    var scales = MapDataUtil.readMap(is);
+                    chunkManager.getLoadedTiles().put(chunk, scales);
+                    chunkManager.getLastChunkUse().put(chunk, System.currentTimeMillis());
+                } catch (FileNotFoundException ex) {//?!
+                    cachedFiles.remove(chunk);
+                } catch (Exception ex) {
+                    if (Config.cacheDeleteIfReadFailed) {
+                        try {
+                            if (file.exists())
+                                file.delete();
+                        } catch (Exception ex2) {
+                            NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to delete broken cache file" + file, ex2);
+                        }
+                    }
+                    cachedFiles.remove(chunk);//prevent another failed load try
+                    NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to load chunk tile from cache", ex);
+                }
+            } finally {
+                chunkManager.finishChunkJob(chunk);
             }
         });
     }

@@ -19,11 +19,18 @@ public class ChunkManager {
     private final Map<ChunkEntry, Long> lastChunkUse = new ConcurrentHashMap<>();
 
     private final Set<ChunkEntry> loadingChunks = ConcurrentHashMap.newKeySet();
+    /** Chunks currently sitting in {@link #awaitingChunks} (dedupe for the queue). */
+    private final Set<ChunkEntry> pendingChunks = ConcurrentHashMap.newKeySet();
+    /**
+     * Needs another pass. Set before scheduling; cleared when a job starts so
+     * dirties that arrive mid-job are preserved for {@link #finishChunkJob}.
+     */
+    private final Set<ChunkEntry> dirtyChunks = ConcurrentHashMap.newKeySet();
     private final Queue<ChunkEntry> awaitingChunks = new ConcurrentLinkedQueue<>();
 
     private final Map<Integer, byte[]> emptyMap = MapDataUtil.prepareEmptyMap();
 
-    private volatile boolean ramLow;
+    private boolean ramLow;
 
 
     private ChunkCache chunkCache;
@@ -38,16 +45,16 @@ public class ChunkManager {
     }
 
     private void removeOldChunks() {
-
-        var sortedEntries = new HashSet<>(lastChunkUse.entrySet()).stream()
-                .filter(i -> System.currentTimeMillis() - i.getValue() > 15000)
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).toList();
+        long now = System.currentTimeMillis();
+        var sortedEntries = new HashSet<>(loadedTiles.keySet()).stream()
+                .filter(chunk -> now - lastChunkUse.getOrDefault(chunk, 0L) > 15000)
+                .toList();
 
         for (var i = 0; sortedEntries.size() > i; i++) {
-            var entry = sortedEntries.get(i);
+            var chunk = sortedEntries.get(i);
 
-            loadedTiles.remove(entry.getKey());
-            lastChunkUse.remove(entry.getKey());
+            loadedTiles.remove(chunk);
+            lastChunkUse.remove(chunk);
         }
 
         renderNextAwaitingChunk();
@@ -59,8 +66,33 @@ public class ChunkManager {
             lastChunkUse.remove(i);
         }
 
-        loadingChunks.removeIf(i -> i.world().equalsIgnoreCase(world));
+        pendingChunks.removeIf(i -> i.world().equalsIgnoreCase(world));
+        dirtyChunks.removeIf(i -> i.world().equalsIgnoreCase(world));
         awaitingChunks.removeIf(i -> i.world().equalsIgnoreCase(world));
+    }
+
+    /**
+     * Enqueue a chunk at most once. Returns true if it was newly queued.
+     */
+    public boolean enqueueChunk(ChunkEntry chunk) {
+        if (!pendingChunks.add(chunk))
+            return false;//already in render queue.
+        awaitingChunks.add(chunk);
+        return true;
+    }
+
+    /**
+     * Called when load/render finishes. If the chunk was dirtied meanwhile, re-queue it once.
+     */
+    public void finishChunkJob(ChunkEntry chunk) {
+        loadingChunks.remove(chunk);
+        if (dirtyChunks.contains(chunk))
+            enqueueChunk(chunk);
+        renderNextAwaitingChunk();
+    }
+
+    public void markDirty(ChunkEntry chunk) {
+        dirtyChunks.add(chunk);
     }
 
     public void renderNextAwaitingChunk() {
@@ -75,6 +107,15 @@ public class ChunkManager {
             if (chunk == null)
                 return;
 
+            pendingChunks.remove(chunk);
+
+            // Duplicate queue entries / race: never start a second job for the same chunk.
+            if (!loadingChunks.add(chunk))
+                continue;
+
+            // Accept this pass; any dirty set after this point triggers another via finishChunkJob.
+            dirtyChunks.remove(chunk);
+
             if (Config.allowFileCache && chunkCache.hasInCache(chunk))
                 chunkCache.loadFromCache(chunk);
             else
@@ -87,13 +128,15 @@ public class ChunkManager {
         if (!chunk.isInsideWorldBorder())
             return emptyMap;
 
-        if (loadedTiles.containsKey(chunk))
-            return loadedTiles.get(chunk);
-        if (!awaitingChunks.contains(chunk) && !loadingChunks.contains(chunk)) {
-            awaitingChunks.add(chunk);
-            loadedTiles.put(chunk, emptyMap);
+        Map<Integer, byte[]> tiles = loadedTiles.get(chunk);
+        if (tiles != null)
+            return tiles;
+
+        if (loadingChunks.contains(chunk) || pendingChunks.contains(chunk))
+            return emptyMap;
+
+        if (enqueueChunk(chunk))
             renderNextAwaitingChunk();
-        }
 
         return emptyMap;
     }
@@ -101,9 +144,10 @@ public class ChunkManager {
     public void reRenderChunk(ChunkEntry chunk) {
         NMinimap.async(() -> {
             chunkCache.removeFromCache(chunk);
-
-            lastChunkUse.remove(chunk);
-            awaitingChunks.add(chunk);
+            // Always mark dirty + try enqueue. If a job is in flight, finishChunkJob
+            // will re-enqueue via dirty; pendingChunks dedupes double enqueue.
+            dirtyChunks.add(chunk);
+            enqueueChunk(chunk);
             renderNextAwaitingChunk();
         });
     }
