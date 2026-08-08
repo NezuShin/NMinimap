@@ -6,6 +6,7 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.WorldUnloadEvent;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.ChunkEntry;
+import su.nezushin.nminimap.util.PerWorldSettingsUtil;
 import su.nezushin.nminimap.util.config.Config;
 
 public class ChunkListener implements Listener {
@@ -20,7 +21,7 @@ public class ChunkListener implements Listener {
             var chunkManager = NMinimap.getInstance().getChunkManager();
             var entry = new ChunkEntry(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), null);
 
-            if (!chunkManager.getChunkCache().hasInCache(entry))
+            if (PerWorldSettingsUtil.getAllowFileCache(entry.world()) && !chunkManager.getChunkCache().hasInCache(entry))
                 NMinimap.getInstance().getChunkManager().getOrRenderChunk(entry);
         });
     }

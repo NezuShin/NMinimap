@@ -6,6 +6,7 @@ import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.ChunkEntry;
 import su.nezushin.nminimap.util.DiskCapacityUtil;
 import su.nezushin.nminimap.util.MapDataUtil;
+import su.nezushin.nminimap.util.PerWorldSettingsUtil;
 import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
 
@@ -77,6 +78,8 @@ public class ChunkCache {
                         continue;
                     }
                 }
+                if (!PerWorldSettingsUtil.getAllowFileCache(name[0]))
+                    continue;
                 cachedFiles.add(new ChunkEntry(name[0], Integer.parseInt(name[1]), z, layer));
             }
         } catch (IOException e) {
@@ -139,7 +142,7 @@ public class ChunkCache {
     }
 
     public void saveToCache(ChunkEntry chunk, Map<Integer, byte[]> scales) {
-        if (!Config.allowFileCache)
+        if (!PerWorldSettingsUtil.getAllowFileCache(chunk.world()))
             return;
         if (DiskCapacityUtil.getUsableSpace() < Config.availableDiskSpaceThreshold) {
             isDiskFull = true;

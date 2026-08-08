@@ -184,6 +184,9 @@ per-world-settings:
     min-y: 0
     #Works same as global setting.
     skip-ceiling: true
+    #Allow cache for these worlds? Default is true.
+    #Highly suggested set this to false for short-living worlds
+    allow-file-cache: true
 
     ceiling-blocks:
       - BEDROCK

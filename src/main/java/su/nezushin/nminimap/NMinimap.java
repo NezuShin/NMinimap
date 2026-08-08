@@ -6,6 +6,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import su.nezushin.nminimap.bstats.Metrics;
 import su.nezushin.nminimap.command.MinimapCommand;
+import su.nezushin.nminimap.compatibility.GeyserManager;
 import su.nezushin.nminimap.compatibility.ModCompatibilityManager;
 import su.nezushin.nminimap.compatibility.WorldGuardManager;
 import su.nezushin.nminimap.database.DatabaseManager;
@@ -38,6 +39,7 @@ public final class NMinimap extends JavaPlugin {
     private DatabaseManager databaseManager;
     private ModCompatibilityManager modCompatibilityManager;
     private WorldGuardManager worldGuardManager;
+    private GeyserManager geyserManager;
     private UpdateCheckerManager updateCheckerManager;
     private MobRadarManager mobRadarManager;
 
@@ -98,6 +100,10 @@ public final class NMinimap extends JavaPlugin {
         worldGuardManager = new WorldGuardManager();
         if(worldGuardManager.isEnabled()){
             getLogger().info("WorldGuard compatibility is enabled, underground layers will be supported");
+        }
+        geyserManager = new GeyserManager();
+        if (geyserManager.isEnabled()) {
+            getLogger().info("Geyser-Spigot found, Bedrock player detection is enabled");
         }
         updateCheckerManager = new UpdateCheckerManager();
         mobRadarManager = new MobRadarManager();
@@ -200,6 +206,10 @@ public final class NMinimap extends JavaPlugin {
 
     public WorldGuardManager getWorldGuardManager() {
         return this.worldGuardManager;
+    }
+
+    public GeyserManager getGeyserManager() {
+        return geyserManager;
     }
 
     public UpdateCheckerManager getUpdateCheckerManager() {

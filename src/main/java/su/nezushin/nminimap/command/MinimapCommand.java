@@ -108,6 +108,12 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
 
             if (player == null)//!?
                 return;
+
+            if (player.isBedrockPlayer()) {
+                Message.bedrock_is_not_allowed.send(p);
+                return;
+            }
+
             if (args.length == 1) {
                 if (args[0].equalsIgnoreCase("enable")) {
                     player.setEnabled(true);

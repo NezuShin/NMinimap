@@ -4,6 +4,7 @@ import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.cache.ChunkCache;
 import su.nezushin.nminimap.chunks.renderer.ChunkRender;
 import su.nezushin.nminimap.util.MapDataUtil;
+import su.nezushin.nminimap.util.PerWorldSettingsUtil;
 import su.nezushin.nminimap.util.RamCapacityUtil;
 import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
@@ -116,7 +117,7 @@ public class ChunkManager {
             // Accept this pass; any dirty set after this point triggers another via finishChunkJob.
             dirtyChunks.remove(chunk);
 
-            if (Config.allowFileCache && chunkCache.hasInCache(chunk))
+            if (PerWorldSettingsUtil.getAllowFileCache(chunk.world()) && chunkCache.hasInCache(chunk))
                 chunkCache.loadFromCache(chunk);
             else
                 chunkRender.renderChunk(chunk);

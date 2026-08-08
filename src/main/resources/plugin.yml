@@ -17,6 +17,8 @@ softdepend:
   - AnvilORM
   - PlaceholderAPI
   - WorldGuard
+  - Geyser-Spigot
+
 
 
 folia-supported: true

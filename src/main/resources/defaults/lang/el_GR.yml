@@ -23,6 +23,7 @@ incorrect_scale: '<red>Λάθος κλίμακα!<#08c0c2> Υποστηριζό�
 insufficient_permissions: <red>Δεν έχεις τα κατάλληλα δικαιώματα!
 you_cannot_use_this_scale: <red>Δεν μπορείς να χρησιμοποιήσεις αυτή την κλίμακα!
 you_cannot_use_radar: <red>Δεν μπορείς να χρησιμοποιήσεις το radar!
+bedrock_is_not_allowed: <red>Το minimap δεν είναι διαθέσιμο για παίκτες Bedrock!
 
 reload_start: <#008f9a>Επανεκκίνηση...
 reload_complete: <#008f9a>Η επανεκκίνηση τελείωσε!

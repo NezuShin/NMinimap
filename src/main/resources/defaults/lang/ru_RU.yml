@@ -16,11 +16,13 @@ help:
   - "<reset><#08c0c2><click:suggest_command:'/mm scale '>/mm <#08c0c2>scale 1/2/4/8<#008f9a> задать масштаб мини-карты"
   - "<reset><#08c0c2><click:suggest_command:'/mm style '>/mm <#08c0c2>style left/square<#008f9a> установить круглый или квадратный стиль мини-карты"
   - "<reset><#08c0c2><click:suggest_command:'/mm side '>/mm <#08c0c2>side right/left<#008f9a> установить положение мини-карты на экране"
-  -
+
+  
 incorrect_scale: "<red>Неправильный масштаб!<#08c0c2> Поддерживаемые масштабы: <#008f9a>1<#08c0c2>, <#008f9a>2<#08c0c2>, <#008f9a>4<#08c0c2>, <#008f9a>8"
 insufficient_permissions: "<red>У вас нет прав на использование этой команды!"
 you_cannot_use_this_scale: "<red>Вы не можете использовать этот масштаб!"
 you_cannot_use_radar: "<red>Вы не можете использовать радар!"
+bedrock_is_not_allowed: "<red>Миникарта недоступна для игроков Bedrock!"
 
 reload_start: "<#008f9a>Перезагрузка..."
 reload_complete: "<#008f9a>Перезагрузка завершена!"

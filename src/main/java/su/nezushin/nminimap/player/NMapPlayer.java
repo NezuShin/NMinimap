@@ -44,6 +44,7 @@ public class NMapPlayer implements AnvilORMSerializable {
     private int lastWorldHash;
 
     private boolean worldAllowed, entitiesSpawned;
+    private boolean isBedrockPlayer;
 
 
     public NMapPlayer(Player player, boolean enabled) {
@@ -204,6 +205,10 @@ public class NMapPlayer implements AnvilORMSerializable {
     }
 
     public void setEnabled(boolean enabled) {
+        this.isBedrockPlayer = NMinimap.getInstance().getGeyserManager().isBedrockPlayer(player);
+        if (this.isBedrockPlayer) {
+            enabled = false;
+        }
         this.enabled = enabled;
 
         respawnEntities(false);
@@ -231,6 +236,10 @@ public class NMapPlayer implements AnvilORMSerializable {
 
     public boolean isEnabled() {
         return enabled;
+    }
+
+    public boolean isBedrockPlayer() {
+        return isBedrockPlayer;
     }
 
     public void setPlayer(Player player) {

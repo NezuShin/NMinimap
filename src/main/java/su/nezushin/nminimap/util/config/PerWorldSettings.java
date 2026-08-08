@@ -10,6 +10,7 @@ public record PerWorldSettings(
         Integer maxY,
         Integer minY,
         Boolean skipCeiling,
+        Boolean allowFileCache,
         Set<Material> ceilingBlocks,
         Set<String> worlds,
         Pattern regex

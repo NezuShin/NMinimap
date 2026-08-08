@@ -136,6 +136,11 @@ Compatibility cannot be added because Iris don't use core shaders. You can disab
 
 ![](images/iris_blocker_showcase.png)
 
+#### Bedrock 
+
+Bedrock is not supported yet due absolutely different render pipeline. Plugin will not allow bedrock players to turn on the minimap if [Geyser](https://modrinth.com/plugin/geyser) installed on server.\
+If you are Bedrock developer and want to contribute please [contact me](#help-and-support).
+
 ### How does it work?
 
 #### Maps

@@ -21,6 +21,7 @@ incorrect_scale: "<red>Incorrect scale!<#08c0c2> Supported scales: <#008f9a>1<#0
 insufficient_permissions: "<red>Insufficient permissions!"
 you_cannot_use_this_scale: "<red>You can't use this scale!"
 you_cannot_use_radar: "<red>You can't use radar!"
+bedrock_is_not_allowed: "<red>Minimap is not available for Bedrock players!"
 
 reload_start: "<#008f9a>Reloading..."
 reload_complete: "<#008f9a>Reload complete!"

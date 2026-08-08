@@ -56,6 +56,17 @@ public class PerWorldSettingsUtil {
         return Config.skipCeiling;
     }
 
+    public static boolean getAllowFileCache(World world) {
+        return getAllowFileCache(world.getName());
+    }
+
+    public static boolean getAllowFileCache(String worldName) {
+        var settings = find(worldName);
+        if (settings != null && settings.allowFileCache() != null)
+            return settings.allowFileCache();
+        return Config.allowFileCache;
+    }
+
     public static Set<Material> getCeilingBlocks(World world) {
         var settings = find(world);
         if (settings != null && settings.ceilingBlocks() != null)

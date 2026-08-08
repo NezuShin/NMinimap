@@ -400,6 +400,7 @@ public class Config {
                     config.contains(path + ".max-y") ? config.getInt(path + ".max-y") : null,
                     config.contains(path + ".min-y") ? config.getInt(path + ".min-y") : null,
                     config.contains(path + ".skip-ceiling") ? config.getBoolean(path + ".skip-ceiling") : null,
+                    config.contains(path + ".allow-file-cache") ? config.getBoolean(path + ".allow-file-cache", true) : null,
                     ceilingBlocks,
                     new HashSet<>(config.getStringList(path + ".worlds")),
                     regex
