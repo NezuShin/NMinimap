@@ -1,8 +1,9 @@
 # BetterHUD patch for NMinimap
 
-Current version of BetterHUD does not support 26.1. This guide only applies to version 1.21.11
+Betterhud currently is broken itself so there is no patches for new NMinimap versions. 
+You can use release [V1.0.5](https://github.com/NezuShin/NMinimap/releases/tag/V1.0.5) as example of patched shader to create your own version.
 
-### Instruction
+### Old instruction
 
 - Backup your old files from `BetterHud/shaders` directory
 - Download `text.vsh` and `text.fsh` from [releases](https://github.com/NezuShin/NMinimap/releases) and drop them to `BetterHud/shaders`

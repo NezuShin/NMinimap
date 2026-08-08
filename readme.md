@@ -114,7 +114,7 @@ You can make images smaller/bigger using `markers.sizes` config property. Like i
 #### Core shaders and another plugins
 Plugin uses `rendertype_text` shader, so shaders for hud or text decorations may not be compatible. In most plugins you must 
 disable text decorations for NMinimap work.\
-Patched shader for BetterHUD is already [provided](betterhud-patching.md). If you are developer you can add compatibility with your plugin using this example easily
+Patched shader examples for BetterHUD is already [provided](betterhud-patching.md). You can easily add compatibility using AI (or by hands if you are developer) via examples.
 
 #### Minimap Mods
 
