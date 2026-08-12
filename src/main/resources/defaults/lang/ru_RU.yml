@@ -32,6 +32,7 @@ admin_stats:
   - "<reset><#08c0c2>Тайлов в ОЗУ: <#008f9a>{loaded_tiles}"
   - "<reset><#08c0c2>Размер кеша: <#008f9a>{cache_size}"
   - "<reset><#08c0c2>Игроков с включенной картой: <#008f9a>{enabled_maps}"
+  - "<reset><#08c0c2>Игроков Bedrock: <#008f9a>{bedrock_players}"
   - "<reset><#08c0c2>Число активных потоков: <#008f9a>{threads}"
   - "<reset><#08c0c2>Размер очереди рендера: <#008f9a>{render_queue}"
   - "<reset><#08c0c2>Число загружаемых чанков сейчас: <#008f9a>{loading_chunks}"

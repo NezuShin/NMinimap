@@ -17,6 +17,7 @@ import su.nezushin.nminimap.api.events.AsyncMarkerRenderEvent;
 import su.nezushin.nminimap.chunks.ChunkEntry;
 import su.nezushin.nminimap.util.DisallowedWorldsUtil;
 import su.nezushin.nminimap.util.config.Config;
+import su.nezushin.nminimap.util.config.Permission;
 import su.nezushin.nminimap.util.config.UndergroundLayer;
 
 import java.util.Arrays;
@@ -206,7 +207,7 @@ public class NMapPlayer implements AnvilORMSerializable {
 
     public void setEnabled(boolean enabled) {
         this.isBedrockPlayer = NMinimap.getInstance().getGeyserManager().isBedrockPlayer(player);
-        if (this.isBedrockPlayer) {
+        if (this.isBedrockPlayer && !Permission.bedrock_bypass.has(player)) {
             enabled = false;
         }
         this.enabled = enabled;

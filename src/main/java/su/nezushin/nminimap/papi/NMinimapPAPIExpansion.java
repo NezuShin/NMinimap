@@ -34,6 +34,8 @@ public class NMinimapPAPIExpansion extends PlaceholderExpansion {
             return String.valueOf(NMinimap.getInstance().getChunkManager().getChunkCache().getCachedFiles().size());
         } else if (params.equalsIgnoreCase("stats_enabled_maps")) {
             return String.valueOf(NMinimap.getInstance().getPlayersWithMap().stream().filter(NMapPlayer::isEnabled).count());
+        } else if (params.equalsIgnoreCase("stats_bedrock_players")) {
+            return String.valueOf(NMinimap.getInstance().getPlayersWithMap().stream().filter(NMapPlayer::isBedrockPlayer).count());
         } else if (params.equalsIgnoreCase("stats_threads")) {
             return String.valueOf(Thread.getAllStackTraces().keySet()
                     .stream().filter(i -> i.getName().equalsIgnoreCase("NMinimapThread")).count());
@@ -72,6 +74,8 @@ public class NMinimapPAPIExpansion extends PlaceholderExpansion {
 
         if (params.equalsIgnoreCase("enabled")) {
             return String.valueOf(nminimapPlayer.isEnabled());
+        } else if (params.equalsIgnoreCase("is_bedrock")) {
+            return String.valueOf(nminimapPlayer.isBedrockPlayer());
         } else if (params.equalsIgnoreCase("radar")) {
             return String.valueOf(nminimapPlayer.isRadarEnabled());
         } else if (params.equalsIgnoreCase("scale")) {

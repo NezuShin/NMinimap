@@ -29,7 +29,7 @@ public class PacketManager {
     private PassengerHook passengerHook;
 
 
-    private int markerEntityId, upItemFrameEntityId, downItemFrameEntityId, facingItemFrameEntityId;
+    private int markerEntityId, facingMarkerEntityId, upItemFrameEntityId, downItemFrameEntityId, facingItemFrameEntityId;
 
     private int mapId;
 
@@ -57,6 +57,7 @@ public class PacketManager {
 
         SchedulerUtil.getScheduler().sync(() -> {
                     this.markerEntityId = SpigotEntityIdUtil.nextEntityId();
+                    this.facingMarkerEntityId = SpigotEntityIdUtil.nextEntityId();
                     this.upItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
                     this.downItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
                     this.facingItemFrameEntityId = SpigotEntityIdUtil.nextEntityId();
@@ -89,6 +90,7 @@ public class PacketManager {
         entityHook.spawnItemFrame(p, facingItemFrameEntityId, mapItem, true);
 
         entityHook.spawnMarker(p, markerEntityId);
+        entityHook.spawnMarker(p, facingMarkerEntityId);
 
         passengerHook.updatePassengers(p, upItemFrameEntityId, downItemFrameEntityId, markerEntityId);
 
@@ -114,6 +116,7 @@ public class PacketManager {
      */
     public void sendMarkerData(Player p, Component markers) {
         entityHook.sendMarkerData(p, markerEntityId, markers);
+        entityHook.sendMarkerData(p, facingMarkerEntityId, markers);
     }
 
     /**
@@ -122,7 +125,7 @@ public class PacketManager {
      * @param p Player
      */
     public void removeEntities(Player p) {
-        entityHook.removeEntities(p, upItemFrameEntityId, downItemFrameEntityId, facingItemFrameEntityId, markerEntityId);
+        entityHook.removeEntities(p, upItemFrameEntityId, downItemFrameEntityId, facingItemFrameEntityId, markerEntityId, facingMarkerEntityId);
         this.trackedPlayers.remove(p);
         this.foliaWorldMap.remove(p);
     }
@@ -147,6 +150,7 @@ public class PacketManager {
     private void tickTrackedPlayers() {
         for (var p : trackedPlayers) {
             entityHook.teleportItemFrame(p, facingItemFrameEntityId);
+            entityHook.teleportMarker(p, facingMarkerEntityId);
         }
     }
 

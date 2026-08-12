@@ -206,7 +206,8 @@ language: en_US
 #Markers are symbols in font, so player needs resourcepack installed to see them.
 #Also, plugin uses core shader to work.
 resourcepack:
-  #Copy the default pack.mcmeta and shader files to resourcepack folder. Files are only copied if they do not already exist
+  #Copy the default pack.mcmeta and shader files to resourcepack folder.
+  #You need to set this to false if you are manually editing shaders. Otherwise, files will be rewritten
   copy-defaults: true
   #where to copy resourcepack folder after building font files?
   copy-destinations: []

@@ -26,6 +26,8 @@ import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
 import su.nezushin.nminimap.util.config.UndergroundLayer;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -55,6 +57,19 @@ public final class NMinimap extends JavaPlugin {
 
         int pluginId = 30414;
         Metrics metrics = new Metrics(this, pluginId);
+        metrics.addCustomChart(new Metrics.AdvancedPie("player_platform", () -> {
+            int bedrock = 0, java = 0;
+            for (var p : playersWithMap) {
+                if (p.isBedrockPlayer()) bedrock++;
+                else java++;
+            }
+            Map<String, Integer> map = new HashMap<>();
+            if (java > 0) map.put("Java", java);
+            if (bedrock > 0) map.put("Bedrock", bedrock);
+            return map;
+        }));
+        metrics.addCustomChart(new Metrics.SingleLineChart("bedrock_players", () ->
+                (int) playersWithMap.stream().filter(NMapPlayer::isBedrockPlayer).count()));
 
         load();
     }

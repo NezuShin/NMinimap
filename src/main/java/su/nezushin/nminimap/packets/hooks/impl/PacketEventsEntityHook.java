@@ -52,6 +52,13 @@ public class PacketEventsEntityHook implements EntityHook {
                 )));
     }
 
+    @Override
+    public void teleportMarker(Player p, int id) {
+        var loc = p.getEyeLocation().add(0, -1, 0).add(p.getLocation().getDirection().multiply(3));
+
+        PacketEventsUtil.sendPackets(p, new WrapperPlayServerEntityTeleport(id, SpigotConversionUtil.fromBukkitLocation(loc), false));
+    }
+
 
     @Override
     public void removeEntities(Player p, int... ids) {

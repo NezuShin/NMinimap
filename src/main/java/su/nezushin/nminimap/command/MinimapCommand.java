@@ -55,6 +55,7 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                     Message.admin_stats.replace("{loaded_tiles}", String.valueOf(chunkManager.getLoadedTiles().size()),
                             "{cache_size}", String.valueOf(chunkManager.getChunkCache().getCachedFiles().size()),
                             "{enabled_maps}", String.valueOf(NMinimap.getInstance().getPlayersWithMap().stream().filter(NMapPlayer::isEnabled).count()),
+                            "{bedrock_players}", String.valueOf(NMinimap.getInstance().getPlayersWithMap().stream().filter(NMapPlayer::isBedrockPlayer).count()),
                             "{render_queue}", String.valueOf(chunkManager.getAwaitingChunksSize()),
                             "{loading_chunks}", String.valueOf(chunkManager.getLoadingChunks().size()),
                             "{threads}", String.valueOf(Thread.getAllStackTraces().keySet().stream().filter(i -> i.getName().equalsIgnoreCase("NMinimapThread")).count()),
@@ -109,7 +110,7 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
             if (player == null)//!?
                 return;
 
-            if (player.isBedrockPlayer()) {
+            if (player.isBedrockPlayer() && !Permission.bedrock_bypass.has(p)) {
                 Message.bedrock_is_not_allowed.send(p);
                 return;
             }

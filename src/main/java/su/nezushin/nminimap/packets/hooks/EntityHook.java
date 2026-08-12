@@ -21,6 +21,8 @@ public interface EntityHook {
 
     public void teleportItemFrame(Player p, int id);
 
+    public void teleportMarker(Player p, int id);
+
     public void removeEntities(Player p, int... ids);
 
     public void sendMapData(Player p, int mapId, int scale, byte[] mapData);

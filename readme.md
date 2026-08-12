@@ -56,6 +56,7 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 - `nminimap.admin` - access for `/minimap admin` command
 - `nminimap.scale.1/2/4/8` - access for `/minimap scale` command (if enabled in config)
 - `nminimap.allow-radar` - access for `/minimap radar enable` command (if enabled in config)
+- `nminimap.bedrock-bypass` - allow Bedrock players to use the minimap despite Bedrock restrictions
 - Another minimap commands can be accessed without any permissions
 
 ### Admin commands
@@ -75,6 +76,7 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 
 #### Player related:
 - `nminimap_enabled` - true or false
+- `nminimap_is_bedrock` - true or false
 - `nminimap_radar` - true or false
 - `nminimap_scale` - 1, 2, 4, 8
 - `nminimap_side` - right or left
@@ -84,6 +86,7 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 - `nminimap_stats_loaded_tiles` - count of tiles in ram, number
 - `nminimap_stats_cache_size` - total count of all cached chunks, number
 - `nminimap_stats_enabled_maps` - how many players use map right now, number
+- `nminimap_stats_bedrock_players` - how many Bedrock players are online, number
 - `nminimap_stats_threads` - how many plugin's threads running right now, number
 - `nminimap_stats_loading_chunks` - how many chunks are being rendered right now, number
 - `nminimap_stats_render_queue` - how many chunks are waiting to be rendered, number
@@ -139,6 +142,7 @@ Compatibility cannot be added because Iris don't use core shaders. You can disab
 #### Bedrock 
 
 Bedrock is not supported yet due absolutely different render pipeline. Plugin will not allow bedrock players to turn on the minimap if [Geyser](https://modrinth.com/plugin/geyser) installed on server.\
+Players with `nminimap.bedrock-bypass` can still use the commands.\
 If you are Bedrock developer and want to contribute please [contact me](#help-and-support).
 
 ### How does it work?

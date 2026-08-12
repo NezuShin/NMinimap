@@ -31,6 +31,7 @@ admin_stats:
   - "<reset><#08c0c2>Tiles in ram: <#008f9a>{loaded_tiles}"
   - "<reset><#08c0c2>Cache size: <#008f9a>{cache_size}"
   - "<reset><#08c0c2>Players with enabled maps: <#008f9a>{enabled_maps}"
+  - "<reset><#08c0c2>Bedrock players: <#008f9a>{bedrock_players}"
   - "<reset><#08c0c2>Active threads count: <#008f9a>{threads}"
   - "<reset><#08c0c2>Render queue size: <#008f9a>{render_queue}"
   - "<reset><#08c0c2>Currently loading chunks size: <#008f9a>{loading_chunks}"

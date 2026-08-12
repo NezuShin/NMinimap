@@ -33,6 +33,7 @@ admin_stats:
 - '<reset><#08c0c2>Πλακίδια στη RAM: <#008f9a>{loaded_tiles}'
 - '<reset><#08c0c2>Μέγεθος της προσωρινής μνήμης: <#008f9a>{cache_size}'
 - '<reset><#08c0c2>Παίκτες με ενεργούς χάρτες: <#008f9a>{enabled_maps}'
+- '<reset><#08c0c2>Παίκτες Bedrock: <#008f9a>{bedrock_players}'
 - '<reset><#08c0c2>Ενεργά νήματα: <#008f9a>{threads}'
 - '<reset><#08c0c2>Μέγεθος ουράς απόδοσης: <#008f9a>{render_queue}'
 - '<reset><#08c0c2>Τμήματα που φορτώνονται αυτή τη στιγμή: <#008f9a>{loading_chunks}'

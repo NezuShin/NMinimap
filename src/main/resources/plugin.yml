@@ -38,6 +38,8 @@ permissions:
     description: Allow using /mm scale 8 when scale.use-permission is enabled
   nminimap.allow-radar:
     description: Allow using /mm radar enable when markers.mob-radar.use-permission is enabled
+  nminimap.bedrock-bypass:
+    description: Allow Bedrock players to use the minimap despite Bedrock restrictions
 
 
 libraries:
