@@ -54,10 +54,11 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 ### Permissions
 
 - `nminimap.admin` - access for `/minimap admin` command
+- `nminimap.command.minimap` - access for player `/minimap` commands (if enabled in config)
 - `nminimap.scale.1/2/4/8` - access for `/minimap scale` command (if enabled in config)
 - `nminimap.allow-radar` - access for `/minimap radar enable` command (if enabled in config)
 - `nminimap.bedrock-bypass` - allow Bedrock players to use the minimap despite Bedrock restrictions
-- Another minimap commands can be accessed without any permissions
+- Another minimap commands can be accessed without any permissions (unless `command-permission.use` is enabled)
 
 ### Admin commands
 - `/minimap admin reload` - reload config

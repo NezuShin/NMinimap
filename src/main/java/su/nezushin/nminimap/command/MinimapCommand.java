@@ -110,6 +110,11 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
             if (player == null)//!?
                 return;
 
+            if (Config.commandPermissionUse && !Permission.command_minimap.has(p)) {
+                Message.insufficient_permissions.send(p);
+                return;
+            }
+
             if (player.isBedrockPlayer() && !Permission.bedrock_bypass.has(p)) {
                 Message.bedrock_is_not_allowed.send(p);
                 return;
@@ -180,6 +185,9 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command
             command, @NotNull String label, @NotNull String @NotNull [] args) {
+        if (Config.commandPermissionUse && !Permission.command_minimap.has(sender) && !Permission.admin.has(sender))
+            return List.of();
+
         if (args.length == 1) {
             return Lists.newArrayList("scale", "style", "side", "radar", "enable", "disable", "admin")
                     .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[0])).toList();

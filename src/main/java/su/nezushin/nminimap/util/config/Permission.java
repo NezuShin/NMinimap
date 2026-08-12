@@ -7,7 +7,8 @@ public enum Permission {
     admin("admin"),
     hide_on_map("hide-on-map"),
     allow_radar("allow-radar"),
-    bedrock_bypass("bedrock-bypass");
+    bedrock_bypass("bedrock-bypass"),
+    command_minimap("command.minimap");
 
     private final String node;
 

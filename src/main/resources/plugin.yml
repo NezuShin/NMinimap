@@ -26,6 +26,8 @@ folia-supported: true
 permissions:
   nminimap.admin:
     description: Access to admin commands
+  nminimap.command.minimap:
+    description: Access to /minimap player commands when command-permission.use is enabled; also required to keep the minimap on when command-permission.apply-to-minimap is enabled
   nminimap.hide-on-map:
     description: Hide this player from other players' minimaps when hide-permission is enabled
   nminimap.scale.1:

@@ -31,7 +31,8 @@ public class Config {
             scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, defaultEnableMobRadar, renderNewChunks, disableModMapActivated,
             disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar,
             packEnable1_21_11, packEnable26_1, packEnable26_2, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed,
-            useDisallowedWorldsRegex, anotherPlayerMarkerHideInvisibilityPotionEffect, anotherPlayerMarkerHidePermission, allowMobRadar, mobRadarUsePermission;
+            useDisallowedWorldsRegex, anotherPlayerMarkerHideInvisibilityPotionEffect, anotherPlayerMarkerHidePermission, allowMobRadar, mobRadarUsePermission,
+            commandPermissionUse, commandPermissionApplyToMinimap;
 
     public static long availableDiskSpaceThreshold = 14L * 1024L * 1024L * 1024L,
             availableRamThreshold = 10L * 1024L * 1024L * 1024L,
@@ -104,6 +105,9 @@ public class Config {
         }
 
         maxRenderThreads = config.getInt("max-render-threads", 30);
+
+        commandPermissionUse = config.getBoolean("command-permission.use", false);
+        commandPermissionApplyToMinimap = config.getBoolean("command-permission.apply-to-minimap", false);
 
         allowFileCache = config.getBoolean("cache.allow-file-cache", true);
         renderNewChunks = config.getBoolean("cache.render-new-chunks", false);
