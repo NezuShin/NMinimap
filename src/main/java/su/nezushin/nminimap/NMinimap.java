@@ -73,6 +73,8 @@ public final class NMinimap extends JavaPlugin {
         }));
         metrics.addCustomChart(new Metrics.SingleLineChart("bedrock_players", () ->
                 (int) playersWithMap.stream().filter(NMapPlayer::isBedrockPlayer).count()));
+        metrics.addCustomChart(new Metrics.SimplePie("servers_with_geyser", () ->
+                Bukkit.getPluginManager().isPluginEnabled("Geyser-Spigot") ? "Yes" : "No"));
 
         load();
     }

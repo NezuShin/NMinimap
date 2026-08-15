@@ -146,6 +146,8 @@ Bedrock is not supported yet due absolutely different render pipeline. Plugin wi
 Players with `nminimap.bedrock-bypass` can still use the commands.\
 If you are Bedrock developer and want to contribute please [contact me](#help-and-support).
 
+![](images/bedrock_example.png)
+
 ### How does it work?
 
 #### Maps
