@@ -48,7 +48,9 @@ public final class NMinimap extends JavaPlugin {
 
     private NMinimapPAPIExpansion placeholderAPIExpansion;
 
-    private final Set<NMapPlayer> playersWithMap = ConcurrentHashMap.newKeySet();//Collections.synchronizedList(new ArrayList<>());
+    private boolean emergencyExit = false;//Do not call unload method if no dependencies installed
+
+    private final Set<NMapPlayer> playersWithMap = ConcurrentHashMap.newKeySet();
 
     @Override
     public void onEnable() {
@@ -78,26 +80,29 @@ public final class NMinimap extends JavaPlugin {
 
     public void load() {
         Config.init();
-        this.packetManager = new PacketManager();
 
         //Fix to display both messages about AnvilORM and Packetevents
-        boolean shouldExit = false;
+        emergencyExit = false;
 
         var anvilOrm = Bukkit.getPluginManager().getPlugin("AnvilORM");
         if (anvilOrm == null || !anvilOrm.isEnabled()) {
-            shouldExit = true;
+            emergencyExit = true;
             this.getLogger().severe("AnvilORM plugin is not found. It is mandatory dependency. Please download it from https://github.com/NezuShin/AnvilORM/releases/");
         } else if (UpdateCheckerManager.versionToNumber(anvilOrm.getDescription().getVersion()) < UpdateCheckerManager.versionToNumber("1.0.2")) {
-            shouldExit = true;
+            emergencyExit = true;
             this.getLogger().severe("AnvilORM version " + anvilOrm.getDescription().getVersion() + " is too old. NMinimap requires AnvilORM 1.0.2 or newer. Please download it from https://github.com/NezuShin/AnvilORM/releases/");
         }
 
-        if (!this.packetManager.isReady()) {
-            shouldExit = true;
-            this.getLogger().severe("Packetevents plugin is not found. It is mandatory dependency. Please download it from https://www.spigotmc.org/resources/packetevents-api.80279/");
+        if (!emergencyExit) {
+            this.packetManager = new PacketManager();
+
+            if (!this.packetManager.isReady()) {
+                emergencyExit = true;
+                this.getLogger().severe("Packetevents plugin is not found. It is mandatory dependency. Please download it from https://www.spigotmc.org/resources/packetevents-api.80279/");
+            }
         }
 
-        if (shouldExit) {
+        if (emergencyExit) {
             setEnabled(false);
             return;
         }
@@ -114,7 +119,7 @@ public final class NMinimap extends JavaPlugin {
         databaseManager = new DatabaseManager();
         modCompatibilityManager = new ModCompatibilityManager();
         worldGuardManager = new WorldGuardManager();
-        if(worldGuardManager.isEnabled()){
+        if (worldGuardManager.isEnabled()) {
             getLogger().info("WorldGuard compatibility is enabled, underground layers will be supported");
         }
         geyserManager = new GeyserManager();
@@ -195,7 +200,8 @@ public final class NMinimap extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        unload();
+        if (!emergencyExit)
+            unload();
     }
 
     public PacketManager getPacketManager() {
