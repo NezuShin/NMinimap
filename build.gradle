@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'su.nezushin'
-version = '1.0.7-quickfix-2'
+version = '1.0.8'
 
 repositories {
     mavenCentral()
