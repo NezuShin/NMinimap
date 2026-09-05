@@ -93,9 +93,9 @@ public class RenderUtil {
         return y;
     }
 
-    public static int getWaterDepth(ChunkSnapshot c, int x, int y, int z, int min) {
+    public static int getWaterDepth(ChunkSnapshot c, int x, int y, int z, int min, int minWorldY) {
         int level = y - 1;
-        while (y > min && c.getBlockType(x, y--, z) == Material.WATER) {
+        while (y > min && y > minWorldY && c.getBlockType(x, y--, z) == Material.WATER) {
         }
         return level - y;
     }
@@ -107,7 +107,7 @@ public class RenderUtil {
         var waterDepth = 0;
 
         if (blockData.getMaterial() == Material.WATER) {
-            waterDepth = getWaterDepth(c, x, y, z, y - 12);
+            waterDepth = getWaterDepth(c, x, y, z, y - 12, minY);
         }
 
         return new BlockDataInfo(blockData.getMapColor(), y, waterDepth);
