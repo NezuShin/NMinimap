@@ -27,6 +27,9 @@ flat out int custom;
 #moj_import <nminimap:vertex_utils.glsl>
 
 void main() {
+    custom = 0;
+    uvCoord = vec2(0);
+
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
 
     sphericalVertexDistance = fog_spherical_distance(Position);
