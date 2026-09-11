@@ -10,9 +10,9 @@ int idx = 0;
 if (texSize != vec2(256))
 {
     if (uv == ivec2(0, 128)) idx = 0;
-    if (uv == ivec2(0, 0)) idx = 1;
+    if (uv == ivec2(128, 128)) idx = 1;
     if (uv == ivec2(128, 0)) idx = 2;
-    if (uv == ivec2(128, 128)) idx = 3;
+    if (uv == ivec2(0, 0)) idx = 3;
 }
     #endif
 #else
@@ -43,12 +43,11 @@ if (id(mapUV + ivec2(0)) == 0xFF0000 && id(mapUV + ivec2(1, 0)) == 0x597D27 && i
 
 
     float rot_offset = (MAP_CROP_RADIUS + 1) / 128.0;
-    float mapExtent = (MAP_CONTENT_SIZE + 1.0) / 128.0 * MAP_SIZE.x;
     vec2 map = rotAngle * (corner2 - rot_offset) + rot_offset;
     map *= MAP_SIZE;
 
     if (isRight)
-        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(mapExtent, 0);
+        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x - (63 - MAP_CROP_RADIUS) / 64.0 * MAP_SIZE.x, 0);
     else
         map = map + MAP_OFFSET;
     gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), MAP_DEPTH, 1);
@@ -66,6 +65,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     corner = corners[idx % 4];
 #endif
     vec2 scaleData = round(texelFetch(Sampler0, uv + ivec2(0, 1 - corner.y * 2), 0).rg * 255);
+
     int meta = int(testColor.r*255-1) / 4;
     bool isRight = meta % 2 == 0;
     bool isRound = (meta / 2) % 2 != 0;
@@ -81,13 +81,12 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     float angle = -Color.b * 2 * PI;
 
     float offset = isRound ? (1.0 + MAP_CROP_RADIUS) / 128.0 : 0.5;
-    float mapExtent = (MAP_CONTENT_SIZE + 1.0) / 128.0 * MAP_SIZE.x;
 
     vec2 map = rotAngle * (mat2_rotate_z(angle) * ((corner - 0.5) / 64 * scaleData) + pos - 0.5) + offset;
     map *= MAP_SIZE;
 
     if (isRight)
-        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(mapExtent, 0);
+        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x - (63 - MAP_CROP_RADIUS) / 64.0 * MAP_SIZE.x, 0);
     else
         map = map + MAP_OFFSET;
 

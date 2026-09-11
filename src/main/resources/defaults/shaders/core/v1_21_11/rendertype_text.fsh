@@ -9,10 +9,10 @@ uniform sampler2D Sampler0;
 in float sphericalVertexDistance;
 in float cylindricalVertexDistance;
 in vec4 vertexColor;
-in vec2 uvCoord;
 in vec2 texCoord0;
 
 flat in int custom;
+in vec2 uvCoord;
 
 out vec4 fragColor;
 
