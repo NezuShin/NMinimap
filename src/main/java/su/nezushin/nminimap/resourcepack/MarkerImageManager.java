@@ -86,7 +86,7 @@ public class MarkerImageManager {
                 Config.copyDefaults("defaults/shaders/include/fragment_body.glsl", new File(niminimapShadersDir, "include/fragment_body.glsl"), true);
 
                 Files.write(Config.getResourceAsString("defaults/shaders/include/config.glsl")
-                                .replace("{content}", String.valueOf(Config.mapPixelSize + 1))
+                                .replace("{content}", String.valueOf(Config.mapPixelSize))
                                 .getBytes(StandardCharsets.UTF_8),
                         new File(niminimapShadersDir, "include/config.glsl"));
             }
