@@ -20,10 +20,10 @@ uniform sampler2D Sampler2;
 out float sphericalVertexDistance;
 out float cylindricalVertexDistance;
 out vec4 vertexColor;
-out vec2 uvCoord;
 out vec2 texCoord0;
 
 flat out int custom;
+out vec2 uvCoord;
 
 #moj_import <nminimap:vertex_utils.glsl>
 
