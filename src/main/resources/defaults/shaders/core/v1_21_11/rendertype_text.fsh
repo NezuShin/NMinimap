@@ -13,6 +13,8 @@ in vec2 texCoord0;
 
 flat in int custom;
 in vec2 uvCoord;
+flat in vec3 b_meta;
+flat in vec4 box;
 
 out vec4 fragColor;
 

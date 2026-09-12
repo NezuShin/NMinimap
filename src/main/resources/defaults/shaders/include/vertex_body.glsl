@@ -1,3 +1,5 @@
+#define FL_ROTATE 1
+
 vec2 texSize = textureSize(Sampler0, 0);
 ivec2 uv = ivec2(UV0 * texSize);
 
@@ -91,6 +93,84 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
         map = map + MAP_OFFSET;
 
     gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), MARKER_DEPTH, 1);
+    vertexColor = vec4(1);
+    
+    sphericalVertexDistance = 0;
+    cylindricalVertexDistance = 0;
+}
+else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xffff) == 0x0200)) //Square border
+{
+#ifndef GL_ARB_shader_draw_parameters //Checking color if GPU doesn't have extension
+    idx = int(round(testColor.r * 255)) - 1;
+    corner = corners[idx % 4];
+#endif
+    custom = 4;
+
+    int meta = int(testColor.r*255-1) / 4;
+    bool isRight = meta % 2 == 0;
+    vec2 scaleData = round(texelFetch(Sampler0, uv + ivec2(0, 1 - corner.y * 2), 0).rg * 255);
+
+    ivec2 stp = ivec2(round(UV0 * 256) - scaleData * corner);
+
+    vec2 border = scaleData - vec2(129, 127) - 1;
+    texCoord0 = UV0 + vec2(1 - corner.x * 2, 0) / texSize;
+
+    box = vec4(stp + vec2(1, 0), scaleData - vec2(2, 0));
+    uvCoord = corner;
+
+    vec2 map = (corner * (1 + border / 127 * 2) - border / 127.0) * MAP_SIZE;
+
+    if (isRight)
+        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x, 0) + vec2(-1 /256.0 + (127 - MAP_CONTENT_SIZE) / 256.0) * vec2(1,-1) * MAP_SIZE;
+    else
+        map = map + MAP_OFFSET + vec2(-(127 - MAP_CONTENT_SIZE) / 256.0) * MAP_SIZE;
+
+    gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), MAP_DEPTH, 1);
+    vertexColor = vec4(1);
+    
+    sphericalVertexDistance = 0;
+    cylindricalVertexDistance = 0;
+}
+else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xffff) == 0x0300)) //Round border
+{
+#ifndef GL_ARB_shader_draw_parameters //Checking color if GPU doesn't have extension
+    idx = int(round(testColor.r * 255)) - 1;
+    corner = corners[idx % 4];
+#endif
+    custom = 3;
+
+    int meta = int(testColor.r*255-1) / 4;
+    bool isRight = meta % 2 == 0;
+    vec2 scaleData = round(texelFetch(Sampler0, uv + ivec2(1 - corner.x * 2, 0), 0).rg * 255) + 1;
+
+    ivec2 stp = ivec2(round(UV0 * 256) - scaleData * corner);
+
+    vec4 meta1 = round(texelFetch(Sampler0, stp + ivec2(2, 0), 0) * 255);
+    vec4 meta2 = round(texelFetch(Sampler0, stp + ivec2(3, 0), 0) * 255);
+    float lenData = meta1.g * 0x100 + meta1.b;
+    vec2 widthData = meta2.gb;
+    int flags = int(meta1.r);
+
+    int partCount = int(ceil(lenData / 256));
+    float width = ((scaleData.y - 2) / (partCount + 1)) - meta2.g;
+
+    b_meta = vec3(lenData, widthData);
+
+    uvCoord = (corner - 0.5) * (1 + width / 32.0) * (1 /127.0 + 127.0 / MAP_CONTENT_SIZE);
+
+    if ((flags & FL_ROTATE) != 0)
+        uvCoord = mat2_rotate_z(-yaw) * uvCoord;
+
+    box = vec4(stp + vec2(0, 1), scaleData - vec2(0, 2));    
+
+    vec2 map = (corner * (1 + width / 32.0) - width / 64.0) * MAP_SIZE;
+
+    if (isRight)
+        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x, 0) + vec2(-1 /256.0 + (127 - MAP_CONTENT_SIZE) / 256.0) * vec2(1,-1) * MAP_SIZE;
+    else
+        map = map + MAP_OFFSET + vec2(1 /256.0 - (127 - MAP_CONTENT_SIZE) / 256.0) * MAP_SIZE;
+
+    gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), MAP_DEPTH, 1);
     vertexColor = vec4(1);
     
     sphericalVertexDistance = 0;
