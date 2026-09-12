@@ -6,6 +6,8 @@ radar_disabled_on_server: "<red>Radar is disabled on server"
 scale_set: "<#08c0c2>Minimap scale:<#008f9a> {scale}"
 style_set: "<#08c0c2>Minimap style:<#008f9a> {style}"
 side_set: "<#08c0c2>Minimap now at <#008f9a>{side}<#08c0c2> side of the screen"
+frame_set: "<#08c0c2>Minimap frame:<#008f9a> {frame}"
+frame_removed: "<#08c0c2>Minimap frame<#008f9a> removed"
 
 help:
   - '<reset><gray>----------------<#008f9a>NMinimap help<reset><gray>---------------'
@@ -16,8 +18,10 @@ help:
   - "<reset><#08c0c2><click:suggest_command:'/mm scale '>/mm <#08c0c2>scale 1/2/4/8 <#008f9a>set minimap scale"
   - "<reset><#08c0c2><click:suggest_command:'/mm style '>/mm <#08c0c2>scale round/square <#008f9a>set minimap round or square"
   - "<reset><#08c0c2><click:suggest_command:'/mm side '>/mm <#08c0c2>side left/right <#008f9a>set position of minimap on screen"
+  - "<reset><#08c0c2><click:suggest_command:'/mm frame '>/mm <#08c0c2>frame <name>/none <#008f9a>set or remove minimap frame"
 
 incorrect_scale: "<red>Incorrect scale!<#08c0c2> Supported scales: <#008f9a>1<#08c0c2>, <#008f9a>2<#08c0c2>, <#008f9a>4<#08c0c2>, <#008f9a>8"
+incorrect_frame: "<red>Unknown frame!<#08c0c2> Use tab-complete to see available frames"
 insufficient_permissions: "<red>Insufficient permissions!"
 you_cannot_use_this_scale: "<red>You can't use this scale!"
 you_cannot_use_radar: "<red>You can't use radar!"

@@ -171,6 +171,16 @@ markers:
       height: 4
       width: 5
 
+#Map frames. Place a long horizontal strip PNG in NMinimap/frames/<name>.png
+#The plugin slices it into 256px rows automatically.
+#Config key must match the file name without extension.
+frames:
+  example:
+    #Rotate the frame together with the player?
+    rotate-with-player: false
+    #How far the frame sits inward over the map, in pixels
+    inset: 0
+
 disallowed-worlds:
   #Regex pattern for advanced users. Usable when you have short-living worlds such as boss arenas
   #Left empty to disable regex checks

@@ -95,7 +95,8 @@ public class Config {
                             "underground-layers",
                             "per-world-settings",
                             "markers.sizes",
-                            "markers.mob-radar.mob-markers"
+                            "markers.mob-radar.mob-markers",
+                            "frames"
                             );
 
                     config = YamlConfiguration.loadConfiguration(configFile);
@@ -279,6 +280,14 @@ public class Config {
         var height = config.getInt("markers.sizes." + marker + ".height", -999);
 
         return (height == -999 || width == -999) ? null : new int[]{width, height};
+    }
+
+    public static boolean getFrameRotateWithPlayer(String name) {
+        return config.getBoolean("frames." + name + ".rotate-with-player", false);
+    }
+
+    public static int getFrameInset(String name) {
+        return Math.max(0, Math.min(255, config.getInt("frames." + name + ".inset", 0)));
     }
 
     public static List<File> getResourcepackCopyDestinationFiles() {

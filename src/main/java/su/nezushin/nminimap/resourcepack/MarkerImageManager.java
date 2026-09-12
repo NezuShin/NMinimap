@@ -24,6 +24,7 @@ public class MarkerImageManager {
 
 
     private Map<String, String[]> markerImages = new HashMap<>();
+    private Map<String, String[]> frameImages = new HashMap<>();
 
     public MarkerImageManager() {
         load();
@@ -51,10 +52,12 @@ public class MarkerImageManager {
             var fontsDir = new File(namespaceDir, "font");
 
             var markersDir = new File(NMinimap.getInstance().getDataFolder(), "markers");
+            var framesDir = new File(NMinimap.getInstance().getDataFolder(), "frames");
 
             texturesDir.mkdirs();
             fontsDir.mkdirs();
             markersDir.mkdirs();
+            framesDir.mkdirs();
 
 
             if (Config.resourcepackCopyDefaults) {
@@ -86,7 +89,7 @@ public class MarkerImageManager {
                 Config.copyDefaults("defaults/shaders/include/fragment_body.glsl", new File(niminimapShadersDir, "include/fragment_body.glsl"), true);
 
                 Files.write(Config.getResourceAsString("defaults/shaders/include/config.glsl")
-                                .replace("{content}", String.valueOf(Config.mapPixelSize + 1))
+                                .replace("{content}", String.valueOf(Config.mapPixelSize))
                                 .getBytes(StandardCharsets.UTF_8),
                         new File(niminimapShadersDir, "include/config.glsl"));
             }
@@ -137,6 +140,45 @@ public class MarkerImageManager {
                 markerImages.put(markerImageName, images);
             }
 
+            var frameFiles = framesDir.listFiles();
+            if (frameFiles != null) {
+                for (var i : frameFiles) {
+                    if (!i.isFile() || i.getName().lastIndexOf('.') < 1) {
+                        continue;
+                    }
+                    var img = ImageIO.read(i);
+                    if (img == null) {
+                        continue;
+                    }
+
+                    var frameImageName = getNameWithoutExt(i);
+                    var images = new String[2];
+                    var k = 0;
+                    var rotateWithPlayer = Config.getFrameRotateWithPlayer(frameImageName);
+                    var inset = Config.getFrameInset(frameImageName);
+                    for (var j : new MarkerType[]{
+                            new MarkerType("_r_round", Lists.newArrayList(9, 10, 11, 12)),
+                            new MarkerType("_l_round", Lists.newArrayList(13, 14, 15, 16))
+                    }) {
+                        var imgName = frameImageName + j.suffix();
+                        if (!ImageCanvasUtil.processFramePng(img, j.colors(), new File(texturesDir, imgName + ".png"),
+                                rotateWithPlayer, inset)) {
+                            NMinimap.getInstance().getLogger().severe(
+                                    "Frame \"" + frameImageName + "\" is too large to pack (max 256x256 after slicing into 256px rows)!");
+                            images = null;
+                            break;
+                        }
+
+                        var symbol = String.valueOf((char) cache.getOrCreateFontImageId(imgName));
+                        cache.getRegisteredCharIds().put(imgName, new BitmapFontImage(9, 8, "nminimap:font/" + imgName + ".png", symbol));
+                        images[k++] = symbol;
+                    }
+                    if (images != null) {
+                        frameImages.put(frameImageName, images);
+                    }
+                }
+            }
+
             cache.build(fontsDir);
             cache.save();
 
@@ -158,6 +200,14 @@ public class MarkerImageManager {
 
     public Map<String, String[]> getMarkerImages() {
         return markerImages;
+    }
+
+    public String getFrameIcon(String image, boolean isRight) {
+        return frameImages.get(image)[isRight ? 0 : 1];
+    }
+
+    public Map<String, String[]> getFrameImages() {
+        return frameImages;
     }
 
     private String getNameWithoutExt(File f) {

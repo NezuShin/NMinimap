@@ -6,6 +6,8 @@ radar_disabled_on_server: <red>Το radar είναι απενεργοποιημ�
 scale_set: <#08c0c2>Κλίμακα minimap:<#008f9a> {scale}
 style_set: <#08c0c2>Στυλ minimap:<#008f9a> {style}
 side_set: <#08c0c2>Το Minimap τώρα στην <#008f9a>{side}<#08c0c2> πλευρά της οθόνης
+frame_set: <#08c0c2>Πλαίσιο minimap:<#008f9a> {frame}
+frame_removed: <#08c0c2>Το πλαίσιο minimap<#008f9a> αφαιρέθηκε
 
 help:
 - <reset><gray>----------------<#008f9a>Βοήθεια NMinimap<reset><gray>---------------
@@ -18,8 +20,11 @@ help:
   <#008f9a>ορισμός κυκλικού ή τετράγωνου minimap
 - <reset><#08c0c2><click:suggest_command:'/mm side '>/mm <#08c0c2>side left/right
   <#008f9a>θέση του minimap στην οθόνη
+- <reset><#08c0c2><click:suggest_command:'/mm frame '>/mm <#08c0c2>frame <όνομα>/none
+  <#008f9a>ορισμός ή αφαίρεση πλαισίου minimap
 incorrect_scale: '<red>Λάθος κλίμακα!<#08c0c2> Υποστηριζόμενες κλίμακες: <#008f9a>1<#08c0c2>,
   <#008f9a>2<#08c0c2>, <#008f9a>4<#08c0c2>, <#008f9a>8'
+incorrect_frame: '<red>Άγνωστο πλαίσιο!<#08c0c2> Χρησιμοποίησε tab-complete για να δεις τα διαθέσιμα πλαίσια'
 insufficient_permissions: <red>Δεν έχεις τα κατάλληλα δικαιώματα!
 you_cannot_use_this_scale: <red>Δεν μπορείς να χρησιμοποιήσεις αυτή την κλίμακα!
 you_cannot_use_radar: <red>Δεν μπορείς να χρησιμοποιήσεις το radar!

@@ -39,6 +39,9 @@ public class NMapPlayer implements AnvilORMSerializable {
     @SqlColumn(type = SqlType.BOOLEAN)
     private boolean enabled = false, isRight, isRound, radarEnabled = true;
 
+    @SqlColumn(type = SqlType.VARCHAR)
+    private String frame;
+
 
     private int lastSentMapHash;
     private int lastSentMarkersHash;
@@ -202,6 +205,13 @@ public class NMapPlayer implements AnvilORMSerializable {
             }
         }
 
+        if (frame != null) {
+            var frameIcon = NMinimap.getInstance().getMarkerImageManager().getFrameIcon(frame, isRight);
+            if (frameIcon != null) {
+                builder.append(Component.text(frameIcon).font(Key.key("nminimap:default")));
+            }
+        }
+
         return builder.asComponent();
     }
 
@@ -296,6 +306,15 @@ public class NMapPlayer implements AnvilORMSerializable {
 
     public void setRadarEnabled(boolean radarEnabled) {
         this.radarEnabled = radarEnabled;
+        saveAsync();
+    }
+
+    public String getFrame() {
+        return frame;
+    }
+
+    public void setFrame(String frame) {
+        this.frame = frame;
         saveAsync();
     }
 
