@@ -1,4 +1,4 @@
-#version 430
+#version 330
 
 #moj_import <nminimap:config.glsl>
 
@@ -18,8 +18,10 @@ in float cylindricalVertexDistance;
 in vec4 vertexColor;
 in vec2 texCoord0;
 
-in vec2 uvCoord;
 flat in int custom;
+in vec2 uvCoord;
+flat in vec3 b_meta;
+flat in vec4 box;
 
 out vec4 fragColor;
 

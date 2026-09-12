@@ -1,5 +1,6 @@
-#version 430
+#version 330
 #define UNREL_ID
+
 #define MAP_DEPTH 1.0
 #define MARKER_DEPTH 1.0
 
@@ -35,12 +36,19 @@ out float cylindricalVertexDistance;
 out vec4 vertexColor;
 out vec2 texCoord0;
 
-out vec2 uvCoord;
 flat out int custom;
+out vec2 uvCoord;
+flat out vec3 b_meta;
+flat out vec4 box;
 
 #moj_import <nminimap:vertex_utils.glsl>
 
 void main() {
+    custom = 0;
+    uvCoord = vec2(0);
+    b_meta = vec3(0);
+    box = vec4(0);
+
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
 
     texCoord0 = UV0;
