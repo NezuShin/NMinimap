@@ -52,7 +52,14 @@ if (id(mapUV + ivec2(0)) == 0xFF0000 && id(mapUV + ivec2(1, 0)) == 0x597D27 && i
         map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x - (63 - MAP_CROP_RADIUS) / 64.0 * MAP_SIZE.x, 0);
     else
         map = map + MAP_OFFSET;
-    gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), MAP_DEPTH, 1);
+    
+    #ifdef MAP_ABSOLUTE_SIZES
+    map /= ScreenSize * vec2(1, -1);
+    #else
+    map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
+    #endif
+
+    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MAP_DEPTH, 1);
     vertexColor = vec4(1);
     custom = isRound ? 2 : 1;
     uvCoord = corner2 * 128;
@@ -92,7 +99,13 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     else
         map = map + MAP_OFFSET;
 
-    gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), MARKER_DEPTH, 1);
+    #ifdef MAP_ABSOLUTE_SIZES
+    map /= ScreenSize * vec2(1, -1);
+    #else
+    map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
+    #endif
+
+    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MARKER_DEPTH, 1);
     vertexColor = vec4(1);
     
     sphericalVertexDistance = 0;
@@ -125,7 +138,13 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     else
         map = map + MAP_OFFSET + vec2(-(127 - MAP_CONTENT_SIZE) / 256.0) * MAP_SIZE;
 
-    gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), MAP_DEPTH, 1);
+    #ifdef MAP_ABSOLUTE_SIZES
+    map /= ScreenSize * vec2(1, -1);
+    #else
+    map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
+    #endif
+
+    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MAP_DEPTH, 1);
     vertexColor = vec4(1);
     
     sphericalVertexDistance = 0;
@@ -170,7 +189,13 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     else
         map = map + MAP_OFFSET + vec2(1 /256.0 - (127 - MAP_CONTENT_SIZE) / 256.0) * MAP_SIZE;
 
-    gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), MAP_DEPTH, 1);
+    #ifdef MAP_ABSOLUTE_SIZES
+    map /= ScreenSize * vec2(1, -1);
+    #else
+    map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
+    #endif
+
+    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MAP_DEPTH, 1);
     vertexColor = vec4(1);
     
     sphericalVertexDistance = 0;
