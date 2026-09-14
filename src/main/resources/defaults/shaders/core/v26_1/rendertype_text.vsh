@@ -8,6 +8,7 @@
 #moj_import <minecraft:dynamictransforms.glsl>
 #moj_import <minecraft:projection.glsl>
 #moj_import <minecraft:sample_lightmap.glsl>
+#moj_import <minecraft:globals.glsl>
 
 in vec3 Position;
 in vec4 Color;
