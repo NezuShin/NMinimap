@@ -171,9 +171,9 @@ markers:
       height: 4
       width: 5
 
-#Map frames. Place a long horizontal strip PNG in NMinimap/frames/<name>.png
-#The plugin slices it into 256px rows automatically.
-#Config key must match the file name without extension.
+#Map frames. Place <name>_round.png (long strip) and/or <name>_square.png in NMinimap/frames/
+#Round textures are sliced into 256px rows automatically.
+#Config key is <name> without _round/_square.
 frames:
   example:
     #Rotate the frame together with the player?

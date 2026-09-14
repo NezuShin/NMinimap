@@ -206,7 +206,7 @@ public class NMapPlayer implements AnvilORMSerializable {
         }
 
         if (frame != null) {
-            var frameIcon = NMinimap.getInstance().getMarkerImageManager().getFrameIcon(frame, isRight);
+            var frameIcon = NMinimap.getInstance().getMarkerImageManager().getFrameIcon(frame, isRight, isRound);
             if (frameIcon != null) {
                 builder.append(Component.text(frameIcon).font(Key.key("nminimap:default")));
             }

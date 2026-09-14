@@ -18,7 +18,7 @@ public class ImageCanvasUtil {
      * @param outFile
      * @throws IOException
      */
-    public static void processPng(BufferedImage originalImage, List<Integer> colors, File outFile, int[] markerSize) throws IOException {
+    public static void processPng(BufferedImage originalImage, List<Integer> colors, File outFile, int[] markerSize, int green) throws IOException {
 
         int width = originalImage.getWidth();
         int height = originalImage.getHeight();
@@ -31,10 +31,10 @@ public class ImageCanvasUtil {
         g2d.dispose();
 
         //markers in corners
-        resultImage.setRGB(0, 0, new Color(((float) colors.get(0)) / 255.0f, 1.0f / 255.0f, 0.0f, 1.0f / 100f).getRGB());
-        resultImage.setRGB(0, height - 1, new Color(((float) colors.get(1)) / 255.0f, 1.0f / 255.0f, 0.0f, 1.0f / 100f).getRGB());
-        resultImage.setRGB(width + 1, height - 1, new Color(((float) colors.get(2)) / 255.0f, 1.0f / 255.0f, 0.0f, 1.0f / 100f).getRGB());
-        resultImage.setRGB(width + 1, 0, new Color(((float) colors.get(3)) / 255.0f, 1.0f / 255.0f, 0.0f, 1.0f / 100f).getRGB());
+        resultImage.setRGB(0, 0, new Color(((float) colors.get(0)) / 255.0f, ((float) green) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
+        resultImage.setRGB(0, height - 1, new Color(((float) colors.get(1)) / 255.0f, ((float) green) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
+        resultImage.setRGB(width + 1, height - 1, new Color(((float) colors.get(2)) / 255.0f, ((float) green) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
+        resultImage.setRGB(width + 1, 0, new Color(((float) colors.get(3)) / 255.0f, ((float) green) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
 
         int newWidth = markerSize == null ? width + 2 : markerSize[0];
         int newHeight = markerSize == null ? height : markerSize[1];
