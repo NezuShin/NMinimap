@@ -125,13 +125,19 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
 
     ivec2 stp = ivec2(round(UV0 * 256) - scaleData * corner);
 
-    vec2 border = scaleData - vec2(129, 127) - 1;
+    //R = offset.x + 127
+    //G = offset,y + 127
+    //B = target map content size
+    vec4 meta1 = round(texelFetch(Sampler0, stp + ivec2(0, 2), 0) * 255);
+
+    vec2 border = scaleData - vec2(meta1.b + 3, meta1.b + 1);
     texCoord0 = UV0 + vec2(1 - corner.x * 2, 0) / texSize;
 
     box = vec4(stp + vec2(1, 0), scaleData - vec2(2, 0));
+    b_meta = vec3(meta1.b, 0, 0);
     uvCoord = corner;
 
-    vec2 map = (corner * (1 + border / 127 * 2) - border / 127.0) * MAP_SIZE;
+    vec2 map = (corner * (1 + border / 127 * 2) - border / 127.0 - 1 + meta1.rg/127.0) * MAP_SIZE;
 
     if (isRight)
         map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x, 0) + vec2(-1 /256.0 + (127 - MAP_CONTENT_SIZE) / 256.0) * vec2(1,-1) * MAP_SIZE;
@@ -164,7 +170,11 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
 
     ivec2 stp = ivec2(round(UV0 * 256) - scaleData * corner);
 
+    //R  = flags
+    //GB = total length
     vec4 meta1 = round(texelFetch(Sampler0, stp + ivec2(2, 0), 0) * 255);
+    
+    //G = inner offset
     vec4 meta2 = round(texelFetch(Sampler0, stp + ivec2(3, 0), 0) * 255);
     float lenData = meta1.g * 0x100 + meta1.b;
     vec2 widthData = meta2.gb;

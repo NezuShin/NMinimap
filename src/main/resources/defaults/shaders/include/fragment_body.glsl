@@ -29,7 +29,7 @@ else if (custom == 4) //Square border
 {
     vec2 uv = box.xy;
 
-    float crop = (127 - MAP_CONTENT_SIZE) / (2 + 7/128.0);
+    float crop = (b_meta.r - MAP_CONTENT_SIZE) / (2 + 7/128.0);
 
     if (uvCoord.x < 0.5)
         uv.x += uvCoord.x * box.z - crop;
