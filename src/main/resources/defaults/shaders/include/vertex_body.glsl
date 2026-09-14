@@ -54,7 +54,7 @@ if (id(mapUV + ivec2(0)) == 0xFF0000 && id(mapUV + ivec2(1, 0)) == 0x597D27 && i
         map = map + MAP_OFFSET;
     
     #ifdef MAP_ABSOLUTE_SIZES
-    map /= ScreenSize * vec2(1, -1);
+    map *= vec2(2, -2) / ScreenSize;
     #else
     map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
     #endif
@@ -100,7 +100,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
         map = map + MAP_OFFSET;
 
     #ifdef MAP_ABSOLUTE_SIZES
-    map /= ScreenSize * vec2(1, -1);
+    map *= vec2(2, -2) / ScreenSize;
     #else
     map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
     #endif
@@ -139,7 +139,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
         map = map + MAP_OFFSET + vec2(-(127 - MAP_CONTENT_SIZE) / 256.0) * MAP_SIZE;
 
     #ifdef MAP_ABSOLUTE_SIZES
-    map /= ScreenSize * vec2(1, -1);
+    map *= vec2(2, -2) / ScreenSize;
     #else
     map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
     #endif
@@ -190,7 +190,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
         map = map + MAP_OFFSET + vec2(1 /256.0 - (127 - MAP_CONTENT_SIZE) / 256.0) * MAP_SIZE;
 
     #ifdef MAP_ABSOLUTE_SIZES
-    map /= ScreenSize * vec2(1, -1);
+    map *= vec2(2, -2) / ScreenSize;
     #else
     map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
     #endif
