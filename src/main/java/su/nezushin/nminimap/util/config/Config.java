@@ -25,9 +25,11 @@ public class Config {
 
     public static FileConfiguration config;
 
-    public static int mapId, maxRenderThreads = 30, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval, mapPixelSize = 40, wgRegionUpdateInterval, mobRadarUpdateInterval;
+    public static int mapId, maxRenderThreads = 30, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval, mapPixelSize = 40, wgRegionUpdateInterval, mobRadarUpdateInterval,
+            mapDisplayOffsetX = 60, mapDisplayOffsetY = 60, mapDisplayScale = 6;
 
-    public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true,
+    public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false,
+            resourcepackCopyMarkers = true, resourcepackCopyFrames = true, resourcepackCopyShaders = true,
             scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, defaultEnableMobRadar, renderNewChunks, disableModMapActivated,
             disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar,
             packEnable1_21_11, packEnable26_1, packEnable26_2, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed,
@@ -87,10 +89,11 @@ public class Config {
             }
         } else {
             config = YamlConfiguration.loadConfiguration(configFile);
+            migrateLegacyCopyDefaults();
 
             if (config.getBoolean("config.allow-config-updates", true))
                 try {
-                    ConfigUpdater.update(NMinimap.getInstance(), "config.yml", configFile,
+                    ConfigUpdater.update(NMinimap.getInstance(), "config.yml", configFile, config,
                             "static-markers",
                             "underground-layers",
                             "per-world-settings",
@@ -174,7 +177,10 @@ public class Config {
 
         resourcepackCopyDestinations = config.getStringList("resourcepack.copy-destinations");
         resourcepackZipDestinations = config.getStringList("resourcepack.zip-destinations");
-        resourcepackCopyDefaults = config.getBoolean("resourcepack.copy-defaults", true);
+        var legacyCopyDefaults = config.getBoolean("resourcepack.copy-defaults", true);
+        resourcepackCopyMarkers = config.getBoolean("resourcepack.copy-markers", legacyCopyDefaults);
+        resourcepackCopyFrames = config.getBoolean("resourcepack.copy-frames", legacyCopyDefaults);
+        resourcepackCopyShaders = config.getBoolean("resourcepack.copy-shaders", legacyCopyDefaults);
 
         scaleUsePermission = config.getBoolean("scale.use-permission", false);
         maxScale = config.getInt("scale.max-scale", 8);
@@ -220,6 +226,10 @@ public class Config {
 
         mapPixelSize = Math.max(Math.min(config.getInt("map-pixel-size", 127), 127), 10);
 
+        mapDisplayOffsetX = config.getInt("map-display.offset.x", 60);
+        mapDisplayOffsetY = config.getInt("map-display.offset.y", 60);
+        mapDisplayScale = Math.max(1, config.getInt("map-display.scale", 6));
+
         var worldBlacklistRegexString = config.getString("disallowed-worlds.regex", "");
 
         useDisallowedWorldsRegex = !worldBlacklistRegexString.isEmpty();
@@ -251,6 +261,17 @@ public class Config {
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
+        }
+    }
+
+    private static void migrateLegacyCopyDefaults() {
+        if (!config.contains("resourcepack.copy-defaults"))
+            return;
+
+        boolean legacy = config.getBoolean("resourcepack.copy-defaults");
+        for (var key : new String[]{"resourcepack.copy-markers", "resourcepack.copy-shaders"}) {
+            if (!config.contains(key))
+                config.set(key, legacy);
         }
     }
 

@@ -60,10 +60,21 @@ public class MarkerImageManager {
             framesDir.mkdirs();
 
 
-            if (Config.resourcepackCopyDefaults) {
+            if (Config.resourcepackCopyMarkers) {
                 for (var i : new String[]{"player", "player_small", "white_banner", "red_marker", "skeleton", "spider", "zombie"})
                     Config.copyDefaults("defaults/markers/" + i + ".png", new File(markersDir, i + ".png"), false);
+            }
 
+            if (Config.resourcepackCopyFrames) {
+                for (var i : new String[]{"example"}) {
+                    for (var j : new String[]{"square", "round"}) {
+                        var filename = i + "_" + j + ".png";
+                        Config.copyDefaults("defaults/frames/" + filename, new File(framesDir, filename), false);
+                    }
+                }
+            }
+
+            if (Config.resourcepackCopyShaders) {
                 var niminimapShadersDir = new File(namespaceDir, "shaders");
 
 
@@ -90,6 +101,9 @@ public class MarkerImageManager {
 
                 Files.write(Config.getResourceAsString("defaults/shaders/include/config.glsl")
                                 .replace("{content}", String.valueOf(Config.mapPixelSize))
+                                .replace("{offset-x}", String.valueOf(Config.mapDisplayOffsetX))
+                                .replace("{offset-y}", String.valueOf(Config.mapDisplayOffsetY))
+                                .replace("{scale}", String.valueOf(Config.mapDisplayScale))
                                 .getBytes(StandardCharsets.UTF_8),
                         new File(niminimapShadersDir, "include/config.glsl"));
             }

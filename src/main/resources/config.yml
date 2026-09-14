@@ -10,7 +10,6 @@ cache:
   #Setting 10G will leave free 10 gigabytes of space and then stop writing to cache
   #You can use G for gigabytes, M for megabytes and K for Kilobytes.
   available-disk-space-threshold: "10G"
-
   #Threshold for available RAM to stop rendering and loading tiles.
   #You can use G for gigabytes, M for megabytes and K for Kilobytes.
   available-ram-threshold: "1G"
@@ -51,8 +50,20 @@ command-permission:
 
 #Map size in pixels. Minimum value is 10; Maximum is 127
 #The value is baked into shader, so changing it will require re-applying the resource pack.
-#Also, this setting will not apply if  resourcepack.copy-defaults set to false.
+#Also, this setting will not apply if resourcepack.copy-shaders set to false.
 map-pixel-size: 127
+
+#Settings for shader to display the map on screen.
+#These values are baked into the shader, so changing them will require re-applying the resource pack.
+#Also, these settings will not apply if resourcepack.copy-shaders set to false.
+map-display:
+  offset:
+    #Width offset in pixels
+    x: 60
+    #Height offset in pixels
+    y: 60
+  #Scale of the map on screen. Only works well with even numbers
+  scale: 6
 
 #When rendering worlds with a ceiling(e.g. Nether), should it be skipped?
 #false - only display buildings above the ceiling (like vanilla maps do)
@@ -225,9 +236,14 @@ language: en_US
 #Markers are symbols in font, so player needs resourcepack installed to see them.
 #Also, plugin uses core shader to work.
 resourcepack:
-  #Copy the default pack.mcmeta and shader files to resourcepack folder.
-  #You need to set this to false if you are manually editing shaders. Otherwise, files will be rewritten
-  copy-defaults: true
+  #Copy default marker images to NMinimap/markers/. Existing files are not overwritten.
+  copy-markers: true
+  #Copy default frame images to NMinimap/frames/. Existing files are not overwritten.
+  copy-frames: true
+  #Copy default shader files to the resourcepack folder.
+  #Set this to false if you are manually editing shaders. Otherwise, files will be rewritten.
+  #Some other config settings such as map-pixel-size and map-display requires this one to be true to change shader's config files
+  copy-shaders: true
   #where to copy resourcepack folder after building font files?
   copy-destinations: []
   #    - 'PackMerger/packs/nminimap'

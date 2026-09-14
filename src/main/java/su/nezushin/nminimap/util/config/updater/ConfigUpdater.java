@@ -55,6 +55,24 @@ public class ConfigUpdater {
 
         FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(plugin.getResource(resourceName), DEFAULT_CHARSET));
         FileConfiguration currentConfig = YamlConfiguration.loadConfiguration(Files.newBufferedReader(toUpdate.toPath(), DEFAULT_CHARSET));
+        update(plugin, resourceName, toUpdate, defaultConfig, currentConfig, ignoredSections);
+    }
+
+    /**
+     * Same as {@link #update(Plugin, String, File, List)}, using an already loaded current config.
+     */
+    public static void update(Plugin plugin, String resourceName, File toUpdate, FileConfiguration currentConfig, String... ignoredSections) throws IOException {
+        update(plugin, resourceName, toUpdate, currentConfig, Arrays.asList(ignoredSections));
+    }
+
+    public static void update(Plugin plugin, String resourceName, File toUpdate, FileConfiguration currentConfig, List<String> ignoredSections) throws IOException {
+        Preconditions.checkArgument(toUpdate.exists(), "The toUpdate file doesn't exist!");
+
+        FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(plugin.getResource(resourceName), DEFAULT_CHARSET));
+        update(plugin, resourceName, toUpdate, defaultConfig, currentConfig, ignoredSections);
+    }
+
+    private static void update(Plugin plugin, String resourceName, File toUpdate, FileConfiguration defaultConfig, FileConfiguration currentConfig, List<String> ignoredSections) throws IOException {
         Map<String, String> comments =
                 parseCommentsFromFile(parseCommentsFromResource(
                     new LinkedHashMap<>(), plugin, resourceName, defaultConfig),
