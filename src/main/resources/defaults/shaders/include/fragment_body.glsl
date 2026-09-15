@@ -17,7 +17,7 @@ else if (custom == 3) //Round border
     if (coords.y < 0 || coords.y > 1)
         discard;
 
-    float prt = max(coords.x * b_meta.x / 256, 0.0001);
+    float prt = clamp(coords.x * b_meta.x / 256, 0.0001, b_meta.x / 256 - 0.0001);
     float part = floor(prt);
     float inpart = prt - part;
     // if (coords.x < 0.0001)
