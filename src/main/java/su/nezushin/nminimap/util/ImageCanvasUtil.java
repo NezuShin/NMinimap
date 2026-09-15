@@ -9,7 +9,6 @@ import java.util.List;
 
 public class ImageCanvasUtil {
 
-
     /**
      * Prepare image to be marker. Add 4 pixels with specific at the corners
      *
@@ -19,6 +18,39 @@ public class ImageCanvasUtil {
      * @throws IOException
      */
     public static void processPng(BufferedImage originalImage, List<Integer> colors, File outFile, int[] markerSize, int green) throws IOException {
+        ImageIO.write(packMarker(originalImage, colors, markerSize, green), "png", outFile);
+    }
+
+    /**
+     * Pack a square frame the same way as a marker and stamp an extra metadata pixel with
+     * the frame offset on screen and the map size the frame is drawn for.
+     *
+     * @param colors corner IDs counterclockwise (TL, BL, BR, TR)
+     * @return false if the image is too large to pack or too small to hold the metadata pixel
+     */
+    public static boolean processSquareFramePng(BufferedImage originalImage, List<Integer> colors, File outFile,
+                                                int offsetX, int offsetY) throws IOException {
+        int width = originalImage.getWidth();
+        int height = originalImage.getHeight();
+
+        //rows 0-2 and the two bottom ones are taken by metadata
+        if (height < 5 || height > 256 || width + 2 > 256) {
+            return false;
+        }
+
+        BufferedImage resultImage = packMarker(originalImage, colors, null, 2);
+
+        int offsetXValue = Math.max(-127, Math.min(127, offsetX)) + 127;
+        int offsetYValue = Math.max(-127, Math.min(127, offsetY)) + 127;
+
+        resultImage.setRGB(0, 2, new Color(((float) offsetXValue) / 255.0f, ((float) offsetYValue) / 255.0f,
+                ((float) 127) / 255.0f, 1.0f / 100f).getRGB());
+
+        ImageIO.write(resultImage, "png", outFile);
+        return true;
+    }
+
+    private static BufferedImage packMarker(BufferedImage originalImage, List<Integer> colors, int[] markerSize, int green) {
 
         int width = originalImage.getWidth();
         int height = originalImage.getHeight();
@@ -45,8 +77,7 @@ public class ImageCanvasUtil {
         resultImage.setRGB(0, height - 2, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
         resultImage.setRGB(width + 1, height - 2, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
 
-
-        ImageIO.write(resultImage, "png", outFile);
+        return resultImage;
     }
 
     /**

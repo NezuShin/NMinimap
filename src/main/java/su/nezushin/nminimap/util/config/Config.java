@@ -50,13 +50,15 @@ public class Config {
 
     public static Set<String> disallowedWorlds;
 
+    public static Set<String> framesWithUsePermission = new HashSet<>();
+
     public static Set<GameMode> anotherPlayerMarkerHideGameModes = EnumSet.noneOf(GameMode.class);
 
     public static Set<EntityType> mobRadarAllowedEntities = EnumSet.noneOf(EntityType.class),
             mobRadarDisallowedEntities = EnumSet.noneOf(EntityType.class);
 
     public static String playerMarker, anotherPlayerMarker, mysqlHost, mysqlUser, mysqlPassword, mysqlDatabase, mysqlPlayersTableName, langName,
-            packDescription;
+            packDescription, defaultFrame;
 
     public static Pattern disallowedWorldsRegex;
 
@@ -196,6 +198,10 @@ public class Config {
         defaultRound = config.getString("default-settings.style", "square").equalsIgnoreCase("round");
         defaultEnableMobRadar = config.getBoolean("default-settings.enable-mob-radar", true);
 
+        defaultFrame = config.getString("default-settings.frame", "default");
+        if (defaultFrame != null && (defaultFrame.isBlank() || defaultFrame.equalsIgnoreCase("none")))
+            defaultFrame = null;
+
         var modsCompatibilityMode = config.getInt("mods-compatibility.mode", 2);
 
         if (modsCompatibilityMode == 1) {
@@ -238,6 +244,15 @@ public class Config {
         }
 
         disallowedWorlds = new HashSet<>(config.getStringList("disallowed-worlds.blacklist"));
+
+        framesWithUsePermission = new HashSet<>();
+        {
+            var cs = config.getConfigurationSection("frames");
+            if (cs != null)
+                for (var name : cs.getKeys(false))
+                    if (config.getBoolean("frames." + name + ".use-permission", false))
+                        framesWithUsePermission.add(name);
+        }
 
 
         undergroundLayers = loadUndergroundLayers(config);
@@ -303,12 +318,20 @@ public class Config {
         return (height == -999 || width == -999) ? null : new int[]{width, height};
     }
 
-    public static boolean getFrameRotateWithPlayer(String name) {
-        return config.getBoolean("frames." + name + ".rotate-with-player", false);
+    public static boolean getRoundFrameRotateWithPlayer(String name) {
+        return config.getBoolean("frames." + name + ".round.rotate-with-player", false);
     }
 
-    public static int getFrameInset(String name) {
-        return Math.max(0, Math.min(255, config.getInt("frames." + name + ".inset", 0)));
+    public static int getRoundFrameInset(String name) {
+        return Math.max(0, Math.min(255, config.getInt("frames." + name + ".round.inset", 0)));
+    }
+
+    public static int getSquareFrameOffsetX(String name) {
+        return Math.max(-127, Math.min(127, config.getInt("frames." + name + ".square.offset.x", 0)));
+    }
+
+    public static int getSquareFrameOffsetY(String name) {
+        return Math.max(-127, Math.min(127, config.getInt("frames." + name + ".square.offset.y", 0)));
     }
 
     public static List<File> getResourcepackCopyDestinationFiles() {
@@ -337,6 +360,19 @@ public class Config {
 
         if (!NMinimap.getInstance().getMarkerImageManager().getMarkerImages().containsKey(mobRadarDefaultMarker.icon())) {
             NMinimap.getInstance().getLogger().severe("Icon " + mobRadarDefaultMarker.icon() + " is not found for mob-radar!");
+        }
+
+        if (defaultFrame != null) {
+            var matched = NMinimap.getInstance().getMarkerImageManager().getFrameImages().keySet().stream()
+                    .filter(i -> i.equalsIgnoreCase(defaultFrame))
+                    .findFirst()
+                    .orElse(null);
+            if (matched == null) {
+                NMinimap.getInstance().getLogger().severe("Default frame \"" + defaultFrame + "\" is not found!");
+                defaultFrame = null;
+            } else {
+                defaultFrame = matched;
+            }
         }
     }
 

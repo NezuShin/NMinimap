@@ -186,11 +186,29 @@ markers:
 #Round textures are sliced into 256px rows automatically.
 #Config key is <name> without _round/_square.
 frames:
-  example:
-    #Rotate the frame together with the player?
-    rotate-with-player: false
-    #How far the frame sits inward over the map, in pixels
-    inset: 0
+  default:
+    #Use permission for this frame?
+    #If set to true, nminimap.frame.<frame-name> will be required to set this frame.
+    use-permission: false
+    #Settings for round frame
+    round:
+      #Rotate the frame together with the player?
+      rotate-with-player: false
+      #How far the frame sits inward over the map, in pixels
+      inset: 0
+    #Settings for square frame
+    square:
+      #Offset from -127 to 127 pixels
+      offset:
+        x: 0
+        y: 0
+  inventory_with_title:
+    use-permission: false
+    square:
+      offset:
+        x: 0
+        y: -5
+
 
 disallowed-worlds:
   #Regex pattern for advanced users. Usable when you have short-living worlds such as boss arenas
@@ -284,6 +302,8 @@ default-settings:
   side: left
   #round or square
   style: square
+  #Frame for minimap. Accepts frame name from NMinimap/frames dir or "none"
+  frame: default
   #Enable mob-radar by default? markers.mob-radar.enable should be true to apply
   enable-mob-radar: true
 

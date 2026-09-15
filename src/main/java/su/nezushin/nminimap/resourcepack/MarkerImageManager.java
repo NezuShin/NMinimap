@@ -181,8 +181,10 @@ public class MarkerImageManager {
                     var frameName = entry.getKey();
                     var files = entry.getValue();
                     var images = new String[4];
-                    var rotateWithPlayer = Config.getFrameRotateWithPlayer(frameName);
-                    var inset = Config.getFrameInset(frameName);
+                    var rotateWithPlayer = Config.getRoundFrameRotateWithPlayer(frameName);
+                    var inset = Config.getRoundFrameInset(frameName);
+                    var offsetX = Config.getSquareFrameOffsetX(frameName);
+                    var offsetY = Config.getSquareFrameOffsetY(frameName);
 
                     if (files[0] != null) {
                         var img = ImageIO.read(files[0]);
@@ -193,7 +195,12 @@ public class MarkerImageManager {
                                     new MarkerType("_l", Lists.newArrayList(5, 6, 7, 8))
                             }) {
                                 var imgName = frameName + j.suffix();
-                                ImageCanvasUtil.processPng(img, j.colors(), new File(texturesDir, imgName + ".png"), null, 2);
+                                if (!ImageCanvasUtil.processSquareFramePng(img, j.colors(), new File(texturesDir, imgName + ".png"),
+                                        offsetX, offsetY)) {
+                                    logger.severe(
+                                            "Frame \"" + frameName + "\" has unsupported " + frameName + "_square.png size (max 254x256, min height 5)!");
+                                    break;
+                                }
 
                                 var symbol = String.valueOf((char) cache.getOrCreateFontImageId(imgName));
                                 cache.getRegisteredCharIds().put(imgName, new BitmapFontImage(9, 8, "nminimap:font/" + imgName + ".png", symbol));

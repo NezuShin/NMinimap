@@ -187,6 +187,7 @@ public final class NMinimap extends JavaPlugin {
                 player.setRound(Config.defaultRound);
                 player.setScale(Config.defaultScale);
                 player.setRadarEnabled(Config.defaultEnableMobRadar);
+                player.setFrame(Config.defaultFrame);
 
                 player.saveAsync();
             }
