@@ -181,7 +181,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     int flags = int(meta1.r);
 
     int partCount = int(ceil(lenData / 256));
-    float width = ((scaleData.y - 2) / (partCount + 1)) - meta2.g;
+    float width = ((scaleData.y - 2) / partCount) - meta2.g;
 
     b_meta = vec3(lenData, widthData);
 
