@@ -12,7 +12,7 @@ else if (custom == 3) //Round border
     int partCount = int(ceil(b_meta.x / 256));
     float width = ((box.w) / (partCount));
     vec2 normCoords = uvCoord;
-    vec2 coords = vec2(atan(-normCoords.x, normCoords.y) / PI * 0.5 + 0.5, 16 + (width - b_meta.y)/4.0 - length(normCoords) * 32);
+    vec2 coords = vec2(atan(-normCoords.x, normCoords.y) / PI * 0.5 + 0.5, (64 + (width - b_meta.y) - length(normCoords) * 128) / width);
 
     if (coords.y < 0 || coords.y > 1)
         discard;
@@ -20,13 +20,11 @@ else if (custom == 3) //Round border
     float prt = clamp(coords.x * b_meta.x / 256, 0.0001, b_meta.x / 256 - 0.0001);
     float part = floor(prt);
     float inpart = prt - part;
-    // if (coords.x < 0.0001)
-    //     color = texelFetch(Sampler0, ivec2(box.xy + vec2(0, coords.y * width)), 0);
-    // else
-        color = texelFetch(Sampler0, ivec2(box.xy
-        + vec2(inpart, coords.y) * vec2(box.z, (width))
-        + vec2(0, part * (width))
-        ), 0);
+
+    color = texelFetch(Sampler0, ivec2(box.xy
+    + vec2(inpart, coords.y) * vec2(box.z, (width))
+    + vec2(0, part * (width))
+    ), 0);
 }
 else if (custom == 4) //Square border
 {

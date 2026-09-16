@@ -185,14 +185,14 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
 
     b_meta = vec3(lenData, widthData);
 
-    uvCoord = (corner - 0.5) * (1 + width / 32.0) * (1 /127.0 + 127.0 / MAP_CONTENT_SIZE);
+    uvCoord = (corner - 0.5) * (1 + width / 4.0) * (128.0 / MAP_CONTENT_SIZE);
 
     if ((flags & FL_ROTATE) != 0)
         uvCoord = mat2_rotate_z(-yaw) * uvCoord;
 
     box = vec4(stp + vec2(0, 1), scaleData - vec2(0, 2));    
 
-    vec2 map = (corner * (1 + width / 32.0) - width / 64.0) * MAP_SIZE;
+    vec2 map = (corner * (1 + width / 4.0) - width / 8.0) * MAP_SIZE;
 
     if (isRight)
         map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x, 0) + vec2(-1 /256.0 + (127 - MAP_CONTENT_SIZE) / 256.0) * vec2(1,-1) * MAP_SIZE;
