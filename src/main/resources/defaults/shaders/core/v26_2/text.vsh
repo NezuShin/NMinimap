@@ -1,8 +1,8 @@
 #version 330
 #define UNREL_ID
 
-#define MAP_DEPTH 1.0
-#define MARKER_DEPTH 1.0
+#define MAP_DEPTH 0.9999
+#define MARKER_DEPTH 0.9999
 
 #ifdef GL_ARB_shader_draw_parameters
 #extension GL_ARB_shader_draw_parameters : require

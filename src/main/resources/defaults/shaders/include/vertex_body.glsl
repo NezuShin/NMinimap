@@ -150,7 +150,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
     #endif
 
-    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MAP_DEPTH, 1);
+    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MAP_DEPTH * (1 + 0.0001 * Color.r), 1);
     vertexColor = vec4(1);
     
     sphericalVertexDistance = 0;
@@ -187,8 +187,12 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
 
     uvCoord = (corner - 0.5) * (1 + width / 4.0) * (128.0 / MAP_CONTENT_SIZE);
 
+    float angle = -Color.b * 2 * PI;
+
     if ((flags & FL_ROTATE) != 0)
-        uvCoord = mat2_rotate_z(-yaw) * uvCoord;
+        angle -= yaw;
+
+    uvCoord = mat2_rotate_z(angle) * uvCoord;
 
     box = vec4(stp + vec2(0, 1), scaleData - vec2(0, 2));    
 
@@ -205,7 +209,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
     #endif
 
-    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MAP_DEPTH, 1);
+    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MAP_DEPTH * (1 + 0.0001 * Color.r), 1);
     vertexColor = vec4(1);
     
     sphericalVertexDistance = 0;
