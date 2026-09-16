@@ -182,6 +182,7 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
 
                     var matched = NMinimap.getInstance().getMarkerImageManager().getFrameImages().keySet().stream()
                             .filter(i -> i.equalsIgnoreCase(args[1]))
+                            .filter(frame -> !Config.framesWithUsePermission.contains(frame) || p.hasPermission("nminimap.frame." + frame))
                             .findFirst()
                             .orElse(null);
                     if (matched == null) {
@@ -226,7 +227,10 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
             else if (args[0].equalsIgnoreCase("frame")) {
                 var suggestions = Lists.newArrayList(NMinimap.getInstance().getMarkerImageManager().getFrameImages().keySet());
                 suggestions.add("none");
-                return suggestions.stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[1])).toList();
+                return suggestions.stream()
+                        .filter(i -> StringUtil.startsWithIgnoreCase(i, args[1]))
+                        .filter(frame -> !Config.framesWithUsePermission.contains(frame) || sender.hasPermission("nminimap.frame." + frame))
+                        .toList();
             }
             else if (args[0].equalsIgnoreCase("admin"))
                 return Lists.newArrayList("reload", "stats", "clean-cache")

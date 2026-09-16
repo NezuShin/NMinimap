@@ -123,7 +123,13 @@ public class ConfigUpdater {
             String trailingKey = splitFullKey[splitFullKey.length - 1];
 
             if (currentValue instanceof ConfigurationSection) {
-                writeConfigurationSection(writer, indents, trailingKey, (ConfigurationSection) currentValue);
+                //Nested lines come from the following iterations of the default keys, not from the current value,
+                //so an emptied section in the file must not be closed with {} while its defaults are still written
+                ConfigurationSection nestedKeysSource = defaultConfig.isConfigurationSection(fullKey)
+                        ? defaultConfig.getConfigurationSection(fullKey)
+                        : (ConfigurationSection) currentValue;
+
+                writeConfigurationSection(writer, indents, trailingKey, !nestedKeysSource.getKeys(false).isEmpty());
                 continue;
             }
             writeYamlValue(yaml, writer, indents, trailingKey, currentValue);
@@ -220,6 +226,7 @@ public class ConfigUpdater {
      * @param ignoredSections the list of sections that will not be changed during the update. Where the elements are the full
      *                        path or the first section that will be ignored.
      * @return a map containing the YAML sections to be written to the file, along with their values, comments, and path names.
+     *         Sections that are not present in the file at all are not included, so the defaults from the JAR are written for them.
      * @throws IOException if the file does not exist, is a directory rather than a regular file, or for some other reason cannot be opened for reading.
      */
     private static Map<String, String> parseIgnoredSections(File toUpdate, Map<String, String> comments, List<String> ignoredSections) throws IOException {
@@ -231,7 +238,14 @@ public class ConfigUpdater {
         Yaml yaml = new Yaml(new YamlConstructor(), new YamlRepresenter(), options);
 
         Map<Object, Object> root = (Map<Object, Object>) yaml.load(new InputStreamReader(new FileInputStream(toUpdate), DEFAULT_CHARSET));
+
+        if (root == null)
+            return ignoredSectionValues;
+
         ignoredSections.forEach(section -> {
+            if (!keyExists(section, root))
+                return;
+
             String[] split = section.split("[" + SEPARATOR + "]");
             String key = split[split.length - 1];
             Map<Object, Object> map = getSection(section, root);
@@ -249,6 +263,30 @@ public class ConfigUpdater {
             ignoredSectionValues.put(section, buildIgnored(key, map, comments, keyBuilder, new StringBuilder(), yaml));
         });
         return ignoredSectionValues;
+    }
+
+    /**
+     * Recursively checks whether the provided full path is written in the YAML file, even when it has no value.
+     * A key present with an empty value counts as existing, unlike {@link FileConfiguration#contains(String)},
+     * which drops null values while loading.
+     *
+     * @param fullKey the full path to look for in the YAML file.
+     * @param root the root section of the YAML file.
+     * @return true if every part of the path is written in the file; otherwise, false.
+     */
+    private static boolean keyExists(String fullKey, Map<Object, Object> root) {
+        String[] keys = fullKey.split("[" + SEPARATOR + "]", 2);
+        Object originalKey = getKeyAsObject(keys[0], root);
+
+        if (originalKey == null)
+            return false;
+
+        if (keys.length == 1)
+            return true;
+
+        Object value = root.get(originalKey);
+
+        return value instanceof Map && keyExists(keys[1], (Map<Object, Object>) value);
     }
 
     /**
@@ -487,16 +525,12 @@ public class ConfigUpdater {
      * @param bufferedWriter The writer to write the configuration section to.
      * @param indents        The string representation of the indentation level.
      * @param trailingKey    The trailing key for the configuration section.
-     * @param configurationSection   The current value of the configuration section.
+     * @param hasNestedKeys  Whether nested lines will be written under this section.
      * @throws IOException If an I/O error occurs while writing the configuration section.
      */
-    private static void writeConfigurationSection(final BufferedWriter bufferedWriter, final String indents, final String trailingKey, final ConfigurationSection configurationSection) throws IOException {
+    private static void writeConfigurationSection(final BufferedWriter bufferedWriter, final String indents, final String trailingKey, final boolean hasNestedKeys) throws IOException {
         bufferedWriter.write(indents + trailingKey + ":");
-        if (!(configurationSection).getKeys(false).isEmpty()) {
-            bufferedWriter.write("\n");
-        } else {
-            bufferedWriter.write(" {}\n");
-        }
+        bufferedWriter.write(hasNestedKeys ? "\n" : " {}\n");
     }
 
     private static Yaml getYamlWriter() {
