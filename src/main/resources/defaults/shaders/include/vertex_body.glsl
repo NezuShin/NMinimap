@@ -122,7 +122,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     int meta = int(testColor.r*255-1) / 4;
     bool isRight = meta % 2 == 0;
     vec3 scaleData = round(texelFetch(Sampler0, uv + ivec2(0, 1 - corner.y * 2), 0).rgb * 255);
-    int metaS = int(scaleData.b);
+    int flags = int(scaleData.b);
 
 
     ivec2 stp = ivec2(round(UV0 * 256) - scaleData.xy * corner);
@@ -133,8 +133,8 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     vec4 meta1 = round(texelFetch(Sampler0, stp + ivec2(0, 2), 0) * 255);
     
     float angle = -Color.b * 2 * PI;
-    if ((metaS & FL_ROTATE) != 0)
-        angle -= yaw;
+    if ((flags & FL_ROTATE) != 0)
+        angle += yaw;
 
     vec2 size = scaleData.xy - vec2(2, 0);
 
