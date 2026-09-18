@@ -143,7 +143,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     b_meta = vec3(meta1.b, 0, 0);
     uvCoord = corner;
 
-    vec2 map = (mat2_rotate_z(angle) * (corner * (1 + border / 127 * 2) - border / 127.0 - 1 + meta1.rg/127.0 - 0.5) + 0.5) * MAP_SIZE;
+    vec2 map = (mat2_rotate_z(angle) * (corner * (1 + border / 128 * 2) - border / 128.0 - 1 + meta1.rg/127.0 - 0.5) + 0.5) * MAP_SIZE;
 
     if (isRight)
         map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x, 0) + vec2(-1 /256.0 + (127 - MAP_CONTENT_SIZE) / 256.0) * vec2(1,-1) * MAP_SIZE;
