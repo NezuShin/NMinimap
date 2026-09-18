@@ -136,14 +136,16 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     if ((metaS & FL_ROTATE) != 0)
         angle -= yaw;
 
-    vec2 border = scaleData.xy - vec2(meta1.b + 3, meta1.b + 1);
+    vec2 size = scaleData.xy - vec2(2, 0);
+
+    vec2 border = size - vec2(meta1.b);
     texCoord0 = UV0 + vec2(1 - corner.x * 2, 0) / texSize;
 
-    box = vec4(stp + vec2(1, 0), scaleData.xy - vec2(2, 0));
+    box = vec4(stp + vec2(1, 0), size);
     b_meta = vec3(meta1.b, 0, 0);
     uvCoord = corner;
 
-    vec2 map = (mat2_rotate_z(angle) * (corner * (1 + border / 128 * 2) - border / 128.0 - 1 + meta1.rg/127.0 - 0.5) + 0.5) * MAP_SIZE;
+    vec2 map = (mat2_rotate_z(angle) * (corner - 0.5) * (size / 128.0) + 0.5 + 1 / 256.0 + (meta1.rg - 127)/128.0) * MAP_SIZE;
 
     if (isRight)
         map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x, 0) + vec2(-1 /256.0 + (127 - MAP_CONTENT_SIZE) / 256.0) * vec2(1,-1) * MAP_SIZE;
