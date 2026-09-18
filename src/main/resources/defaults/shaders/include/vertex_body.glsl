@@ -156,7 +156,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
     #endif
 
-    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MAP_DEPTH * (1 + 0.0001 * Color.r), 1);
+    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MAP_DEPTH * (1 + 0.0001 * (Color.r-0.5)), 1);
     vertexColor = vec4(1);
     
     sphericalVertexDistance = 0;
@@ -215,7 +215,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
     #endif
 
-    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MAP_DEPTH * (1 + 0.0001 * Color.r), 1);
+    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MAP_DEPTH * (1 + 0.0001 * (Color.r-0.5)), 1);
     vertexColor = vec4(1);
     
     sphericalVertexDistance = 0;
