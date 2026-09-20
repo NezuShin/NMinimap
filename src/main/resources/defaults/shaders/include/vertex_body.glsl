@@ -1,4 +1,5 @@
 #define FL_ROTATE 1
+#define FL_INV_ROT 2
 
 vec2 texSize = textureSize(Sampler0, 0);
 ivec2 uv = ivec2(UV0 * texSize);
@@ -73,21 +74,26 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     idx = int(round(testColor.r * 255)) - 1;
     corner = corners[idx % 4];
 #endif
-    vec2 scaleData = round(texelFetch(Sampler0, uv + ivec2(0, 1 - corner.y * 2), 0).rg * 255);
+    vec4 metaScale = round(texelFetch(Sampler0, uv + ivec2(0, 1 - corner.y * 2), 0) * 255);
+    vec2 scaleData = metaScale.xy;
+    int flags = int(metaScale.z);
 
     int meta = int(testColor.r*255-1) / 4;
     bool isRight = meta % 2 == 0;
     bool isRound = (meta / 2) % 2 != 0;
 
     vec2 pos = Color.rg;
+    float angle = -Color.b * 2 * PI;
+
     if (isRound)
     {
         rotAngle = mat2_rotate_z(yaw);
         pos -= 0.5;
         pos = normalize(pos) * clamp(length(pos), 0.0, MAP_CROP_RADIUS / 128.0) + 0.5;
-    }
 
-    float angle = -Color.b * 2 * PI;
+        if ((flags & FL_ROTATE) == 0)
+            angle -= yaw;
+    }
 
     float offset = isRound ? (1.0 + MAP_CROP_RADIUS) / 128.0 : 0.5;
 
@@ -134,7 +140,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     
     float angle = -Color.b * 2 * PI;
     if ((flags & FL_ROTATE) != 0)
-        angle += yaw;
+        angle += (flags & FL_INV_ROT) != 0 ? -yaw : yaw;
 
     vec2 size = scaleData.xy - vec2(2, 0);
 
@@ -195,10 +201,10 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
 
     uvCoord = (corner - 0.5) * (1 + width / 4.0) * (128.0 / MAP_CONTENT_SIZE);
 
-    float angle = -Color.b * 2 * PI;
+    float angle = Color.b * 2 * PI;
 
     if ((flags & FL_ROTATE) != 0)
-        angle -= yaw;
+        angle -= (flags & FL_INV_ROT) != 0 ? -yaw : yaw;
 
     uvCoord = mat2_rotate_z(angle) * uvCoord;
 
