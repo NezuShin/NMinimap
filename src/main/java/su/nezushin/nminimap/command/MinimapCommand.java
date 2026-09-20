@@ -180,18 +180,14 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                         return;
                     }
 
-                    var matched = NMinimap.getInstance().getMarkerImageManager().getFrameNames().stream()
-                            .filter(i -> i.equalsIgnoreCase(args[1]))
-                            .filter(frame -> !Config.framesWithUsePermission.contains(frame) || p.hasPermission("nminimap.frame." + frame))
-                            .findFirst()
-                            .orElse(null);
-                    if (matched == null) {
+                    var matched = NMinimap.getInstance().getFrameManager().getFrame(args[1]);
+                    if (matched == null || (matched.usePermission() && !p.hasPermission("nminimap.frame." + matched.name()))) {
                         Message.incorrect_frame.send(p);
                         return;
                     }
 
-                    player.setFrame(matched);
-                    Message.frame_set.replace("{frame}", matched).send(p);
+                    player.setFrame(matched.name());
+                    Message.frame_set.replace("{frame}", matched.name()).send(p);
                     return;
                 }
             }
@@ -225,11 +221,15 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                 return Lists.newArrayList("enable", "disable")
                         .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[1])).toList();
             else if (args[0].equalsIgnoreCase("frame")) {
-                var suggestions = Lists.newArrayList(NMinimap.getInstance().getMarkerImageManager().getFrameNames());
+                var manager = NMinimap.getInstance().getFrameManager();
+                var suggestions = Lists.newArrayList(manager.getFrameNames());
                 suggestions.add("none");
                 return suggestions.stream()
                         .filter(i -> StringUtil.startsWithIgnoreCase(i, args[1]))
-                        .filter(frame -> !Config.framesWithUsePermission.contains(frame) || sender.hasPermission("nminimap.frame." + frame))
+                        .filter(frame -> {
+                            var baked = manager.getFrame(frame);
+                            return baked == null || !baked.usePermission() || sender.hasPermission("nminimap.frame." + baked.name());
+                        })
                         .toList();
             }
             else if (args[0].equalsIgnoreCase("admin"))

@@ -147,7 +147,7 @@ Layer types:
 - `type: square` — flat texture above or below the map. Max size is 254×256, min height is 5. `offset.x` / `offset.y` shift it on screen (−127 to 127).
 - `type: round` — horizontal strip the shader wraps into a ring. Strips are sliced into 256px-wide rows; packed height must stay ≤ 256 (min width is 4). A 1px-tall strip can be very long; a thicker strip must be shorter. `inset` pulls the ring inward over the map.
 
-Both types also support `rotate-with-player`. You can add or replace layers at render time using `AsyncFrameRenderEvent`.
+Both types also support `rotate-with-player`. You can add or replace layers at render time using [`AsyncFrameRenderEvent`](#frames-1).
 
 Both types can automatically downscale to fit `map-pixel-size`. Draw frames for size 127:
 
@@ -206,7 +206,7 @@ Also color of image is used. Red is X position on map. Green is Y position on ma
 
 #### Frames
 
-Frames are font glyphs too. The plugin stamps metadata pixels onto each image (corners, size, offset, inset, rotate flag) and sends them as characters in the same text as markers. The shader recognizes those pixels and places the glyph on the minimap instead of drawing it as text. Square layers are positioned around the map; round layers are remapped from the strip into a ring in the fragment shader. The character color's red channel is z-index, so a layer can sit under the map (0–127) or over it (128–255) without editing the map pixels.
+Frames are font glyphs too. The plugin stamps metadata pixels onto each image (corners, size, offset, inset, rotate flag) and sends them as characters in the same text as markers. The shader recognizes those pixels and places the glyph on the minimap instead of drawing it as text. Square layers are positioned around the map; round layers are remapped from the strip into a ring in the fragment shader. The character color's red channel is z-index, so a layer can sit under the map (0–127) or over it (128–255) without editing the map pixels, and the blue channel rotates the layer on screen.
 
 ### API
 
@@ -260,6 +260,39 @@ public void drawMarker(AsyncMarkerRenderEvent e){
     //Add marker with relative position on map.
     markers.add(new PositionMarker(markerIcon, positionMarkerX, positionMarkerY, positionMarkerRotation));
 
+}
+```
+
+#### Frame-related api
+
+Layer images are packed into the resourcepack on plugin load, so texture, type, offset, inset and `rotate-with-player` cannot change at render time. Z-index and rotation can.
+
+Layers come from `FrameManager`, never from a constructor. `getLayers(texture)` returns every packed variant of one image in `NMinimap/frames/` — an image used by several frames with different offsets has one entry per variant.
+
+Layers owned by the manager are shared between all players, so call `copy()` before changing one. The list in `AsyncFrameRenderEvent` is already a copy of the player's frame and is yours to modify.
+
+```java
+@EventHandler
+public void drawFrame(AsyncFrameRenderEvent e) {
+    List<FrameLayer> layers = e.getLayers();
+
+    for (FrameLayer layer : layers)
+        layer.setZIndex(200);//0-127 behind the map, 128-255 in front
+
+    FrameManager frames = NMinimap.getInstance().getFrameManager();
+
+    List<FrameLayer> variants = frames.getLayers("inventory_square");
+    if (!variants.isEmpty()) {
+        FrameLayer layer = variants.get(0).copy();
+        layer.setRotation(64);//0-255 for a full turn, 0 points up
+        layers.add(layer);
+    }
+
+    //Layers of another frame can be used too
+    Frame frame = frames.getFrame("inventory");
+    if (frame != null)
+        for (FrameLayer layer : frame.layers(e.getPlayer().isRound()))
+            layers.add(layer.copy());
 }
 ```
 

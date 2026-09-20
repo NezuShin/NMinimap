@@ -223,8 +223,7 @@ frames:
       - texture: inventory_round
         inset: 0
   inventory_with_title:
-    #This frame requires map.display.offset.y to be increased, so it is not available for players by default
-    use-permission: true
+    use-permission: false
     square:
       layers:
       - texture: inventory_with_title_square

@@ -50,8 +50,6 @@ public class Config {
 
     public static Set<String> disallowedWorlds;
 
-    public static Set<String> framesWithUsePermission = new HashSet<>();
-
     public static Map<String, FrameDefinition> frames = new LinkedHashMap<>();
 
     public static Set<GameMode> anotherPlayerMarkerHideGameModes = EnumSet.noneOf(GameMode.class);
@@ -248,11 +246,6 @@ public class Config {
         disallowedWorlds = new HashSet<>(config.getStringList("disallowed-worlds.blacklist"));
 
         frames = loadFrames(config);
-        framesWithUsePermission = new HashSet<>();
-        for (var frame : frames.values())
-            if (frame.usePermission())
-                framesWithUsePermission.add(frame.name());
-
 
         undergroundLayers = loadUndergroundLayers(config);
 
@@ -317,19 +310,6 @@ public class Config {
         return (height == -999 || width == -999) ? null : new int[]{width, height};
     }
 
-    public static FrameDefinition getFrame(String name) {
-        if (name == null)
-            return null;
-        var exact = frames.get(name);
-        if (exact != null)
-            return exact;
-        return frames.entrySet().stream()
-                .filter(e -> e.getKey().equalsIgnoreCase(name))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .orElse(null);
-    }
-
     public static List<File> getResourcepackCopyDestinationFiles() {
         return resourcepackCopyDestinations.stream().map(i -> Path.of(i).isAbsolute() ? new File(i) : new File(NMinimap.getInstance().getDataFolder().getParentFile(), i)).toList();
     }
@@ -339,8 +319,10 @@ public class Config {
     }
 
     public static void validateLocationMarkers() {
+        var markerManager = NMinimap.getInstance().getMarkerManager();
+
         staticMarkers.removeIf((marker) -> {
-            if (!NMinimap.getInstance().getMarkerImageManager().getMarkerImages().containsKey(marker.marker().getIcon())) {
+            if (!markerManager.hasMarker(marker.marker().getIcon())) {
                 NMinimap.getInstance().getLogger().severe("Icon " + marker.marker().getIcon() + " is not found for static marker " + marker.name() + "!");
                 return true;
             }
@@ -348,18 +330,18 @@ public class Config {
         });
 
         new HashSet<>(mobRadarEntityIcons.entrySet()).forEach((marker) -> {
-            if (NMinimap.getInstance().getMarkerImageManager().getMarkerImages().containsKey(marker.getValue().icon()))
+            if (markerManager.hasMarker(marker.getValue().icon()))
                 return;
             NMinimap.getInstance().getLogger().severe("Icon " + marker.getValue().icon() + " is not found for entity " + marker.getKey() + "!");
             mobRadarEntityIcons.remove(marker.getKey());
         });
 
-        if (!NMinimap.getInstance().getMarkerImageManager().getMarkerImages().containsKey(mobRadarDefaultMarker.icon())) {
+        if (!markerManager.hasMarker(mobRadarDefaultMarker.icon())) {
             NMinimap.getInstance().getLogger().severe("Icon " + mobRadarDefaultMarker.icon() + " is not found for mob-radar!");
         }
 
         if (defaultFrame != null) {
-            var matched = getFrame(defaultFrame);
+            var matched = NMinimap.getInstance().getFrameManager().getFrame(defaultFrame);
             if (matched == null) {
                 NMinimap.getInstance().getLogger().severe("Default frame \"" + defaultFrame + "\" is not found!");
                 defaultFrame = null;

@@ -1,7 +1,7 @@
 package su.nezushin.nminimap.player;
 
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -17,9 +17,9 @@ import su.nezushin.nminimap.api.events.AsyncMapRenderEvent;
 import su.nezushin.nminimap.api.events.AsyncMarkerRenderEvent;
 import su.nezushin.nminimap.chunks.ChunkEntry;
 import su.nezushin.nminimap.frames.FrameLayer;
+import su.nezushin.nminimap.resourcepack.ResourcepackManager;
 import su.nezushin.nminimap.util.DisallowedWorldsUtil;
 import su.nezushin.nminimap.util.config.Config;
-import su.nezushin.nminimap.util.config.FrameLayerDefinition;
 import su.nezushin.nminimap.util.config.Permission;
 import su.nezushin.nminimap.util.config.UndergroundLayer;
 
@@ -186,6 +186,7 @@ public class NMapPlayer implements AnvilORMSerializable {
     private Component prepareMarkers() {
 
         var builder = Component.text();
+        var markerManager = NMinimap.getInstance().getMarkerManager();
         var event = new AsyncMarkerRenderEvent(this);
         Bukkit.getPluginManager().callEvent(event);
 
@@ -200,7 +201,10 @@ public class NMapPlayer implements AnvilORMSerializable {
                     (isRound && NumberConversions.square(markerX) + NumberConversions.square(markerZ) < NumberConversions.square(Config.mapPixelSize))
                             ||
                             (!isRound && Math.abs(markerX) < Config.mapPixelSize && Math.abs(markerZ) < Config.mapPixelSize)) {
-                builder.append(Component.text(NMinimap.getInstance().getMarkerImageManager().getMarkerIcon(marker.getIcon(), isRight, isRound)).font(Key.key("nminimap:default"))
+                var icon = markerManager.getMarkerIcon(marker.getIcon(), isRight, isRound);
+                if (icon == null)
+                    continue;
+                builder.append(Component.text(icon).font(ResourcepackManager.FONT)
                         .color(
                                 isRound ?
                                         TextColor.color(markerX - 128, markerZ - 128, rotation)//
@@ -209,32 +213,43 @@ public class NMapPlayer implements AnvilORMSerializable {
             }
         }
 
-        if (frame != null) {
-            var definition = Config.getFrame(frame);
-            if (definition != null) {
-                var layerDefs = isRound ? definition.roundLayers() : definition.squareLayers();
-                var layers = new ArrayList<FrameLayer>();
-                for (int i = 0; i < layerDefs.size(); i++) {
-                    var layerDef = layerDefs.get(i);
-                    layers.add(new FrameLayer(layerDef.packedId(), FrameLayerDefinition.resolveZIndex(layerDef.zIndex(), i)));
-                }
-
-                var frameEvent = new AsyncFrameRenderEvent(this, layers);
-                Bukkit.getPluginManager().callEvent(frameEvent);
-
-                var manager = NMinimap.getInstance().getMarkerImageManager();
-                for (var layer : frameEvent.getLayers()) {
-                    var symbol = manager.getLayerSymbol(layer.getTexture(), isRight);
-                    if (symbol == null)
-                        continue;
-                    var zIndex = Math.max(0, Math.min(255, layer.getZIndex()));
-                    builder.append(Component.text(symbol).font(Key.key("nminimap:default"))
-                            .color(TextColor.color(zIndex, 0, 0)));
-                }
-            }
-        }
+        appendFrame(builder);
 
         return builder.asComponent();
+    }
+
+    private void appendFrame(TextComponent.Builder builder) {
+        if (frame == null)
+            return;
+
+        var definition = NMinimap.getInstance().getFrameManager().getFrame(frame);
+        if (definition == null)
+            return;
+
+        var layers = definition.layers(isRound);
+
+        //Layers are shared between players, so they are only handed to listeners as copies
+        if (AsyncFrameRenderEvent.getHandlerList().getRegisteredListeners().length == 0) {
+            for (var i = 0; i < layers.size(); i++)
+                appendLayer(builder, layers.get(i));
+            return;
+        }
+
+        var copies = new ArrayList<FrameLayer>(layers.size());
+        for (var i = 0; i < layers.size(); i++)
+            copies.add(layers.get(i).copy());
+
+        var event = new AsyncFrameRenderEvent(this, copies);
+        Bukkit.getPluginManager().callEvent(event);
+
+        for (var layer : event.getLayers())
+            if (layer != null)
+                appendLayer(builder, layer);
+    }
+
+    private void appendLayer(TextComponent.Builder builder, FrameLayer layer) {
+        builder.append(Component.text(layer.symbol(isRight)).font(ResourcepackManager.FONT)
+                .color(TextColor.color(layer.getZIndex(), 0, layer.rotationChannel())));
     }
 
     public void setEnabled(boolean enabled) {
