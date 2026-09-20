@@ -34,7 +34,7 @@ public class Config {
             disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar,
             packEnable1_21_11, packEnable26_1, packEnable26_2, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed,
             useDisallowedWorldsRegex, anotherPlayerMarkerHideInvisibilityPotionEffect, anotherPlayerMarkerHidePermission, allowMobRadar, mobRadarUsePermission,
-            commandPermissionUse, commandPermissionApplyToMinimap;
+            commandPermissionUse, commandPermissionApplyToMinimap, keepUprightForPlayerMarker;
 
     public static long availableDiskSpaceThreshold = 14L * 1024L * 1024L * 1024L,
             availableRamThreshold = 10L * 1024L * 1024L * 1024L,
@@ -102,7 +102,7 @@ public class Config {
                             "markers.sizes",
                             "markers.mob-radar.mob-markers",
                             "frames"
-                            );
+                    );
 
                     config = YamlConfiguration.loadConfiguration(configFile);
                 } catch (IOException ex) {
@@ -311,7 +311,7 @@ public class Config {
     }
 
     public static boolean getMarkerKeepUpright(String marker) {
-        return config.getBoolean("markers.sizes." + marker + ".keep-upright", true);
+        return config.getBoolean("markers.sizes." + marker + ".keep-upright", false);
     }
 
     public static List<File> getResourcepackCopyDestinationFiles() {
@@ -322,7 +322,10 @@ public class Config {
         return resourcepackZipDestinations.stream().map(i -> Path.of(i).isAbsolute() ? new File(i) : new File(NMinimap.getInstance().getDataFolder().getParentFile(), i)).toList();
     }
 
-    public static void validateLocationMarkers() {
+    public static void validateConfig() {
+        if (!playerMarker.isEmpty())
+            keepUprightForPlayerMarker = getMarkerKeepUpright(playerMarker);
+
         var markerManager = NMinimap.getInstance().getMarkerManager();
 
         staticMarkers.removeIf((marker) -> {

@@ -27,7 +27,6 @@ import su.nezushin.nminimap.updatechecker.UpdateCheckerManager;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
 import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
-import su.nezushin.nminimap.util.config.UndergroundLayer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -133,7 +132,7 @@ public final class NMinimap extends JavaPlugin {
         updateCheckerManager = new UpdateCheckerManager();
         mobRadarManager = new MobRadarManager();
 
-        Config.validateLocationMarkers();
+        Config.validateConfig();
 
         SchedulerUtil.getScheduler().async(() -> {
             playersWithMap.forEach(NMapPlayer::sendMap);
