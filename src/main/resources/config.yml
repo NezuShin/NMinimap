@@ -151,6 +151,9 @@ markers:
       #size in pixels
       height: 5
       width: 5
+      #Stay screen-upright on a round map. false = spin with the map.
+      #Only applies to round minimaps. Default is true.
+      keep-upright: true
 
     player_small:
       #size in pixels
@@ -207,7 +210,9 @@ frames:
       - texture: default_round
         type: round
         #Rotate the frame together with the player?
-        rotate-with-player: false
+        rotate-with-player: true
+        #Flip yaw-follow direction? Only applies when rotate-with-player is true
+        inverse-rotation: true
         #How far the frame sits inward over the map, in pixels
         inset: 0
   inventory:

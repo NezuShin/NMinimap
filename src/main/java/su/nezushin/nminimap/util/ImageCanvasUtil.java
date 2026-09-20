@@ -9,6 +9,22 @@ import java.util.List;
 
 public class ImageCanvasUtil {
 
+    /** Matches {@code FL_ROTATE} in {@code vertex_body.glsl}. */
+    public static final int FL_ROTATE = 1;
+    /** Matches {@code FL_INV_ROT} in {@code vertex_body.glsl}. */
+    public static final int FL_INV_ROT = 2;
+
+    public static int frameFlags(boolean rotateWithPlayer, boolean inverseRotation) {
+        return (rotateWithPlayer ? FL_ROTATE : 0) | (inverseRotation ? FL_INV_ROT : 0);
+    }
+
+    /**
+     * Marker sprites stay screen-upright on a round map unless {@code FL_ROTATE} is set.
+     */
+    public static int markerFlags(boolean keepUpright) {
+        return keepUpright ? 0 : FL_ROTATE;
+    }
+
     /**
      * Prepare image to be marker. Add 4 pixels with specific at the corners
      *
@@ -17,8 +33,8 @@ public class ImageCanvasUtil {
      * @param outFile
      * @throws IOException
      */
-    public static void processPng(BufferedImage originalImage, List<Integer> colors, File outFile, int[] markerSize, int green) throws IOException {
-        ImageIO.write(packMarker(originalImage, colors, markerSize, green), "png", outFile);
+    public static void processPng(BufferedImage originalImage, List<Integer> colors, File outFile, int[] markerSize, int green, int flags) throws IOException {
+        ImageIO.write(packMarker(originalImage, colors, markerSize, green, flags), "png", outFile);
     }
 
     /**
@@ -29,7 +45,8 @@ public class ImageCanvasUtil {
      * @return false if the image is too large to pack or too small to hold the metadata pixel
      */
     public static boolean processSquareFramePng(BufferedImage originalImage, List<Integer> colors, File outFile,
-                                                int offsetX, int offsetY, boolean rotateWithPlayer) throws IOException {
+                                                int offsetX, int offsetY, boolean rotateWithPlayer,
+                                                boolean inverseRotation) throws IOException {
         int width = originalImage.getWidth();
         int height = originalImage.getHeight();
 
@@ -38,7 +55,7 @@ public class ImageCanvasUtil {
             return false;
         }
 
-        BufferedImage resultImage = packMarker(originalImage, colors, null, 2, rotateWithPlayer ? 1 : 0);
+        BufferedImage resultImage = packMarker(originalImage, colors, null, 2, frameFlags(rotateWithPlayer, inverseRotation));
 
         int offsetXValue = Math.max(-127, Math.min(127, offsetX)) + 127;
         int offsetYValue = Math.max(-127, Math.min(127, offsetY)) + 127;
@@ -76,7 +93,7 @@ public class ImageCanvasUtil {
         int newHeight = markerSize == null ? height : markerSize[1];
         int flagValue = Math.max(0, Math.min(255, flags));
 
-        //size info for shader; B is flags (FL_ROTATE = 1 for square frames)
+        //size info for shader; B is flags (FL_ROTATE = 1, FL_INV_ROT = 2)
         resultImage.setRGB(0, 1, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, ((float) flagValue) / 255.0f, 1.0f / 100f).getRGB());
         resultImage.setRGB(width + 1, 1, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, ((float) flagValue) / 255.0f, 1.0f / 100f).getRGB());
         resultImage.setRGB(0, height - 2, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, ((float) flagValue) / 255.0f, 1.0f / 100f).getRGB());
@@ -93,7 +110,7 @@ public class ImageCanvasUtil {
      * @return false if the packed image would exceed 256px height
      */
     public static boolean processFramePng(BufferedImage originalImage, List<Integer> colors, File outFile,
-                                          boolean rotateWithPlayer, int inset) throws IOException {
+                                          boolean rotateWithPlayer, boolean inverseRotation, int inset) throws IOException {
         int sourceWidth = originalImage.getWidth();
         int sourceHeight = originalImage.getHeight();
         int sliceCount = (sourceWidth + 255) / 256;
@@ -123,7 +140,7 @@ public class ImageCanvasUtil {
         int packedWidthMinusOne = packedWidth - 1;
         int packedHeightMinusOne = packedHeight - 1;
         int insetValue = Math.max(0, Math.min(255, inset));
-        int flags = rotateWithPlayer ? 0x1 : 0;
+        int flags = frameFlags(rotateWithPlayer, inverseRotation);
 
         resultImage.setRGB(0, 0, new Color(((float) colors.get(0)) / 255.0f, 3.0f / 255.0f, 0.0f, 1.0f / 100f).getRGB());
         resultImage.setRGB(0, packedHeightMinusOne, new Color(((float) colors.get(1)) / 255.0f, 3.0f / 255.0f, 0.0f, 1.0f / 100f).getRGB());

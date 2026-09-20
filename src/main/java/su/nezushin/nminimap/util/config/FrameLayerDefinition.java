@@ -4,6 +4,7 @@ public record FrameLayerDefinition(
         String texture,
         boolean isRound,
         boolean rotateWithPlayer,
+        boolean inverseRotation,
         int inset,
         int offsetX,
         int offsetY,
@@ -13,6 +14,7 @@ public record FrameLayerDefinition(
     public String packedId() {
         return texture + "_" + (isRound ? "round" : "square")
                 + "_rot" + (rotateWithPlayer ? 1 : 0)
+                + "_inv" + (inverseRotation ? 1 : 0)
                 + "_in" + inset
                 + "_x" + offsetX
                 + "_y" + offsetY;

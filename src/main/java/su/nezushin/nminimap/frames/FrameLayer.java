@@ -5,8 +5,8 @@ import org.jetbrains.annotations.ApiStatus;
 /**
  * One frame overlay drawn on the minimap.
  * <p>
- * Layers are packed into the resourcepack on plugin load, so texture, type, offsets, inset and
- * rotate-with-player cannot change at runtime. Obtain a layer from
+ * Layers are packed into the resourcepack on plugin load, so texture, type, offsets, inset,
+ * rotate-with-player and inverse-rotation cannot change at runtime. Obtain a layer from
  * {@link FrameManager#getFrame(String)} or {@link FrameManager#getLayers(String)} and change
  * {@link #setZIndex(int)} / {@link #setRotation(int)} as you like.
  * <p>
@@ -20,6 +20,7 @@ public class FrameLayer {
     private final String id;
     private final boolean round;
     private final boolean rotateWithPlayer;
+    private final boolean inverseRotation;
     private final int inset;
     private final int offsetX;
     private final int offsetY;
@@ -30,12 +31,13 @@ public class FrameLayer {
     private int zIndex;
     private int rotation;
 
-    FrameLayer(String texture, String id, boolean round, boolean rotateWithPlayer, int inset, int offsetX, int offsetY,
-               String symbolRight, String symbolLeft, int zIndex) {
+    FrameLayer(String texture, String id, boolean round, boolean rotateWithPlayer, boolean inverseRotation,
+               int inset, int offsetX, int offsetY, String symbolRight, String symbolLeft, int zIndex) {
         this.texture = texture;
         this.id = id;
         this.round = round;
         this.rotateWithPlayer = rotateWithPlayer;
+        this.inverseRotation = inverseRotation;
         this.inset = inset;
         this.offsetX = offsetX;
         this.offsetY = offsetY;
@@ -49,6 +51,7 @@ public class FrameLayer {
         this.id = other.id;
         this.round = other.round;
         this.rotateWithPlayer = other.rotateWithPlayer;
+        this.inverseRotation = other.inverseRotation;
         this.inset = other.inset;
         this.offsetX = other.offsetX;
         this.offsetY = other.offsetY;
@@ -83,6 +86,13 @@ public class FrameLayer {
 
     public boolean isRotateWithPlayer() {
         return rotateWithPlayer;
+    }
+
+    /**
+     * Flips yaw-follow direction. Only applies when {@link #isRotateWithPlayer()} is true.
+     */
+    public boolean isInverseRotation() {
+        return inverseRotation;
     }
 
     public int getInset() {
@@ -141,6 +151,7 @@ public class FrameLayer {
                 ", id='" + id + '\'' +
                 ", round=" + round +
                 ", rotateWithPlayer=" + rotateWithPlayer +
+                ", inverseRotation=" + inverseRotation +
                 ", inset=" + inset +
                 ", offsetX=" + offsetX +
                 ", offsetY=" + offsetY +

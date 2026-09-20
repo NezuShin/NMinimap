@@ -310,6 +310,10 @@ public class Config {
         return (height == -999 || width == -999) ? null : new int[]{width, height};
     }
 
+    public static boolean getMarkerKeepUpright(String marker) {
+        return config.getBoolean("markers.sizes." + marker + ".keep-upright", true);
+    }
+
     public static List<File> getResourcepackCopyDestinationFiles() {
         return resourcepackCopyDestinations.stream().map(i -> Path.of(i).isAbsolute() ? new File(i) : new File(NMinimap.getInstance().getDataFolder().getParentFile(), i)).toList();
     }
@@ -452,6 +456,7 @@ public class Config {
                     texture,
                     isRound,
                     mapBoolean(raw, "rotate-with-player", false),
+                    mapBoolean(raw, "inverse-rotation", false),
                     Math.max(0, Math.min(255, mapInt(raw, "inset", 0))),
                     offsetX,
                     offsetY,

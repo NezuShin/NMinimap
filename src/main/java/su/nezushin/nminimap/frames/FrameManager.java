@@ -132,7 +132,8 @@ public class FrameManager {
 
     private FrameLayer newLayer(FrameLayerDefinition definition, String id, String[] symbols, int zIndex) {
         return new FrameLayer(definition.texture(), id, definition.isRound(), definition.rotateWithPlayer(),
-                definition.inset(), definition.offsetX(), definition.offsetY(), symbols[0], symbols[1], zIndex);
+                definition.inverseRotation(), definition.inset(), definition.offsetX(), definition.offsetY(),
+                symbols[0], symbols[1], zIndex);
     }
 
     /**
@@ -166,12 +167,13 @@ public class FrameManager {
 
                 if (definition.isRound()) {
                     packed = ImageCanvasUtil.processFramePng(image, variants[i].colors(), context.imageFile(imageName),
-                            definition.rotateWithPlayer(), definition.inset());
+                            definition.rotateWithPlayer(), definition.inverseRotation(), definition.inset());
                     if (!packed)
                         logger.severe("Frame texture \"" + definition.texture() + "\" is too large to pack (max 256x256 after slicing into 256px rows)!");
                 } else {
                     packed = ImageCanvasUtil.processSquareFramePng(image, variants[i].colors(), context.imageFile(imageName),
-                            definition.offsetX(), definition.offsetY(), definition.rotateWithPlayer());
+                            definition.offsetX(), definition.offsetY(), definition.rotateWithPlayer(),
+                            definition.inverseRotation());
                     if (!packed)
                         logger.severe("Frame texture \"" + definition.texture() + "\" has unsupported size (max 254x256, min height 5)!");
                 }

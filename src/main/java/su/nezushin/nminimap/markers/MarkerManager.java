@@ -60,10 +60,12 @@ public class MarkerManager {
                 }
 
                 var symbols = new String[GlyphVariant.MARKER.length];
+                var flags = ImageCanvasUtil.markerFlags(Config.getMarkerKeepUpright(markerName));
+                var size = Config.getMarkerSize(markerName);
                 for (var i = 0; i < GlyphVariant.MARKER.length; i++) {
                     var imageName = markerName + GlyphVariant.MARKER[i].suffix();
                     ImageCanvasUtil.processPng(image, GlyphVariant.MARKER[i].colors(), context.imageFile(imageName),
-                            Config.getMarkerSize(markerName), 1);
+                            size, 1, flags);
                     symbols[i] = context.registerGlyph(imageName);
                 }
                 markerImages.put(markerName, symbols);
