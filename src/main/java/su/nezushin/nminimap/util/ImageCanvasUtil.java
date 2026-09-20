@@ -29,7 +29,7 @@ public class ImageCanvasUtil {
      * @return false if the image is too large to pack or too small to hold the metadata pixel
      */
     public static boolean processSquareFramePng(BufferedImage originalImage, List<Integer> colors, File outFile,
-                                                int offsetX, int offsetY) throws IOException {
+                                                int offsetX, int offsetY, boolean rotateWithPlayer) throws IOException {
         int width = originalImage.getWidth();
         int height = originalImage.getHeight();
 
@@ -38,7 +38,7 @@ public class ImageCanvasUtil {
             return false;
         }
 
-        BufferedImage resultImage = packMarker(originalImage, colors, null, 2);
+        BufferedImage resultImage = packMarker(originalImage, colors, null, 2, rotateWithPlayer ? 1 : 0);
 
         int offsetXValue = Math.max(-127, Math.min(127, offsetX)) + 127;
         int offsetYValue = Math.max(-127, Math.min(127, offsetY)) + 127;
@@ -51,6 +51,10 @@ public class ImageCanvasUtil {
     }
 
     private static BufferedImage packMarker(BufferedImage originalImage, List<Integer> colors, int[] markerSize, int green) {
+        return packMarker(originalImage, colors, markerSize, green, 0);
+    }
+
+    private static BufferedImage packMarker(BufferedImage originalImage, List<Integer> colors, int[] markerSize, int green, int flags) {
 
         int width = originalImage.getWidth();
         int height = originalImage.getHeight();
@@ -70,12 +74,13 @@ public class ImageCanvasUtil {
 
         int newWidth = markerSize == null ? width + 2 : markerSize[0];
         int newHeight = markerSize == null ? height : markerSize[1];
+        int flagValue = Math.max(0, Math.min(255, flags));
 
-        //size info for shader
-        resultImage.setRGB(0, 1, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
-        resultImage.setRGB(width + 1, 1, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
-        resultImage.setRGB(0, height - 2, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
-        resultImage.setRGB(width + 1, height - 2, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, 0.0f, 1.0f / 100f).getRGB());
+        //size info for shader; B is flags (FL_ROTATE = 1 for square frames)
+        resultImage.setRGB(0, 1, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, ((float) flagValue) / 255.0f, 1.0f / 100f).getRGB());
+        resultImage.setRGB(width + 1, 1, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, ((float) flagValue) / 255.0f, 1.0f / 100f).getRGB());
+        resultImage.setRGB(0, height - 2, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, ((float) flagValue) / 255.0f, 1.0f / 100f).getRGB());
+        resultImage.setRGB(width + 1, height - 2, new Color(((float) newWidth) / 255.0f, ((float) (newHeight)) / 255.0f, ((float) flagValue) / 255.0f, 1.0f / 100f).getRGB());
 
         return resultImage;
     }
@@ -93,7 +98,7 @@ public class ImageCanvasUtil {
         int sourceHeight = originalImage.getHeight();
         int sliceCount = (sourceWidth + 255) / 256;
         int packedWidth = Math.min(256, sourceWidth);
-        int packedHeight = sliceCount * sourceHeight + sliceCount + 1;
+        int packedHeight = sliceCount * sourceHeight + sliceCount;
 
         if (sourceHeight < 1 || packedWidth < 4 || packedHeight > 256) {
             return false;
@@ -107,7 +112,7 @@ public class ImageCanvasUtil {
         for (int i = 0; i < sliceCount; i++) {
             int srcX = i * 256;
             int sliceWidth = Math.min(256, sourceWidth - srcX);
-            int dstY = 1 + i * (sourceHeight + 1);
+            int dstY = 1 + i * (sourceHeight);
             g2d.drawImage(originalImage,
                     0, dstY, sliceWidth, dstY + sourceHeight,
                     srcX, 0, srcX + sliceWidth, sourceHeight,

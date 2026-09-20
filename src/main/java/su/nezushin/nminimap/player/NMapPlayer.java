@@ -12,14 +12,18 @@ import su.nezushin.anvil.orm.SqlType;
 import su.nezushin.anvil.orm.table.AnvilORMSerializable;
 import su.nezushin.anvil.orm.table.SqlColumn;
 import su.nezushin.nminimap.NMinimap;
+import su.nezushin.nminimap.api.events.AsyncFrameRenderEvent;
 import su.nezushin.nminimap.api.events.AsyncMapRenderEvent;
 import su.nezushin.nminimap.api.events.AsyncMarkerRenderEvent;
 import su.nezushin.nminimap.chunks.ChunkEntry;
+import su.nezushin.nminimap.frames.FrameLayer;
 import su.nezushin.nminimap.util.DisallowedWorldsUtil;
 import su.nezushin.nminimap.util.config.Config;
+import su.nezushin.nminimap.util.config.FrameLayerDefinition;
 import su.nezushin.nminimap.util.config.Permission;
 import su.nezushin.nminimap.util.config.UndergroundLayer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class NMapPlayer implements AnvilORMSerializable {
@@ -206,9 +210,27 @@ public class NMapPlayer implements AnvilORMSerializable {
         }
 
         if (frame != null) {
-            var frameIcon = NMinimap.getInstance().getMarkerImageManager().getFrameIcon(frame, isRight, isRound);
-            if (frameIcon != null) {
-                builder.append(Component.text(frameIcon).font(Key.key("nminimap:default")));
+            var definition = Config.getFrame(frame);
+            if (definition != null) {
+                var layerDefs = isRound ? definition.roundLayers() : definition.squareLayers();
+                var layers = new ArrayList<FrameLayer>();
+                for (int i = 0; i < layerDefs.size(); i++) {
+                    var layerDef = layerDefs.get(i);
+                    layers.add(new FrameLayer(layerDef.packedId(), FrameLayerDefinition.resolveZIndex(layerDef.zIndex(), i)));
+                }
+
+                var frameEvent = new AsyncFrameRenderEvent(this, layers);
+                Bukkit.getPluginManager().callEvent(frameEvent);
+
+                var manager = NMinimap.getInstance().getMarkerImageManager();
+                for (var layer : frameEvent.getLayers()) {
+                    var symbol = manager.getLayerSymbol(layer.getTexture(), isRight);
+                    if (symbol == null)
+                        continue;
+                    var zIndex = Math.max(0, Math.min(255, layer.getZIndex()));
+                    builder.append(Component.text(symbol).font(Key.key("nminimap:default"))
+                            .color(TextColor.color(zIndex, 0, 0)));
+                }
             }
         }
 

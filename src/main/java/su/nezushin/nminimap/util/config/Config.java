@@ -52,6 +52,8 @@ public class Config {
 
     public static Set<String> framesWithUsePermission = new HashSet<>();
 
+    public static Map<String, FrameDefinition> frames = new LinkedHashMap<>();
+
     public static Set<GameMode> anotherPlayerMarkerHideGameModes = EnumSet.noneOf(GameMode.class);
 
     public static Set<EntityType> mobRadarAllowedEntities = EnumSet.noneOf(EntityType.class),
@@ -245,14 +247,11 @@ public class Config {
 
         disallowedWorlds = new HashSet<>(config.getStringList("disallowed-worlds.blacklist"));
 
+        frames = loadFrames(config);
         framesWithUsePermission = new HashSet<>();
-        {
-            var cs = config.getConfigurationSection("frames");
-            if (cs != null)
-                for (var name : cs.getKeys(false))
-                    if (config.getBoolean("frames." + name + ".use-permission", false))
-                        framesWithUsePermission.add(name);
-        }
+        for (var frame : frames.values())
+            if (frame.usePermission())
+                framesWithUsePermission.add(frame.name());
 
 
         undergroundLayers = loadUndergroundLayers(config);
@@ -318,20 +317,17 @@ public class Config {
         return (height == -999 || width == -999) ? null : new int[]{width, height};
     }
 
-    public static boolean getRoundFrameRotateWithPlayer(String name) {
-        return config.getBoolean("frames." + name + ".round.rotate-with-player", false);
-    }
-
-    public static int getRoundFrameInset(String name) {
-        return Math.max(0, Math.min(255, config.getInt("frames." + name + ".round.inset", 0)));
-    }
-
-    public static int getSquareFrameOffsetX(String name) {
-        return Math.max(-127, Math.min(127, config.getInt("frames." + name + ".square.offset.x", 0)));
-    }
-
-    public static int getSquareFrameOffsetY(String name) {
-        return Math.max(-127, Math.min(127, config.getInt("frames." + name + ".square.offset.y", 0)));
+    public static FrameDefinition getFrame(String name) {
+        if (name == null)
+            return null;
+        var exact = frames.get(name);
+        if (exact != null)
+            return exact;
+        return frames.entrySet().stream()
+                .filter(e -> e.getKey().equalsIgnoreCase(name))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(null);
     }
 
     public static List<File> getResourcepackCopyDestinationFiles() {
@@ -363,15 +359,12 @@ public class Config {
         }
 
         if (defaultFrame != null) {
-            var matched = NMinimap.getInstance().getMarkerImageManager().getFrameImages().keySet().stream()
-                    .filter(i -> i.equalsIgnoreCase(defaultFrame))
-                    .findFirst()
-                    .orElse(null);
+            var matched = getFrame(defaultFrame);
             if (matched == null) {
                 NMinimap.getInstance().getLogger().severe("Default frame \"" + defaultFrame + "\" is not found!");
                 defaultFrame = null;
             } else {
-                defaultFrame = matched;
+                defaultFrame = matched.name();
             }
         }
     }
@@ -425,6 +418,97 @@ public class Config {
         }
 
         return list;
+    }
+
+    private static Map<String, FrameDefinition> loadFrames(FileConfiguration config) {
+        var cs = config.getConfigurationSection("frames");
+        Map<String, FrameDefinition> result = new LinkedHashMap<>();
+        if (cs == null)
+            return result;
+
+        for (var name : cs.getKeys(false)) {
+            var path = "frames." + name;
+            result.put(name, new FrameDefinition(
+                    name,
+                    config.getBoolean(path + ".use-permission", false),
+                    loadFrameLayers(config, path + ".square.layers", name, false),
+                    loadFrameLayers(config, path + ".round.layers", name, true)
+            ));
+        }
+        return result;
+    }
+
+    private static List<FrameLayerDefinition> loadFrameLayers(FileConfiguration config, String path, String frameName, boolean defaultRound) {
+        List<FrameLayerDefinition> layers = new ArrayList<>();
+        for (var raw : config.getMapList(path)) {
+            var textureObj = raw.get("texture");
+            if (textureObj == null || textureObj.toString().isBlank()) {
+                NMinimap.getInstance().getLogger().severe("Frame \"" + frameName + "\" has a layer without a texture!");
+                continue;
+            }
+            var texture = textureObj.toString();
+
+            Boolean isRound = parseLayerRound(raw.containsKey("type") ? String.valueOf(raw.get("type")) : null, defaultRound);
+            if (isRound == null) {
+                NMinimap.getInstance().getLogger().severe("Unknown frame layer type \"" + raw.get("type") + "\" in frame \"" + frameName + "\"!");
+                continue;
+            }
+
+            int offsetX = 0;
+            int offsetY = 0;
+            var offset = raw.get("offset");
+            if (offset instanceof Map<?, ?> offsetMap) {
+                offsetX = Math.max(-127, Math.min(127, mapInt(offsetMap, "x", 0)));
+                offsetY = Math.max(-127, Math.min(127, mapInt(offsetMap, "y", 0)));
+            }
+
+            Integer zIndex = null;
+            if (raw.containsKey("z-index"))
+                zIndex = Math.max(0, Math.min(255, mapInt(raw, "z-index", 128)));
+
+            layers.add(new FrameLayerDefinition(
+                    texture,
+                    isRound,
+                    mapBoolean(raw, "rotate-with-player", false),
+                    Math.max(0, Math.min(255, mapInt(raw, "inset", 0))),
+                    offsetX,
+                    offsetY,
+                    zIndex
+            ));
+        }
+        return layers;
+    }
+
+    private static int mapInt(Map<?, ?> map, String key, int def) {
+        var value = map.get(key);
+        if (value instanceof Number number)
+            return number.intValue();
+        if (value != null) {
+            try {
+                return Integer.parseInt(value.toString());
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return def;
+    }
+
+    private static Boolean parseLayerRound(String value, boolean fallback) {
+        if (value == null || value.isBlank())
+            return fallback;
+        if (value.equalsIgnoreCase("round"))
+            return true;
+        if (value.equalsIgnoreCase("square"))
+            return false;
+        return null;
+    }
+
+    private static boolean mapBoolean(Map<?, ?> map, String key, boolean def) {
+        var value = map.get(key);
+        if (value instanceof Boolean bool)
+            return bool;
+        if (value != null)
+            return Boolean.parseBoolean(value.toString());
+        return def;
     }
 
     private static List<UndergroundLayer> loadUndergroundLayers(FileConfiguration config) {

@@ -182,32 +182,59 @@ markers:
       height: 4
       width: 5
 
-#Map frames. Place <name>_round.png (long strip) and/or <name>_square.png in NMinimap/frames/
-#Round textures are sliced into 256px rows automatically.
-#Config key is <name> without _round/_square.
+#Map frames. Place texture PNGs in NMinimap/frames/ and reference them from layers below.
+#Round textures (long strips) are sliced into 256px rows automatically.
+#Each frame has independent square and round layer lists. Layer type can differ from map style
+#(a round map may include a square overlay).
+#z-index: 0-127 draws behind the map, 128-255 in front.
+#If z-index is omitted, the first layer is 128, the second 129, and so on.
 frames:
   default:
     #Use permission for this frame?
     #If set to true, nminimap.frame.<frame-name> will be required to set this frame.
     use-permission: false
-    #Settings for round frame
-    round:
-      #Rotate the frame together with the player?
-      rotate-with-player: false
-      #How far the frame sits inward over the map, in pixels
-      inset: 0
-    #Settings for square frame
     square:
-      #Offset from -127 to 127 pixels
-      offset:
-        x: 0
-        y: 0
-  inventory_with_title:
+      layers:
+      - texture: default_square
+        type: square
+        rotate-with-player: false
+        #Offset from -127 to 127 pixels
+        offset:
+          x: 0
+          y: 0
+    round:
+      layers:
+      - texture: default_round
+        type: round
+        #Rotate the frame together with the player?
+        rotate-with-player: false
+        #How far the frame sits inward over the map, in pixels
+        inset: 0
+  inventory:
     use-permission: false
     square:
-      offset:
-        x: 0
-        y: -5
+      layers:
+      - texture: inventory_square
+        offset:
+          x: 0
+          y: 0
+    round:
+      layers:
+      - texture: inventory_round
+        inset: 0
+  inventory_with_title:
+    #This frame requires map.display.offset.y to be increased, so it is not available for players by default
+    use-permission: true
+    square:
+      layers:
+      - texture: inventory_with_title_square
+        offset:
+          x: 0
+          y: -5
+    round:
+      layers:
+      - texture: inventory_with_title_round
+        inset: 0
 
 
 disallowed-worlds:
@@ -302,7 +329,7 @@ default-settings:
   side: left
   #round or square
   style: square
-  #Frame for minimap. Accepts frame name from NMinimap/frames dir or "none"
+  #Frame for minimap. Accepts frame name from the frames section or "none"
   frame: default
   #Enable mob-radar by default? markers.mob-radar.enable should be true to apply
   enable-mob-radar: true

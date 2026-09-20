@@ -5,8 +5,10 @@ import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.map.MapPalette;
+import su.nezushin.nminimap.api.events.AsyncFrameRenderEvent;
 import su.nezushin.nminimap.api.events.AsyncMapRenderEvent;
 import su.nezushin.nminimap.api.events.AsyncMarkerRenderEvent;
+import su.nezushin.nminimap.frames.FrameLayer;
 import su.nezushin.nminimap.markers.NMapMarker;
 import su.nezushin.nminimap.markers.impl.LocationMarker;
 import su.nezushin.nminimap.markers.impl.PositionMarker;
@@ -51,5 +53,16 @@ public class APIExampleListener implements Listener {
         //Add marker with relative position on map.
         markers.add(new PositionMarker(markerIcon, positionMarkerX, positionMarkerY, positionMarkerRotation));
 
+    }
+
+    @EventHandler
+    public void drawFrame(AsyncFrameRenderEvent e) {
+        List<FrameLayer> layers = e.getLayers();
+
+        //Texture from NMinimap/frames directory (without .png) or a packed layer id
+        String texture = "default_square";
+        int zIndex = 200;//0-127 behind the map, 128-255 in front
+
+        layers.add(new FrameLayer(texture, zIndex));
     }
 }

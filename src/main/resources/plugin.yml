@@ -40,6 +40,8 @@ permissions:
     description: Allow using /mm scale 8 when scale.use-permission is enabled
   nminimap.frame.default:
     description: Allow using /mm frame default when frames.default.use-permission is enabled
+  nminimap.frame.inventory_with_title:
+    description: Allow using /mm frame inventory_with_title when frames.inventory_with_title.use-permission is enabled
   nminimap.allow-radar:
     description: Allow using /mm radar enable when markers.mob-radar.use-permission is enabled
   nminimap.bedrock-bypass:

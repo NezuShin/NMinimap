@@ -2,29 +2,33 @@ package su.nezushin.nminimap.resourcepack;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.resourcepack.cache.FontImageIdCache;
 import su.nezushin.nminimap.resourcepack.font.BitmapFontImage;
 import su.nezushin.nminimap.resourcepack.packmcmeta.PackMcMeta;
 import su.nezushin.nminimap.util.config.Config;
+import su.nezushin.nminimap.util.config.FrameLayerDefinition;
 import su.nezushin.nminimap.util.ImageCanvasUtil;
 import su.nezushin.nminimap.util.ZipUtil;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 
 public class MarkerImageManager {
 
 
     private Map<String, String[]> markerImages = new HashMap<>();
-    private Map<String, String[]> frameImages = new HashMap<>();
+    private Map<String, String[]> layerSymbols = new HashMap<>();
+    private Map<String, String> textureAliases = new HashMap<>();
 
     public MarkerImageManager() {
         load();
@@ -66,7 +70,7 @@ public class MarkerImageManager {
             }
 
             if (Config.resourcepackCopyFrames) {
-                for (var i : new String[]{"example"}) {
+                for (var i : new String[]{"default", "inventory", "inventory_with_title"}) {
                     for (var j : new String[]{"square", "round"}) {
                         var filename = i + "_" + j + ".png";
                         Config.copyDefaults("defaults/frames/" + filename, new File(framesDir, filename), false);
@@ -155,89 +159,24 @@ public class MarkerImageManager {
             }
 
             var frameFiles = framesDir.listFiles();
+            Map<String, File> textureFiles = new HashMap<>();
             if (frameFiles != null) {
-                Map<String, File[]> groupedFrames = new HashMap<>();
                 for (var i : frameFiles) {
-                    if (!i.isFile() || i.getName().lastIndexOf('.') < 1) {
+                    if (!i.isFile() || i.getName().lastIndexOf('.') < 1)
                         continue;
-                    }
-                    var fileName = getNameWithoutExt(i);
-                    String baseName;
-                    int slot;
-                    if (fileName.endsWith("_square") && fileName.length() > "_square".length()) {
-                        baseName = fileName.substring(0, fileName.length() - "_square".length());
-                        slot = 0;
-                    } else if (fileName.endsWith("_round") && fileName.length() > "_round".length()) {
-                        baseName = fileName.substring(0, fileName.length() - "_round".length());
-                        slot = 1;
-                    } else {
-                        continue;
-                    }
-                    groupedFrames.computeIfAbsent(baseName, k -> new File[2])[slot] = i;
+                    textureFiles.put(getNameWithoutExt(i), i);
                 }
+            }
 
-                var logger = NMinimap.getInstance().getLogger();
-                for (var entry : groupedFrames.entrySet()) {
-                    var frameName = entry.getKey();
-                    var files = entry.getValue();
-                    var images = new String[4];
-                    var rotateWithPlayer = Config.getRoundFrameRotateWithPlayer(frameName);
-                    var inset = Config.getRoundFrameInset(frameName);
-                    var offsetX = Config.getSquareFrameOffsetX(frameName);
-                    var offsetY = Config.getSquareFrameOffsetY(frameName);
-
-                    if (files[0] != null) {
-                        var img = ImageIO.read(files[0]);
-                        if (img != null) {
-                            var k = 0;
-                            for (var j : new MarkerType[]{
-                                    new MarkerType("_r", Lists.newArrayList(1, 2, 3, 4)),
-                                    new MarkerType("_l", Lists.newArrayList(5, 6, 7, 8))
-                            }) {
-                                var imgName = frameName + j.suffix();
-                                if (!ImageCanvasUtil.processSquareFramePng(img, j.colors(), new File(texturesDir, imgName + ".png"),
-                                        offsetX, offsetY)) {
-                                    logger.severe(
-                                            "Frame \"" + frameName + "\" has unsupported " + frameName + "_square.png size (max 254x256, min height 5)!");
-                                    break;
-                                }
-
-                                var symbol = String.valueOf((char) cache.getOrCreateFontImageId(imgName));
-                                cache.getRegisteredCharIds().put(imgName, new BitmapFontImage(9, 8, "nminimap:font/" + imgName + ".png", symbol));
-                                images[k++] = symbol;
-                            }
-                        }
-                    } else {
-                        logger.warning("Frame \"" + frameName + "\" is missing " + frameName + "_square.png");
-                    }
-
-                    if (files[1] != null) {
-                        var img = ImageIO.read(files[1]);
-                        if (img != null) {
-                            var k = 2;
-                            for (var j : new MarkerType[]{
-                                    new MarkerType("_r_round", Lists.newArrayList(9, 10, 11, 12)),
-                                    new MarkerType("_l_round", Lists.newArrayList(13, 14, 15, 16))
-                            }) {
-                                var imgName = frameName + j.suffix();
-                                if (!ImageCanvasUtil.processFramePng(img, j.colors(), new File(texturesDir, imgName + ".png"),
-                                        rotateWithPlayer, inset)) {
-                                    logger.severe(
-                                            "Frame \"" + frameName + "\" is too large to pack (max 256x256 after slicing into 256px rows)!");
-                                    break;
-                                }
-
-                                var symbol = String.valueOf((char) cache.getOrCreateFontImageId(imgName));
-                                cache.getRegisteredCharIds().put(imgName, new BitmapFontImage(9, 8, "nminimap:font/" + imgName + ".png", symbol));
-                                images[k++] = symbol;
-                            }
-                        }
-                    } else {
-                        logger.warning("Frame \"" + frameName + "\" is missing " + frameName + "_round.png");
-                    }
-
-                    frameImages.put(frameName, images);
-                }
+            var logger = NMinimap.getInstance().getLogger();
+            Map<String, Set<String>> packedIdsByTexture = new HashMap<>();
+            for (var frame : Config.frames.values()) {
+                packFrameLayers(frame.squareLayers(), textureFiles, texturesDir, cache, packedIdsByTexture, logger);
+                packFrameLayers(frame.roundLayers(), textureFiles, texturesDir, cache, packedIdsByTexture, logger);
+            }
+            for (var entry : packedIdsByTexture.entrySet()) {
+                if (entry.getValue().size() == 1)
+                    textureAliases.put(entry.getKey(), entry.getValue().iterator().next());
             }
 
             cache.build(fontsDir);
@@ -263,13 +202,106 @@ public class MarkerImageManager {
         return markerImages;
     }
 
-    public String getFrameIcon(String image, boolean isRight, boolean isRoundMap) {
-        var images = frameImages.get(image);
-        return images == null ? null : images[(isRoundMap ? 2 : 0) + (isRight ? 0 : 1)];
+    public String getLayerSymbol(String texture, boolean isRight) {
+        var images = lookupLayerSymbols(texture);
+        return images == null ? null : images[isRight ? 0 : 1];
     }
 
-    public Map<String, String[]> getFrameImages() {
-        return frameImages;
+    public Set<String> getFrameNames() {
+        return Config.frames.keySet();
+    }
+
+    private String[] lookupLayerSymbols(String texture) {
+        if (texture == null)
+            return null;
+        var images = layerSymbols.get(texture);
+        if (images != null)
+            return images;
+        var aliased = textureAliases.get(texture);
+        if (aliased != null)
+            return layerSymbols.get(aliased);
+        for (var entry : layerSymbols.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(texture))
+                return entry.getValue();
+        }
+        for (var entry : textureAliases.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(texture))
+                return layerSymbols.get(entry.getValue());
+        }
+        return null;
+    }
+
+    private void packFrameLayers(List<FrameLayerDefinition> layers, Map<String, File> textureFiles, File texturesDir,
+                                 FontImageIdCache cache, Map<String, Set<String>> packedIdsByTexture,
+                                 Logger logger) throws Exception {
+        for (var layer : layers) {
+            var packedId = layer.packedId();
+            if (layerSymbols.containsKey(packedId)) {
+                packedIdsByTexture.computeIfAbsent(layer.texture(), k -> new HashSet<>()).add(packedId);
+                continue;
+            }
+
+            var file = textureFiles.get(layer.texture());
+            if (file == null) {
+                file = textureFiles.entrySet().stream()
+                        .filter(e -> e.getKey().equalsIgnoreCase(layer.texture()))
+                        .map(Map.Entry::getValue)
+                        .findFirst()
+                        .orElse(null);
+            }
+            if (file == null) {
+                logger.severe("Frame texture \"" + layer.texture() + "\" is not found!");
+                continue;
+            }
+            BufferedImage img = ImageIO.read(file);
+            if (img == null) {
+                logger.severe("Frame texture \"" + layer.texture() + "\" could not be read!");
+                continue;
+            }
+
+            MarkerType[] types;
+            if (layer.isRound()) {
+                types = new MarkerType[]{
+                        new MarkerType("_r_round", Lists.newArrayList(9, 10, 11, 12)),
+                        new MarkerType("_l_round", Lists.newArrayList(13, 14, 15, 16))
+                };
+            } else {
+                types = new MarkerType[]{
+                        new MarkerType("_r", Lists.newArrayList(1, 2, 3, 4)),
+                        new MarkerType("_l", Lists.newArrayList(5, 6, 7, 8))
+                };
+            }
+
+            var images = new String[2];
+            var packed = true;
+            for (var k = 0; k < types.length; k++) {
+                var markerType = types[k];
+                var imgName = packedId + markerType.suffix();
+                boolean ok;
+                if (!layer.isRound()) {
+                    ok = ImageCanvasUtil.processSquareFramePng(img, markerType.colors(), new File(texturesDir, imgName + ".png"),
+                            layer.offsetX(), layer.offsetY(), layer.rotateWithPlayer());
+                    if (!ok)
+                        logger.severe("Frame texture \"" + layer.texture() + "\" has unsupported size (max 254x256, min height 5)!");
+                } else {
+                    ok = ImageCanvasUtil.processFramePng(img, markerType.colors(), new File(texturesDir, imgName + ".png"),
+                            layer.rotateWithPlayer(), layer.inset());
+                    if (!ok)
+                        logger.severe("Frame texture \"" + layer.texture() + "\" is too large to pack (max 256x256 after slicing into 256px rows)!");
+                }
+                if (!ok) {
+                    packed = false;
+                    break;
+                }
+                var symbol = String.valueOf((char) cache.getOrCreateFontImageId(imgName));
+                cache.getRegisteredCharIds().put(imgName, new BitmapFontImage(9, 8, "nminimap:font/" + imgName + ".png", symbol));
+                images[k] = symbol;
+            }
+            if (packed) {
+                layerSymbols.put(packedId, images);
+                packedIdsByTexture.computeIfAbsent(layer.texture(), k -> new HashSet<>()).add(packedId);
+            }
+        }
     }
 
     private String getNameWithoutExt(File f) {

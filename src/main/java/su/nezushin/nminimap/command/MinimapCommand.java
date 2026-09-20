@@ -180,7 +180,7 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                         return;
                     }
 
-                    var matched = NMinimap.getInstance().getMarkerImageManager().getFrameImages().keySet().stream()
+                    var matched = NMinimap.getInstance().getMarkerImageManager().getFrameNames().stream()
                             .filter(i -> i.equalsIgnoreCase(args[1]))
                             .filter(frame -> !Config.framesWithUsePermission.contains(frame) || p.hasPermission("nminimap.frame." + frame))
                             .findFirst()
@@ -225,7 +225,7 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                 return Lists.newArrayList("enable", "disable")
                         .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[1])).toList();
             else if (args[0].equalsIgnoreCase("frame")) {
-                var suggestions = Lists.newArrayList(NMinimap.getInstance().getMarkerImageManager().getFrameImages().keySet());
+                var suggestions = Lists.newArrayList(NMinimap.getInstance().getMarkerImageManager().getFrameNames());
                 suggestions.add("none");
                 return suggestions.stream()
                         .filter(i -> StringUtil.startsWithIgnoreCase(i, args[1]))
