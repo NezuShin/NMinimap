@@ -47,7 +47,7 @@ public class BlockListener implements Listener {
                 if (updateSurface)
                     manager.reRenderChunk(new ChunkEntry(world, chunkX, chunkZ, null));
                 for (var layer : Config.undergroundLayers) {
-                    int radius = layer.smartDescend().enabled() && layer.smartDescend().minConnectedColumns() > 1 ? 1 : 0;
+                    int radius = layer.smartDescend().minConnectedColumns() > 1 ? 1 : 0;
                     for (int dx = -radius; dx <= radius; dx++)
                         for (int dz = -radius; dz <= radius; dz++) {
                             var entry = new ChunkEntry(world, chunkX + dx, chunkZ + dz, layer);

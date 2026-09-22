@@ -134,11 +134,6 @@ public class RenderUtil {
                                                            ConnectedCaveCheck connectedCaveCheck) {
         int startY = Math.min(worldMaxY, layer.renderFromY());
         var smart = layer.smartDescend();
-        if (smart == null || !smart.enabled()) {
-            return getHighestBlockDataAt(c, x, z, minY, startY, hasCeiling, skipCeiling, ceilingBlocks,
-                    layer.waterRendering().maxSampledDepth());
-        }
-
         if (smart.useRegionFloor() && regionFloorY == null)
             return missingCaveSurface(c, x, z, minY, worldMaxY, hasCeiling, skipCeiling, ceilingBlocks, layer);
 

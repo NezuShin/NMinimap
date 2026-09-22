@@ -29,8 +29,7 @@ public class ChunkRender {
         Map<Long, CompletableFuture<Chunk>> nearby = new HashMap<>();
         nearby.put(ConnectedCaveCheck.chunkKey(0, 0), futureFirstChunk);
         nearby.put(ConnectedCaveCheck.chunkKey(0, -1), futureSecondChunk);
-        if (chunk.layer() != null && chunk.layer().smartDescend().enabled()
-                && chunk.layer().smartDescend().minConnectedColumns() > 1) {
+        if (chunk.layer() != null && chunk.layer().smartDescend().minConnectedColumns() > 1) {
             for (int dx = -1; dx <= 1; dx++)
                 for (int dz = -1; dz <= 1; dz++) {
                     long key = ConnectedCaveCheck.chunkKey(dx, dz);
@@ -156,7 +155,7 @@ public class ChunkRender {
             return RenderUtil.getHighestBlockDataAt(snapshot, x, z, minY, maxY, hasCeiling, skipCeiling, ceilingBlocks,
                     Config.waterRendering.maxSampledDepth());
         Integer regionFloor = null;
-        if (chunk.layer().smartDescend().enabled() && chunk.layer().smartDescend().useRegionFloor())
+        if (chunk.layer().smartDescend().useRegionFloor())
             regionFloor = NMinimap.getInstance().getWorldGuardManager().getLayerFloorAt(sourceChunk.getWorld(),
                     sourceChunk.getX() * 16 + x, sourceChunk.getZ() * 16 + z, chunk.layer());
         return RenderUtil.getUndergroundBlockDataAt(snapshot, x, z, minY, maxY, hasCeiling, skipCeiling,

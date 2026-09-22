@@ -441,11 +441,10 @@ public class Config {
             }
         }
         return new SmartDescendSettings(
-                config.getBoolean(path + ".enabled", false),
                 minY,
                 useRegionFloor,
                 loadEnum(SmartDescendSettings.NoOpeningMode.class, config.getString(path + ".no-opening-mode"),
-                        SmartDescendSettings.NoOpeningMode.DESCEND, path + ".no-opening-mode"),
+                        SmartDescendSettings.NoOpeningMode.FIXED, path + ".no-opening-mode"),
                 materials,
                 config.getInt(path + ".min-open-height", 2),
                 config.getInt(path + ".min-connected-columns",

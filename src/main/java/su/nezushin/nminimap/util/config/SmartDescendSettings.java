@@ -5,7 +5,6 @@ import org.bukkit.Material;
 import java.util.Set;
 
 public record SmartDescendSettings(
-        boolean enabled,
         int minY,
         boolean useRegionFloor,
         NoOpeningMode noOpeningMode,

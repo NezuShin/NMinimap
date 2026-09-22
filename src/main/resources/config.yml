@@ -328,14 +328,13 @@ underground-layers:
     # Darken factor for chunks OUTSIDE this region (0.0=none, 1.0=max)
     darken: 0.5
 
-    # Optionally find the nearest cave space below render-from-y for each map pixel.
+    # Choose whether to render the fixed Y slice or search downward for cave space.
     smart-descend:
-      enabled: false
       # region-floor: stop at the floor (minimum Y) of the covering WorldGuard region; or set a numeric Y.
       min-y: region-floor
       # descend: search below, then show a darkened surface if no cave is found;
-      # fixed: keep the old Y slice if no cave is found at render-from-y.
-      no-opening-mode: descend
+      # fixed: check only render-from-y and keep its slice if no opening is found.
+      no-opening-mode: fixed
       min-open-height: 2
       # Optional override of smart-descend-defaults.min-connected-columns.
       # Example: 8 ignores isolated pockets spanning fewer than 8 columns.
