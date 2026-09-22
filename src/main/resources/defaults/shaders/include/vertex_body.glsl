@@ -6,7 +6,7 @@ ivec2 uv = ivec2(UV0 * texSize);
 
 const vec2 corners[] = vec2[](vec2(0, 0), vec2(0, 1), vec2(1, 1), vec2(1, 0));
 #ifdef UNREL_ID //We can't rely on gl_VertexID as is cause of merged buffer
-    #ifdef GL_ARB_shader_draw_parameters //Take a shortcut if gpu can do it
+    #if defined(GL_ARB_shader_draw_parameters) && !defined(NO_PARAMS) //Take a shortcut if gpu can do it
 int idx = gl_VertexID - gl_BaseVertexARB;
     #else //Take by uv
 int idx = 0;
@@ -70,7 +70,7 @@ if (id(mapUV + ivec2(0)) == 0xFF0000 && id(mapUV + ivec2(1, 0)) == 0x597D27 && i
 }
 else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xffff) == 0x0100)) //Markers
 {
-#ifndef GL_ARB_shader_draw_parameters //Checking color if GPU doesn't have extension
+#if !defined(GL_ARB_shader_draw_parameters) || defined(NO_PARAMS) //Checking color if GPU doesn't have extension
     idx = int(round(testColor.r * 255)) - 1;
     corner = corners[idx % 4];
 #endif
@@ -119,7 +119,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
 }
 else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xffff) == 0x0200)) //Square border
 {
-#ifndef GL_ARB_shader_draw_parameters //Checking color if GPU doesn't have extension
+#if !defined(GL_ARB_shader_draw_parameters) || defined(NO_PARAMS) //Checking color if GPU doesn't have extension
     idx = int(round(testColor.r * 255)) - 1;
     corner = corners[idx % 4];
 #endif
@@ -172,7 +172,7 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
 }
 else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xffff) == 0x0300)) //Round border
 {
-#ifndef GL_ARB_shader_draw_parameters //Checking color if GPU doesn't have extension
+#if !defined(GL_ARB_shader_draw_parameters) || defined(NO_PARAMS) //Checking color if GPU doesn't have extension
     idx = int(round(testColor.r * 255)) - 1;
     corner = corners[idx % 4];
 #endif
