@@ -63,7 +63,7 @@ map-display:
     #Height offset in pixels
     y: 60
   #Scale of the map on screen. Only works well with even numbers
-  scale: 6
+  scale: 2
 
 #When rendering worlds with a ceiling(e.g. Nether), should it be skipped?
 #false - only display buildings above the ceiling (like vanilla maps do)
@@ -161,29 +161,27 @@ markers:
       width: 5
 
     red_marker:
-      #size in pixels
       height: 2
       width: 2
 
     white_banner:
-      #size in pixels
       height: 5
       width: 5
 
     zombie:
-      #size in pixels
       height: 4
       width: 5
+      keep-upright: true
 
     skeleton:
-      #size in pixels
       height: 4
       width: 5
+      keep-upright: true
 
     spider:
-      #size in pixels
       height: 4
       width: 5
+      keep-upright: true
 
 #Map frames. Place texture PNGs in NMinimap/frames/ and reference them from layers below.
 #Round textures (long strips) are sliced into 256px rows automatically.
@@ -210,35 +208,54 @@ frames:
       - texture: default_round
         type: round
         #Rotate the frame together with the player?
-        rotate-with-player: true
+        rotate-with-player: false
         #Flip yaw-follow direction? Only applies when rotate-with-player is true
         inverse-rotation: true
         #How far the frame sits inward over the map, in pixels
         inset: 0
+  compass:
+    use-permission: false
+    square:
+      layers:
+        - texture: default_square
+          type: square
+          rotate-with-player: false
+          offset:
+            x: 0
+            y: 0
+    round:
+      layers:
+        - texture: default_round
+          type: round
+        - texture: compass
+          type: round
+          rotate-with-player: true
+          inset: 2
   inventory:
     use-permission: false
     square:
       layers:
       - texture: inventory_square
-        offset:
-          x: 0
-          y: 0
     round:
       layers:
+      - texture: inventory_background
+        type: square
+        #z-index less than 128 is background. More - foreground
+        z-index: 1
       - texture: inventory_round
         inset: 0
-  inventory_with_title:
+  map:
     use-permission: false
     square:
       layers:
-      - texture: inventory_with_title_square
-        offset:
-          x: 0
-          y: -5
+        - texture: map_square
+          type: square
+          z-index: 1
     round:
       layers:
-      - texture: inventory_with_title_round
-        inset: 0
+        - texture: map_round
+          type: round
+          z-index: 1
 
 
 disallowed-worlds:

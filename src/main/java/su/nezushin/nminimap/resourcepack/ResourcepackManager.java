@@ -89,11 +89,10 @@ public class ResourcepackManager {
                 Config.copyDefaults("defaults/markers/" + i + ".png", new File(markersDir, i + ".png"), false);
 
         if (Config.resourcepackCopyFrames)
-            for (var i : new String[]{"default", "inventory", "inventory_with_title"})
-                for (var j : new String[]{"square", "round"}) {
-                    var filename = i + "_" + j + ".png";
-                    Config.copyDefaults("defaults/frames/" + filename, new File(framesDir, filename), false);
-                }
+            for (var i : new String[]{"compass", "default_round", "default_square", "inventory_background",
+            "inventory_round", "inventory_square", "map_round", "map_square"})
+                    Config.copyDefaults("defaults/frames/" + i + ".png", new File(framesDir, i + ".png"), false);
+
     }
 
     private void writeShaders(File resourcepackDir, File namespaceDir) throws Exception {
