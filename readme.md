@@ -19,7 +19,7 @@ Serverside minimap based on core shaders
 - Async work as much as possible
 - Map size up tp 127 x 127 pixels
 - Automatic resource pack build
-- Supported minecraft versions from 1.21.11 to 26.2
+- Supported minecraft versions from 1.21.11 to 26.3
 - Configurable mob and player radar
 
 ### Supported server platforms
@@ -180,8 +180,8 @@ Supported mods:
 
 #### Iris/OptiFine shaders incompatibility
 
-Compatibility cannot be added because Iris don't use core shaders. You can disable NMinimap for users with Iris using [NMinimapIrisBlocker](https://github.com/NezuShin/NMinimapIrisBlocker)  
-
+Compatibility cannot be added because Iris don't use core shaders. You can disable NMinimap for users with Iris using [NMinimapIrisBlocker](https://github.com/NezuShin/NMinimapIrisBlocker).  
+Also, immediatelyfast mod support can't be supported by shader since 26.3.
 
 ![](images/iris_blocker_showcase.png)
 

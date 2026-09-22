@@ -113,6 +113,11 @@ public class ResourcepackManager {
             Config.copyDefaults("defaults/shaders/core/v26_2/text.vsh", new File(resourcepackDir, "nminimap_26_2/assets/minecraft/shaders/core/text.vsh"), true);
         }
 
+        if (Config.packEnable26_3) {
+            Config.copyDefaults("defaults/shaders/core/v26_3/text.fsh", new File(resourcepackDir, "nminimap_26_3/assets/minecraft/shaders/core/text.fsh"), true);
+            Config.copyDefaults("defaults/shaders/core/v26_3/text.vsh", new File(resourcepackDir, "nminimap_26_3/assets/minecraft/shaders/core/text.vsh"), true);
+        }
+
         //Config.copyDefaults("defaults/shaders/include/config.glsl", new File(nminimapShadersDir, "include/config.glsl"), true);
         Config.copyDefaults("defaults/shaders/include/vertex_body.glsl", new File(nminimapShadersDir, "include/vertex_body.glsl"), true);
         Config.copyDefaults("defaults/shaders/include/vertex_utils.glsl", new File(nminimapShadersDir, "include/vertex_utils.glsl"), true);
@@ -134,7 +139,9 @@ public class ResourcepackManager {
         if (Config.packEnable26_1)
             packOverlays.add(new PackMcMeta.Overlay("nminimap_26_1", 84, 88, Config.packUseFormats ? new int[]{84, 88} : null));
         if (Config.packEnable26_2)
-            packOverlays.add(new PackMcMeta.Overlay("nminimap_26_2", 88, 9999, Config.packUseFormats ? new int[]{88, 9999} : null));
+            packOverlays.add(new PackMcMeta.Overlay("nminimap_26_2", 88, 97, Config.packUseFormats ? new int[]{88, 97} : null));
+        if (Config.packEnable26_3)
+            packOverlays.add(new PackMcMeta.Overlay("nminimap_26_3", 97, 9999, Config.packUseFormats ? new int[]{97, 9999} : null));
 
         Files.write(new GsonBuilder().setPrettyPrinting().create().toJson(
                 new PackMcMeta(

@@ -32,7 +32,7 @@ public class Config {
             resourcepackCopyMarkers = true, resourcepackCopyFrames = true, resourcepackCopyShaders = true,
             scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, defaultEnableMobRadar, renderNewChunks, disableModMapActivated,
             disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar,
-            packEnable1_21_11, packEnable26_1, packEnable26_2, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed,
+            packEnable1_21_11, packEnable26_1, packEnable26_2, packEnable26_3, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed,
             useDisallowedWorldsRegex, anotherPlayerMarkerHideInvisibilityPotionEffect, anotherPlayerMarkerHidePermission, allowMobRadar, mobRadarUsePermission,
             commandPermissionUse, commandPermissionApplyToMinimap, keepUprightForPlayerMarker;
 
@@ -225,6 +225,7 @@ public class Config {
         packEnable1_21_11 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-1-21-11", true);
         packEnable26_1 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-26-1", true);
         packEnable26_2 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-26-2", true);
+        packEnable26_3 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-26-3", true);
 
 
         packMcMetaChangeEnabled = config.getBoolean("resourcepack.pack-mcmeta.enable");
