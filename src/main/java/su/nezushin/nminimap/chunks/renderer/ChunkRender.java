@@ -1,14 +1,18 @@
 package su.nezushin.nminimap.chunks.renderer;
 
 import org.bukkit.Chunk;
+import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.BlockDataInfo;
 import su.nezushin.nminimap.chunks.ChunkEntry;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
+import su.nezushin.nminimap.util.ConnectedCaveCheck;
 import su.nezushin.nminimap.util.ColorUtil;
 import su.nezushin.nminimap.util.PerWorldSettingsUtil;
 import su.nezushin.nminimap.util.RenderUtil;
+import su.nezushin.nminimap.util.config.Config;
+import su.nezushin.nminimap.util.config.WaterRenderingSettings;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,8 +26,20 @@ public class ChunkRender {
         var chunkManager = NMinimap.getInstance().getChunkManager();
         CompletableFuture<Chunk> futureFirstChunk = ChunkLoadingUtil.getChunkAt(chunk.getWorld(), chunk.x(), chunk.z());
         CompletableFuture<Chunk> futureSecondChunk = ChunkLoadingUtil.getChunkAt(chunk.getWorld(), chunk.x(), chunk.z() - 1);
+        Map<Long, CompletableFuture<Chunk>> nearby = new HashMap<>();
+        nearby.put(ConnectedCaveCheck.chunkKey(0, 0), futureFirstChunk);
+        nearby.put(ConnectedCaveCheck.chunkKey(0, -1), futureSecondChunk);
+        if (chunk.layer() != null && chunk.layer().smartDescend().enabled()
+                && chunk.layer().smartDescend().minConnectedColumns() > 1) {
+            for (int dx = -1; dx <= 1; dx++)
+                for (int dz = -1; dz <= 1; dz++) {
+                    long key = ConnectedCaveCheck.chunkKey(dx, dz);
+                    if (!nearby.containsKey(key))
+                        nearby.put(key, ChunkLoadingUtil.getChunkAt(chunk.getWorld(), chunk.x() + dx, chunk.z() + dz));
+                }
+        }
 
-        CompletableFuture.allOf(futureFirstChunk, futureSecondChunk).whenComplete((v, ex) -> {
+        CompletableFuture.allOf(nearby.values().toArray(CompletableFuture[]::new)).whenComplete((v, ex) -> {
             if (ex != null) {
                 chunkManager.finishChunkJob(chunk);
                 NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to render chunk tile", ex);
@@ -43,20 +59,27 @@ public class ChunkRender {
                         Set<Material> ceilingBlocks = PerWorldSettingsUtil.getCeilingBlocks(c.getWorld());
                         var chunkSnapshot = c.getChunkSnapshot(true, false, false);
                         var northChunkSnapshot = cNorth.getChunkSnapshot(true, false, false);
+                        ConnectedCaveCheck connectedCaveCheck = null;
+                        if (nearby.size() > 2) {
+                            Map<Long, ChunkSnapshot> snapshots = new HashMap<>();
+                            for (var entry : nearby.entrySet())
+                                snapshots.put(entry.getKey(), entry.getValue().join().getChunkSnapshot(true, false, false));
+                            connectedCaveCheck = new ConnectedCaveCheck(snapshots);
+                        }
 
                         var northChunk = new BlockDataInfo[(16) * (8)];
                         var currentChunk = new BlockDataInfo[(16) * (16)];
 
                         int maxY = PerWorldSettingsUtil.getMaxY(c.getWorld());
-                        if (chunk.layer() != null)
-                            maxY = Math.min(maxY, chunk.layer().renderFromY());
 
                         for (var x = 0; x < 16; x++) {
                             for (var z = 0; z < 16; z++) {
                                 if (z < 8) {
-                                    northChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(northChunkSnapshot, x, 15 - z, minY, maxY, hasCeiling, skipCeiling, ceilingBlocks);
+                                    northChunk[x + (z * 16)] = renderColumn(northChunkSnapshot, x, 15 - z, minY, maxY,
+                                            hasCeiling, skipCeiling, ceilingBlocks, chunk, cNorth, null);
                                 }
-                                currentChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(chunkSnapshot, x, z, minY, maxY, hasCeiling, skipCeiling, ceilingBlocks);
+                                currentChunk[x + (z * 16)] = renderColumn(chunkSnapshot, x, z, minY, maxY,
+                                        hasCeiling, skipCeiling, ceilingBlocks, chunk, c, connectedCaveCheck);
                             }
                         }
 
@@ -73,11 +96,12 @@ public class ChunkRender {
                                         lastYLevel = RenderUtil.getMostCommonOpaqueBlockBlockData(northChunk, x, 0, scale).yLevel();
                                     }
                                     var info = RenderUtil.getMostCommonOpaqueBlockBlockData(currentChunk, x, z, scale);
-                                    var color = ColorUtil.exactColor(info.color());
+                                    var waterSettings = chunk.layer() == null ? Config.waterRendering : chunk.layer().waterRendering();
+                                    var color = waterColor(info, waterSettings);
                                     var waterDepth = info.waterDepth();
 
                                     //https://mcsrc.dev/1/26.1.1/net/minecraft/world/item/MapItem
-                                    if (waterDepth != 0) {
+                                    if (waterDepth != 0 && waterSettings.mode() == WaterRenderingSettings.Mode.VANILLA) {
                                         double diff = waterDepth * 0.1 + (x + z & 1) * 0.2;
                                         if (diff < 0.5) {
                                         } else if (diff > 0.9) {
@@ -95,6 +119,9 @@ public class ChunkRender {
                                             color -= 1;
                                         }
                                     }
+
+                                    if (info.missingCave() && chunk.layer() != null)
+                                        color = ColorUtil.darken(color, chunk.layer().darken());
 
                                     bytes[x + (z * (16 / scale))] = color;
 
@@ -120,5 +147,33 @@ public class ChunkRender {
                 NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to render chunk tile", e);
             }
         });
+    }
+
+    private static BlockDataInfo renderColumn(org.bukkit.ChunkSnapshot snapshot, int x, int z, int minY, int maxY,
+                                               boolean hasCeiling, boolean skipCeiling, Set<Material> ceilingBlocks,
+                                               ChunkEntry chunk, Chunk sourceChunk, ConnectedCaveCheck connectedCaveCheck) {
+        if (chunk.layer() == null)
+            return RenderUtil.getHighestBlockDataAt(snapshot, x, z, minY, maxY, hasCeiling, skipCeiling, ceilingBlocks,
+                    Config.waterRendering.maxSampledDepth());
+        Integer regionFloor = null;
+        if (chunk.layer().smartDescend().enabled() && chunk.layer().smartDescend().useRegionFloor())
+            regionFloor = NMinimap.getInstance().getWorldGuardManager().getLayerFloorAt(sourceChunk.getWorld(),
+                    sourceChunk.getX() * 16 + x, sourceChunk.getZ() * 16 + z, chunk.layer());
+        return RenderUtil.getUndergroundBlockDataAt(snapshot, x, z, minY, maxY, hasCeiling, skipCeiling,
+                ceilingBlocks, chunk.layer(), regionFloor, connectedCaveCheck);
+    }
+
+    private static byte waterColor(BlockDataInfo info, WaterRenderingSettings settings) {
+        if (info.waterDepth() == 0)
+            return ColorUtil.exactColor(info.color());
+        if (settings.mode() == WaterRenderingSettings.Mode.VANILLA)
+            return ColorUtil.exactColor(info.color());
+        if (settings.mode() == WaterRenderingSettings.Mode.DISABLED)
+            return ColorUtil.exactColor(info.bottomColor());
+
+        var base = settings.colorSource() == WaterRenderingSettings.ColorSource.BOTTOM
+                ? info.bottomColor() : info.color();
+        byte color = ColorUtil.blend(base, settings.tint(), settings.opacityForDepth(info.waterDepth()));
+        return ColorUtil.darken(color, settings.underwaterDarken());
     }
 }

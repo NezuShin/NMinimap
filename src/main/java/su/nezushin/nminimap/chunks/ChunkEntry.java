@@ -12,7 +12,9 @@ public record ChunkEntry(String world, int x, int z, UndergroundLayer layer) {
 
     public File getAsFile() {
         String layerSuffix = layer != null ? "_layer_" + layer.id() : "";
-        return new File(Config.cacheFolder, world + "." + x + "." + z + layerSuffix + ".bin.gz");
+        int settingsHash = layer != null ? layer.hashCode() : Config.waterRendering.hashCode();
+        var namespace = new File(Config.cacheFolder, "render-v6-" + Integer.toUnsignedString(settingsHash, 16));
+        return new File(namespace, world + "." + x + "." + z + layerSuffix + ".bin.gz");
     }
 
     public World getWorld() {//fix for cases where world is not loaded when cache is already there

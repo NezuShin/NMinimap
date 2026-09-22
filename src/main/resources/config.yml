@@ -293,8 +293,27 @@ static-markers:
     yaw: 180
     world: "world"
 
+# Default water rendering. Underground layers may override any of these values.
+water-rendering:
+  # vanilla: Minecraft map water shading; fixed: constant tint; depth: tint by depth; disabled: show the bottom
+  mode: vanilla
+  opacity: 0.35
+  min-opacity: 0.10
+  max-opacity: 0.65
+  depth-for-max-opacity: 12
+  tint: "#3F9FD4"
+  # water: tint the vanilla water color; bottom: tint the block below the water
+  color-source: water
+  max-sampled-depth: 12
+  underwater-darken: 0.0
+
 # Configuration for underground layers (caves)
 # It uses WorldGuard regions.
+smart-descend-defaults:
+  # Minimum number of horizontally distinct columns in one connected air/water space.
+  # 1 disables the connectivity check and keeps the previous behavior.
+  min-connected-columns: 1
+
 underground-layers:
   # Example:
   cave_layer_1:
@@ -308,6 +327,33 @@ underground-layers:
     priority: 1
     # Darken factor for chunks OUTSIDE this region (0.0=none, 1.0=max)
     darken: 0.5
+
+    # Optionally find the nearest cave space below render-from-y for each map pixel.
+    smart-descend:
+      enabled: false
+      # region-floor: stop at the floor (minimum Y) of the covering WorldGuard region; or set a numeric Y.
+      min-y: region-floor
+      # descend: search below, then show a darkened surface if no cave is found;
+      # fixed: keep the old Y slice if no cave is found at render-from-y.
+      no-opening-mode: descend
+      min-open-height: 2
+      # Optional override of smart-descend-defaults.min-connected-columns.
+      # Example: 8 ignores isolated pockets spanning fewer than 8 columns.
+      # min-connected-columns: 8
+      # Add WATER for flooded caves.
+      transparent-blocks:
+        - AIR
+        - CAVE_AIR
+        - VOID_AIR
+
+    # Optional per-layer override. Omitted values inherit the global water-rendering section.
+    water-rendering:
+      mode: fixed
+      opacity: 0.15
+      tint: "#3F9FD4"
+      color-source: bottom
+      max-sampled-depth: 8
+      underwater-darken: 0.10
 
 
 config:

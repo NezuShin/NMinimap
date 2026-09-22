@@ -21,6 +21,8 @@ Serverside minimap based on core shaders
 - Automatic resource pack build
 - Supported minecraft versions from 1.21.11 to 26.2
 - Configurable mob and player radar
+- Configurable water tint and opacity, globally or per underground layer
+- WorldGuard underground layers with smart cave descent and optional connected-space filtering
 
 ### Supported server platforms
 - [Papermc](https://papermc.io/software/paper/)
@@ -40,6 +42,7 @@ Serverside minimap based on core shaders
 - [Packet events](https://www.spigotmc.org/resources/packetevents-api.80279/)
 - [PassengerAPI](https://www.spigotmc.org/resources/passengerapi-entity-passenger-bug-fixes-more.117017/) (Optional; Needed for compatibility with another plugins)
 - [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) (Optional; If you need placeholders)
+- [WorldGuard](https://enginehub.org/worldguard/) (Optional; Required for underground layers)
 
 ### Installation
 
@@ -50,6 +53,48 @@ Serverside minimap based on core shaders
 
 Also, you can configure [PackMerger](https://www.spigotmc.org/resources/packmerger.132700/)
 or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-manager.118574/) for automatic resource pack merge and distribution
+
+### Water and underground rendering
+
+Water rendering can be configured globally with `water-rendering` and overridden for each underground layer. `vanilla` keeps the original map shading; `fixed` applies a constant tint opacity; `depth` interpolates between minimum and maximum opacity according to water depth; `disabled` shows the block below the water. `color-source` selects whether the tint is blended with the water color or the block below it. All opacity and darkening values are between `0.0` and `1.0`.
+
+Underground layers require WorldGuard regions. With `smart-descend.enabled: true` and `no-opening-mode: descend`, each map column searches downward from `render-from-y` for `min-open-height` consecutive blocks listed in `transparent-blocks`. `min-y` can be a numeric Y coordinate or `region-floor`, which uses the minimum Y of the covering WorldGuard region; it must be at or below `render-from-y`. A column without a qualifying opening shows the darkened surface. `no-opening-mode: fixed` checks only `render-from-y` and retains the original slice there when no opening is found.
+
+An optional connectivity threshold excludes small isolated air or water pockets. `smart-descend-defaults.min-connected-columns` sets the default for all layers; a layer's `smart-descend.min-connected-columns` overrides it. `1` disables the connectivity check. Higher values require that many distinct horizontal columns in one six-directionally connected transparent space, searched within the current chunk and its eight neighbors. This is a local size check, not a pathfinding check from the player's position. Enabling it loads neighboring chunks during rendering and rerenders affected neighboring cached tiles after block changes.
+
+```yaml
+water-rendering:
+  mode: depth
+  min-opacity: 0.05
+  max-opacity: 0.50
+  depth-for-max-opacity: 12
+  tint: "#3F9FD4"
+  color-source: bottom
+
+smart-descend-defaults:
+  min-connected-columns: 1
+
+underground-layers:
+  flooded_cave:
+    wg-regions: [my_flooded_cave]
+    render-from-y: 50
+    priority: 1
+    darken: 0.5
+    smart-descend:
+      enabled: true
+      min-y: region-floor
+      no-opening-mode: descend
+      min-open-height: 2
+      min-connected-columns: 8
+      transparent-blocks: [AIR, CAVE_AIR, VOID_AIR, WATER]
+    water-rendering:
+      mode: fixed
+      opacity: 0.15
+      color-source: bottom
+      underwater-darken: 0.10
+```
+
+Only blocks in `transparent-blocks` count as cave space; add `WATER` for flooded caves. Layer water settings not specified here inherit the global values. The tile cache is separated by rendering settings, so changes to these settings generate new tiles instead of reusing incompatible cached colors.
 
 ### Permissions
 
@@ -63,7 +108,7 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 ### Admin commands
 - `/minimap admin reload` - reload config
 - `/minimap admin stats` - get statistics info
-- `/minimap admin clean-cahced` - clean cached tiles of map
+- `/minimap admin clean-cache` - clean cached tiles of map
 
 ### User commands
 

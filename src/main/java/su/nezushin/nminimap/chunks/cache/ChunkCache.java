@@ -41,9 +41,11 @@ public class ChunkCache {
         NMinimap.getInstance().getLogger().info("Loading cache...");
         var reportTask = SchedulerUtil.getScheduler().async(this::reportCacheLoadingStatus, 40, 40);
         this.cachedFiles.clear();
-        try (var stream = Files.newDirectoryStream(Config.cacheFolder.toPath())) {
-            for (var path : stream) {
+        try (var stream = Files.walk(Config.cacheFolder.toPath())) {
+            for (var path : stream.toList()) {
                 var file = path.toFile();
+                if (!file.isFile())
+                    continue;
                 String[] name = file.getName().split("\\.");
                 if (file.getName().endsWith(".json")) {
                     file.delete();//old cache clear
@@ -80,7 +82,10 @@ public class ChunkCache {
                 }
                 if (!PerWorldSettingsUtil.getAllowFileCache(name[0]))
                     continue;
-                cachedFiles.add(new ChunkEntry(name[0], Integer.parseInt(name[1]), z, layer));
+                var entry = new ChunkEntry(name[0], Integer.parseInt(name[1]), z, layer);
+                if (!file.toPath().normalize().equals(entry.getAsFile().toPath().normalize()))
+                    continue;
+                cachedFiles.add(entry);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -5,6 +5,8 @@ import org.bukkit.ChunkSnapshot;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import su.nezushin.nminimap.chunks.BlockDataInfo;
+import su.nezushin.nminimap.util.config.SmartDescendSettings;
+import su.nezushin.nminimap.util.config.UndergroundLayer;
 
 import java.util.*;
 
@@ -100,17 +102,103 @@ public class RenderUtil {
         return level - y;
     }
 
-    public static BlockDataInfo getHighestBlockDataAt(ChunkSnapshot c, int x, int z, int minY, int maxY, boolean hasCeiling, boolean skipCeiling, Set<Material> ceilingBlocks) {
+    public static BlockDataInfo getHighestBlockDataAt(ChunkSnapshot c, int x, int z, int minY, int maxY, boolean hasCeiling,
+                                                       boolean skipCeiling, Set<Material> ceilingBlocks, int maxWaterDepth) {
         var y = Math.max(getHighestNonTransparentBlockAt(c, x, z, minY, maxY, hasCeiling, skipCeiling, ceilingBlocks), minY);
 
         var blockData = c.getBlockData(x, y, z);
         var waterDepth = 0;
 
         if (blockData.getMaterial() == Material.WATER) {
-            waterDepth = getWaterDepth(c, x, y, z, y - 12, minY);
+            waterDepth = getWaterDepth(c, x, y, z, y - Math.max(1, maxWaterDepth), minY);
         }
 
-        return new BlockDataInfo(blockData.getMapColor(), y, waterDepth);
+        var bottomColor = blockData.getMapColor();
+        if (waterDepth > 0) {
+            int bottomY = Math.max(minY, y - waterDepth);
+            bottomColor = c.getBlockData(x, bottomY, z).getMapColor();
+        }
+        return new BlockDataInfo(blockData.getMapColor(), bottomColor, y, waterDepth);
+    }
+
+    public static BlockDataInfo getUndergroundBlockDataAt(ChunkSnapshot c, int x, int z, int minY, int worldMaxY,
+                                                           boolean hasCeiling, boolean skipCeiling,
+                                                           Set<Material> ceilingBlocks, UndergroundLayer layer, Integer regionFloorY) {
+        return getUndergroundBlockDataAt(c, x, z, minY, worldMaxY, hasCeiling, skipCeiling,
+                ceilingBlocks, layer, regionFloorY, null);
+    }
+
+    public static BlockDataInfo getUndergroundBlockDataAt(ChunkSnapshot c, int x, int z, int minY, int worldMaxY,
+                                                           boolean hasCeiling, boolean skipCeiling,
+                                                           Set<Material> ceilingBlocks, UndergroundLayer layer, Integer regionFloorY,
+                                                           ConnectedCaveCheck connectedCaveCheck) {
+        int startY = Math.min(worldMaxY, layer.renderFromY());
+        var smart = layer.smartDescend();
+        if (smart == null || !smart.enabled()) {
+            return getHighestBlockDataAt(c, x, z, minY, startY, hasCeiling, skipCeiling, ceilingBlocks,
+                    layer.waterRendering().maxSampledDepth());
+        }
+
+        if (smart.useRegionFloor() && regionFloorY == null)
+            return missingCaveSurface(c, x, z, minY, worldMaxY, hasCeiling, skipCeiling, ceilingBlocks, layer);
+
+        int searchMinY = Math.max(minY, smart.useRegionFloor() ? regionFloorY : smart.minY());
+        int openingY = isOpening(c, x, startY, z, searchMinY, startY, smart, connectedCaveCheck)
+                ? startY : Integer.MIN_VALUE;
+        if (openingY == Integer.MIN_VALUE && smart.noOpeningMode() == SmartDescendSettings.NoOpeningMode.DESCEND) {
+            for (int y = startY - 1; y >= searchMinY; y--) {
+                if (isOpening(c, x, y, z, searchMinY, startY, smart, connectedCaveCheck)) {
+                    openingY = y;
+                    break;
+                }
+            }
+        }
+
+        if (openingY == Integer.MIN_VALUE) {
+            if (smart.noOpeningMode() == SmartDescendSettings.NoOpeningMode.DESCEND)
+                return missingCaveSurface(c, x, z, minY, worldMaxY, hasCeiling, skipCeiling, ceilingBlocks, layer);
+            return getHighestBlockDataAt(c, x, z, minY, startY, hasCeiling, skipCeiling, ceilingBlocks,
+                    layer.waterRendering().maxSampledDepth());
+        }
+
+        Material fluid = c.getBlockType(x, openingY, z);
+        int fluidDepth = 0;
+        if (fluid == Material.WATER) {
+            int fluidY = openingY;
+            while (fluidY >= searchMinY && c.getBlockType(x, fluidY, z) == Material.WATER) {
+                fluidDepth++;
+                fluidY--;
+            }
+        }
+        int floorY = openingY;
+        while (floorY >= searchMinY && smart.transparentBlocks().contains(c.getBlockType(x, floorY, z)))
+            floorY--;
+        floorY = Math.max(floorY, searchMinY);
+        var floor = c.getBlockData(x, floorY, z);
+        int waterDepth = Math.min(fluidDepth, layer.waterRendering().maxSampledDepth());
+        Color visible = fluid == Material.WATER ? c.getBlockData(x, openingY, z).getMapColor() : floor.getMapColor();
+        return new BlockDataInfo(visible, floor.getMapColor(), floorY, waterDepth);
+    }
+
+    private static boolean isOpening(ChunkSnapshot c, int x, int y, int z, int minY, int maxY,
+                                     SmartDescendSettings smart, ConnectedCaveCheck connectedCaveCheck) {
+        if (!smart.transparentBlocks().contains(c.getBlockType(x, y, z)))
+            return false;
+        for (int i = 1; i < smart.minOpenHeight(); i++) {
+            int checkY = y - i;
+            if (checkY < minY || !smart.transparentBlocks().contains(c.getBlockType(x, checkY, z)))
+                return false;
+        }
+        return smart.minConnectedColumns() <= 1 || connectedCaveCheck != null
+                && connectedCaveCheck.hasConnectedColumns(x, y, z, minY, maxY, smart);
+    }
+
+    private static BlockDataInfo missingCaveSurface(ChunkSnapshot c, int x, int z, int minY, int worldMaxY,
+                                                     boolean hasCeiling, boolean skipCeiling, Set<Material> ceilingBlocks,
+                                                     UndergroundLayer layer) {
+        var surface = getHighestBlockDataAt(c, x, z, minY, worldMaxY, hasCeiling, skipCeiling, ceilingBlocks,
+                layer.waterRendering().maxSampledDepth());
+        return new BlockDataInfo(surface.color(), surface.bottomColor(), surface.yLevel(), surface.waterDepth(), true);
     }
 
     public static BlockDataInfo getMostCommonOpaqueBlockBlockData(BlockDataInfo[] infoArray, int x, int z, int scale) {
@@ -118,22 +206,24 @@ public class RenderUtil {
             return infoArray[x + (z * 16)];
 
 
-        Map<Color, Integer> map = new HashMap<>();
-        Map<Color, Integer> yLevel = new HashMap<>();
-        Map<Color, Integer> waterDepth = new HashMap<>();
-        for (var i = 0; i < scale; i++)
-            for (var dx = 0; dx <= i; dx++)
-                for (var dz = 0; dz <= i; dz++) {
+        Map<SampleKey, Integer> map = new HashMap<>();
+        Map<SampleKey, Integer> yLevel = new HashMap<>();
+        Map<SampleKey, Integer> waterDepth = new HashMap<>();
+        for (var dx = 0; dx < scale; dx++)
+                for (var dz = 0; dz < scale; dz++) {
                     var info = infoArray[((x * scale) + dx) + (((z * scale) + dz) * 16)];
-                    var color = info.color();
+                    var key = new SampleKey(info.color(), info.bottomColor(), info.waterDepth() > 0, info.missingCave());
 
-                    map.put(color, map.getOrDefault(color, 0) + 1);
-                    yLevel.put(color, info.yLevel());
-                    waterDepth.put(color, Math.max(info.waterDepth(), waterDepth.getOrDefault(color, 0)));
+                    map.put(key, map.getOrDefault(key, 0) + 1);
+                    yLevel.put(key, info.yLevel());
+                    waterDepth.put(key, Math.max(info.waterDepth(), waterDepth.getOrDefault(key, 0)));
                 }
         var data = map.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).map(Map.Entry::getKey).findFirst().orElse(null);
 
-        return new BlockDataInfo(data, yLevel.get(data), waterDepth.get(data));
+        return new BlockDataInfo(data.color(), data.bottomColor(), yLevel.get(data), waterDepth.get(data), data.missingCave());
+    }
+
+    private record SampleKey(Color color, Color bottomColor, boolean water, boolean missingCave) {
     }
 
 }
