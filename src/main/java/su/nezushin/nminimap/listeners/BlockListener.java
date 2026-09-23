@@ -12,6 +12,7 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.ChunkEntry;
 import su.nezushin.nminimap.util.PerWorldSettingsUtil;
+import su.nezushin.nminimap.util.config.Config;
 
 import java.util.Set;
 
@@ -36,9 +37,24 @@ public class BlockListener implements Listener {
     public void update(Block b) {
         if (b == null)
             return;
-        if (b.getLightFromSky() == 15 || (b.getWorld().hasCeiling() && PerWorldSettingsUtil.getSkipCeiling(b.getWorld())))
+        boolean updateSurface = b.getLightFromSky() == 15 || (b.getWorld().hasCeiling() && PerWorldSettingsUtil.getSkipCeiling(b.getWorld()));
+        var world = b.getWorld().getName();
+        var chunkX = Math.floorDiv(b.getX(), 16);
+        var chunkZ = Math.floorDiv(b.getZ(), 16);
+        if (updateSurface || !Config.undergroundLayers.isEmpty())
             NMinimap.async(() -> {
-                NMinimap.getInstance().getChunkManager().reRenderChunk(new ChunkEntry(b.getWorld().getName(), Math.floorDiv(b.getX(), 16), Math.floorDiv(b.getZ(), 16), null));
+                var manager = NMinimap.getInstance().getChunkManager();
+                if (updateSurface)
+                    manager.reRenderChunk(new ChunkEntry(world, chunkX, chunkZ, null));
+                for (var layer : Config.undergroundLayers) {
+                    int radius = layer.smartDescend().minConnectedColumns() > 1 ? 1 : 0;
+                    for (int dx = -radius; dx <= radius; dx++)
+                        for (int dz = -radius; dz <= radius; dz++) {
+                            var entry = new ChunkEntry(world, chunkX + dx, chunkZ + dz, layer);
+                            if (manager.getLoadedTiles().containsKey(entry) || manager.getChunkCache().hasInCache(entry))
+                                manager.reRenderChunk(entry);
+                        }
+                }
             });
     }
 

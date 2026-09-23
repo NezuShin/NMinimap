@@ -27,7 +27,7 @@ public class NMapPlayer implements AnvilORMSerializable {
 
     private Player player;
 
-    private transient UndergroundLayer activeLayer;
+    private transient volatile UndergroundLayer activeLayer;
 
     @SqlColumn(type = SqlType.VARCHAR, flags = SqlFlag.PRIMARY_KEY)
     private String id;
@@ -121,6 +121,7 @@ public class NMapPlayer implements AnvilORMSerializable {
 
         // Capture once — this.scale can change concurrently via setScale()
         final int scale = normalizeScale(this.scale);
+        final UndergroundLayer layer = this.activeLayer;
         var chunkSize = 16 / scale;
         var mapData = new byte[128 * 128];
         var world = player.getWorld();
@@ -137,7 +138,7 @@ public class NMapPlayer implements AnvilORMSerializable {
                 var localX = Math.floorMod(wx, 16);
                 var localZ = Math.floorMod(wz, 16);
 
-                var chunk = new ChunkEntry(worldName, cx, cz, this.activeLayer);
+                var chunk = new ChunkEntry(worldName, cx, cz, layer);
                 var bytes = chunkManager.getOrRenderChunk(chunk).get(scale);
 
                 chunkManager.getLastChunkUse().put(chunk, System.currentTimeMillis());
@@ -146,16 +147,16 @@ public class NMapPlayer implements AnvilORMSerializable {
                 var indexZZ = Math.floorDiv(localZ, scale);
 
                 var color = colorAt(bytes, indexXX, indexZZ, chunkSize);
-                if (this.activeLayer != null) {
+                if (layer != null) {
                     // Check if block outside WG layer region
-                    if (!NMinimap.getInstance().getWorldGuardManager().isInsideLayer(new Location(world, wx, this.activeLayer.renderFromY(), wz), this.activeLayer)) {
+                    if (!NMinimap.getInstance().getWorldGuardManager().isInsideLayer(new Location(world, wx, layer.renderFromY(), wz), layer)) {
                         // Load normal surface chunk for outside region
                         var normalChunk = new ChunkEntry(worldName, cx, cz, null);
                         var normalBytes = chunkManager.getOrRenderChunk(normalChunk).get(scale);
                         chunkManager.getLastChunkUse().put(normalChunk, System.currentTimeMillis());
 
                         var normalColor = colorAt(normalBytes, indexXX, indexZZ, chunkSize);
-                        color = normalColor != 0 ? su.nezushin.nminimap.util.ColorUtil.darken(normalColor, this.activeLayer.darken()) : 0;
+                        color = normalColor != 0 ? su.nezushin.nminimap.util.ColorUtil.darken(normalColor, layer.darken()) : 0;
                     }
                 }
 
