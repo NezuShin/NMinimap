@@ -19,7 +19,7 @@ Serverside minimap based on core shaders
 - Async work as much as possible
 - Map size up tp 127 x 127 pixels
 - Automatic resource pack build
-- Supported minecraft versions from 1.21.11 to 26.2
+- Supported minecraft versions from 1.21.11 to 26.3
 - Configurable mob and player radar
 
 ### Supported server platforms
@@ -56,6 +56,7 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 - `nminimap.admin` - access for `/minimap admin` command
 - `nminimap.command.minimap` - access for player `/minimap` commands (if enabled in config)
 - `nminimap.scale.1/2/4/8` - access for `/minimap scale` command (if enabled in config)
+- `nminimap.frame.<frame-name>` - access for `/minimap frame <frame-name>` when that frame has `use-permission` enabled
 - `nminimap.allow-radar` - access for `/minimap radar enable` command (if enabled in config)
 - `nminimap.bedrock-bypass` - allow Bedrock players to use the minimap despite Bedrock restrictions
 - Another minimap commands can be accessed without any permissions (unless `command-permission.use` is enabled)
@@ -72,6 +73,7 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 - `/minimap style round/square` - set map round or square
 - `/minimap disable/enable` - disable or enable map
 - `/minimap radar disable/enable` - disable or enable mob radar
+- `/minimap frame <name>/none` - set or remove minimap frame
 
 ### PlaceholderAPI Placeholders
 
@@ -111,7 +113,50 @@ Markers are just font images with special marks on texture, so they have same li
 
 
 To add marker, drop your image to `markers` directory and type `/minimap admin reload`. New resourcepack will be generated. \
-You can make images smaller/bigger using `markers.sizes` config property. Like in `player_small` default marker.
+You can make images smaller/bigger using `markers.sizes` config property. Like in `player_small` default marker. \
+`keep-upright` (default true) keeps the icon screen-upright on a round map; set it to false to spin the icon with the map. This is baked into the resourcepack.
+
+### Frames
+
+Frames are borders drawn around the minimap. Players choose one with `/minimap frame <name>` (tab-complete lists available frames) or turn it off with `/minimap frame none`. New players get `default-settings.frame`. If a frame has `use-permission: true`, players need `nminimap.frame.<frame-name>`.
+
+To add a frame, drop PNG files into the `frames` directory, reference them from the `frames` config section, and type `/minimap admin reload`. New resourcepack will be generated.
+
+Each frame has two layer lists: `square` (used when the map is square) and `round` (used when the map is round). You can combine as many layers as you want. Layer `type` does not have to match map style — a round map may use a square overlay, and a square map may use a round ring.
+
+```yaml
+frames:
+  default:
+    square:
+      layers:
+        - texture: default_square
+          type: square
+          # z-index: 128   # omit to auto-assign 128, 129, ...
+          offset:
+            x: 0
+            y: 0
+    round:
+      layers:
+        - texture: default_round
+          type: round
+          inset: 0
+```
+
+`texture` is the file name in `NMinimap/frames/` without `.png`. Omitted `z-index` values are 128, 129, …; use under 128 to draw behind the map.
+
+Layer types:
+- `type: square` — flat texture above or below the map. Max size is 254×256, min height is 5. `offset.x` / `offset.y` shift it on screen (−127 to 127).
+- `type: round` — horizontal strip the shader wraps into a ring. Strips are sliced into 256px-wide rows; packed height must stay ≤ 256 (min width is 4). A 1px-tall strip can be very long; a thicker strip must be shorter. `inset` pulls the ring inward over the map.
+
+Both types also support `rotate-with-player`. `inverse-rotation` flips the yaw-follow direction and only applies when `rotate-with-player` is true. You can add or replace layers at render time using [`AsyncFrameRenderEvent`](#frames-1).
+
+Both types can automatically downscale to fit `map-pixel-size`. Draw frames for size 127:
+
+![Same frame at two map-pixel-size values](images/frame_resize_example.png)
+
+Layer type is independent of map style. This round map uses a round ring and a square title bar:
+
+![Round ring and square title on a round map](images/frame_types_combine_example.png)
 
 ### Compatibility 
 
@@ -135,8 +180,8 @@ Supported mods:
 
 #### Iris/OptiFine shaders incompatibility
 
-Compatibility cannot be added because Iris don't use core shaders. You can disable NMinimap for users with Iris using [NMinimapIrisBlocker](https://github.com/NezuShin/NMinimapIrisBlocker)  
-
+Compatibility cannot be added because Iris don't use core shaders. You can disable NMinimap for users with Iris using [NMinimapIrisBlocker](https://github.com/NezuShin/NMinimapIrisBlocker).  
+Also, immediatelyfast mod support can't be supported by shader since 26.3.
 
 ![](images/iris_blocker_showcase.png)
 
@@ -160,6 +205,9 @@ The first map column is also disabled for symmetry.
 Marker images have for pixels with specific color on then's corners. For every combination of map style and screen corner image is being created. Four images in total \
 Also color of image is used. Red is X position on map. Green is Y position on map. Blue is marker rotation.
 
+#### Frames
+
+Frames are font glyphs too. The plugin stamps metadata pixels onto each image (corners, size, offset, inset, rotate and inverse-rotate flags) and sends them as characters in the same text as markers. The shader recognizes those pixels and places the glyph on the minimap instead of drawing it as text. Square layers are positioned around the map; round layers are remapped from the strip into a ring in the fragment shader. The character color's red channel is z-index, so a layer can sit under the map (0–127) or over it (128–255) without editing the map pixels, and the blue channel rotates the layer on screen.
 
 ### API
 
@@ -213,6 +261,39 @@ public void drawMarker(AsyncMarkerRenderEvent e){
     //Add marker with relative position on map.
     markers.add(new PositionMarker(markerIcon, positionMarkerX, positionMarkerY, positionMarkerRotation));
 
+}
+```
+
+#### Frame-related api
+
+Layer images are packed into the resourcepack on plugin load, so texture, type, offset, inset, `rotate-with-player` and `inverse-rotation` cannot change at render time. Z-index and rotation can.
+
+Layers come from `FrameManager`, never from a constructor. `getLayers(texture)` returns every packed variant of one image in `NMinimap/frames/` — an image used by several frames with different offsets has one entry per variant.
+
+Layers owned by the manager are shared between all players, so call `copy()` before changing one. The list in `AsyncFrameRenderEvent` is already a copy of the player's frame and is yours to modify.
+
+```java
+@EventHandler
+public void drawFrame(AsyncFrameRenderEvent e) {
+    List<FrameLayer> layers = e.getLayers();
+
+    for (FrameLayer layer : layers)
+        layer.setZIndex(200);//0-127 behind the map, 128-255 in front
+
+    FrameManager frames = NMinimap.getInstance().getFrameManager();
+
+    List<FrameLayer> variants = frames.getLayers("inventory_square");
+    if (!variants.isEmpty()) {
+        FrameLayer layer = variants.get(0).copy();
+        layer.setRotation(64);//0-255 for a full turn, 0 points up
+        layers.add(layer);
+    }
+
+    //Layers of another frame can be used too
+    Frame frame = frames.getFrame("inventory");
+    if (frame != null)
+        for (FrameLayer layer : frame.layers(e.getPlayer().isRound()))
+            layers.add(layer.copy());
 }
 ```
 

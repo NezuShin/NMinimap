@@ -10,7 +10,6 @@ cache:
   #Setting 10G will leave free 10 gigabytes of space and then stop writing to cache
   #You can use G for gigabytes, M for megabytes and K for Kilobytes.
   available-disk-space-threshold: "10G"
-
   #Threshold for available RAM to stop rendering and loading tiles.
   #You can use G for gigabytes, M for megabytes and K for Kilobytes.
   available-ram-threshold: "1G"
@@ -51,8 +50,20 @@ command-permission:
 
 #Map size in pixels. Minimum value is 10; Maximum is 127
 #The value is baked into shader, so changing it will require re-applying the resource pack.
-#Also, this setting will not apply if  resourcepack.copy-defaults set to false.
+#Also, this setting will not apply if resourcepack.copy-shaders set to false.
 map-pixel-size: 127
+
+#Settings for shader to display the map on screen.
+#These values are baked into the shader, so changing them will require re-applying the resource pack.
+#Also, these settings will not apply if resourcepack.copy-shaders set to false.
+map-display:
+  offset:
+    #Width offset in pixels
+    x: 60
+    #Height offset in pixels
+    y: 60
+  #Scale of the map on screen. Only works well with even numbers
+  scale: 2
 
 #When rendering worlds with a ceiling(e.g. Nether), should it be skipped?
 #false - only display buildings above the ceiling (like vanilla maps do)
@@ -140,6 +151,9 @@ markers:
       #size in pixels
       height: 5
       width: 5
+      #Stay screen-upright on a round map. false = spin with the map.
+      #Only applies to round minimaps. Default is true.
+      keep-upright: true
 
     player_small:
       #size in pixels
@@ -147,29 +161,102 @@ markers:
       width: 5
 
     red_marker:
-      #size in pixels
       height: 2
       width: 2
 
     white_banner:
-      #size in pixels
       height: 5
       width: 5
 
     zombie:
-      #size in pixels
       height: 4
       width: 5
+      keep-upright: true
 
     skeleton:
-      #size in pixels
       height: 4
       width: 5
+      keep-upright: true
 
     spider:
-      #size in pixels
       height: 4
       width: 5
+      keep-upright: true
+
+#Map frames. Place texture PNGs in NMinimap/frames/ and reference them from layers below.
+#Round textures (long strips) are sliced into 256px rows automatically.
+#Each frame has independent square and round layer lists. Layer type can differ from map style
+#(a round map may include a square overlay).
+#z-index: 0-127 draws behind the map, 128-255 in front.
+#If z-index is omitted, the first layer is 128, the second 129, and so on.
+frames:
+  default:
+    #Use permission for this frame?
+    #If set to true, nminimap.frame.<frame-name> will be required to set this frame.
+    use-permission: false
+    square:
+      layers:
+      - texture: default_square
+        type: square
+        rotate-with-player: false
+        #Offset from -127 to 127 pixels
+        offset:
+          x: 0
+          y: 0
+    round:
+      layers:
+      - texture: default_round
+        type: round
+        #Rotate the frame together with the player?
+        rotate-with-player: false
+        #Flip yaw-follow direction? Only applies when rotate-with-player is true
+        inverse-rotation: true
+        #How far the frame sits inward over the map, in pixels
+        inset: 0
+  compass:
+    use-permission: false
+    square:
+      layers:
+        - texture: default_square
+          type: square
+          rotate-with-player: false
+          offset:
+            x: 0
+            y: 0
+    round:
+      layers:
+        - texture: default_round
+          type: round
+        - texture: compass
+          type: round
+          rotate-with-player: true
+          inset: 2
+  inventory:
+    use-permission: false
+    square:
+      layers:
+      - texture: inventory_square
+    round:
+      layers:
+      - texture: inventory_background
+        type: square
+        #z-index less than 128 is background. More - foreground
+        z-index: 1
+      - texture: inventory_round
+        inset: 0
+  map:
+    use-permission: false
+    square:
+      layers:
+        - texture: map_square
+          type: square
+          z-index: 1
+    round:
+      layers:
+        - texture: map_round
+          type: round
+          z-index: 1
+
 
 disallowed-worlds:
   #Regex pattern for advanced users. Usable when you have short-living worlds such as boss arenas
@@ -215,9 +302,14 @@ language: en_US
 #Markers are symbols in font, so player needs resourcepack installed to see them.
 #Also, plugin uses core shader to work.
 resourcepack:
-  #Copy the default pack.mcmeta and shader files to resourcepack folder.
-  #You need to set this to false if you are manually editing shaders. Otherwise, files will be rewritten
-  copy-defaults: true
+  #Copy default marker images to NMinimap/markers/. Existing files are not overwritten.
+  copy-markers: true
+  #Copy default frame images to NMinimap/frames/. Existing files are not overwritten.
+  copy-frames: true
+  #Copy default shader files to the resourcepack folder.
+  #Set this to false if you are manually editing shaders. Otherwise, files will be rewritten.
+  #Some other config settings such as map-pixel-size and map-display requires this one to be true to change shader's config files
+  copy-shaders: true
   #where to copy resourcepack folder after building font files?
   copy-destinations: []
   #    - 'PackMerger/packs/nminimap'
@@ -236,6 +328,7 @@ resourcepack:
       enable-1-21-11: true
       enable-26-1: true
       enable-26-2: true
+      enable-26-3: true
 
     #add "formats" and "supported_formats" fields to pack.mcmeta? Needed for compatibility when merging with another resource packs or for an old minecraft versions
     use-formats: false
@@ -258,6 +351,8 @@ default-settings:
   side: left
   #round or square
   style: square
+  #Frame for minimap. Accepts frame name from the frames section or "none"
+  frame: default
   #Enable mob-radar by default? markers.mob-radar.enable should be true to apply
   enable-mob-radar: true
 

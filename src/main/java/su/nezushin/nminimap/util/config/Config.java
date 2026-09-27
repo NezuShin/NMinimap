@@ -25,14 +25,16 @@ public class Config {
 
     public static FileConfiguration config;
 
-    public static int mapId, maxRenderThreads = 30, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval, mapPixelSize = 40, wgRegionUpdateInterval, mobRadarUpdateInterval;
+    public static int mapId, maxRenderThreads = 30, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval, mapPixelSize = 40, wgRegionUpdateInterval, mobRadarUpdateInterval,
+            mapDisplayOffsetX = 60, mapDisplayOffsetY = 60, mapDisplayScale = 6;
 
-    public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false, resourcepackCopyDefaults = true,
+    public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false,
+            resourcepackCopyMarkers = true, resourcepackCopyFrames = true, resourcepackCopyShaders = true,
             scaleUsePermission, defaultEnableAnyway, defaultRightSide, defaultRound, defaultEnableMobRadar, renderNewChunks, disableModMapActivated,
             disableModMapAlways, enableModVoxelMap, enableModXaerosMap, enableModJourneyMap, skipCeiling, allowModRadar,
-            packEnable1_21_11, packEnable26_1, packEnable26_2, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed,
+            packEnable1_21_11, packEnable26_1, packEnable26_2, packEnable26_3, packMcMetaChangeEnabled, checkForUpdates, cacheValidateWorlds, packUseFormats, cacheDeleteIfReadFailed,
             useDisallowedWorldsRegex, anotherPlayerMarkerHideInvisibilityPotionEffect, anotherPlayerMarkerHidePermission, allowMobRadar, mobRadarUsePermission,
-            commandPermissionUse, commandPermissionApplyToMinimap;
+            commandPermissionUse, commandPermissionApplyToMinimap, keepUprightForPlayerMarker;
 
     public static long availableDiskSpaceThreshold = 14L * 1024L * 1024L * 1024L,
             availableRamThreshold = 10L * 1024L * 1024L * 1024L,
@@ -48,13 +50,15 @@ public class Config {
 
     public static Set<String> disallowedWorlds;
 
+    public static Map<String, FrameDefinition> frames = new LinkedHashMap<>();
+
     public static Set<GameMode> anotherPlayerMarkerHideGameModes = EnumSet.noneOf(GameMode.class);
 
     public static Set<EntityType> mobRadarAllowedEntities = EnumSet.noneOf(EntityType.class),
             mobRadarDisallowedEntities = EnumSet.noneOf(EntityType.class);
 
     public static String playerMarker, anotherPlayerMarker, mysqlHost, mysqlUser, mysqlPassword, mysqlDatabase, mysqlPlayersTableName, langName,
-            packDescription;
+            packDescription, defaultFrame;
 
     public static Pattern disallowedWorldsRegex;
 
@@ -87,16 +91,18 @@ public class Config {
             }
         } else {
             config = YamlConfiguration.loadConfiguration(configFile);
+            migrateLegacyCopyDefaults();
 
             if (config.getBoolean("config.allow-config-updates", true))
                 try {
-                    ConfigUpdater.update(NMinimap.getInstance(), "config.yml", configFile,
+                    ConfigUpdater.update(NMinimap.getInstance(), "config.yml", configFile, config,
                             "static-markers",
                             "underground-layers",
                             "per-world-settings",
                             "markers.sizes",
-                            "markers.mob-radar.mob-markers"
-                            );
+                            "markers.mob-radar.mob-markers",
+                            "frames"
+                    );
 
                     config = YamlConfiguration.loadConfiguration(configFile);
                 } catch (IOException ex) {
@@ -173,7 +179,10 @@ public class Config {
 
         resourcepackCopyDestinations = config.getStringList("resourcepack.copy-destinations");
         resourcepackZipDestinations = config.getStringList("resourcepack.zip-destinations");
-        resourcepackCopyDefaults = config.getBoolean("resourcepack.copy-defaults", true);
+        var legacyCopyDefaults = config.getBoolean("resourcepack.copy-defaults", true);
+        resourcepackCopyMarkers = config.getBoolean("resourcepack.copy-markers", legacyCopyDefaults);
+        resourcepackCopyFrames = config.getBoolean("resourcepack.copy-frames", legacyCopyDefaults);
+        resourcepackCopyShaders = config.getBoolean("resourcepack.copy-shaders", legacyCopyDefaults);
 
         scaleUsePermission = config.getBoolean("scale.use-permission", false);
         maxScale = config.getInt("scale.max-scale", 8);
@@ -188,6 +197,10 @@ public class Config {
         defaultRightSide = config.getString("default-settings.side", "left").equalsIgnoreCase("right");
         defaultRound = config.getString("default-settings.style", "square").equalsIgnoreCase("round");
         defaultEnableMobRadar = config.getBoolean("default-settings.enable-mob-radar", true);
+
+        defaultFrame = config.getString("default-settings.frame", "default");
+        if (defaultFrame != null && (defaultFrame.isBlank() || defaultFrame.equalsIgnoreCase("none")))
+            defaultFrame = null;
 
         var modsCompatibilityMode = config.getInt("mods-compatibility.mode", 2);
 
@@ -212,12 +225,17 @@ public class Config {
         packEnable1_21_11 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-1-21-11", true);
         packEnable26_1 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-26-1", true);
         packEnable26_2 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-26-2", true);
+        packEnable26_3 = config.getBoolean("resourcepack.pack-mcmeta.overlays.enable-26-3", true);
 
 
         packMcMetaChangeEnabled = config.getBoolean("resourcepack.pack-mcmeta.enable");
         packUseFormats = config.getBoolean("resourcepack.pack-mcmeta.use-formats", false);
 
         mapPixelSize = Math.max(Math.min(config.getInt("map-pixel-size", 127), 127), 10);
+
+        mapDisplayOffsetX = config.getInt("map-display.offset.x", 60);
+        mapDisplayOffsetY = config.getInt("map-display.offset.y", 60);
+        mapDisplayScale = Math.max(1, config.getInt("map-display.scale", 6));
 
         var worldBlacklistRegexString = config.getString("disallowed-worlds.regex", "");
 
@@ -228,6 +246,7 @@ public class Config {
 
         disallowedWorlds = new HashSet<>(config.getStringList("disallowed-worlds.blacklist"));
 
+        frames = loadFrames(config);
 
         undergroundLayers = loadUndergroundLayers(config);
 
@@ -250,6 +269,17 @@ public class Config {
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
+        }
+    }
+
+    private static void migrateLegacyCopyDefaults() {
+        if (!config.contains("resourcepack.copy-defaults"))
+            return;
+
+        boolean legacy = config.getBoolean("resourcepack.copy-defaults");
+        for (var key : new String[]{"resourcepack.copy-markers", "resourcepack.copy-shaders"}) {
+            if (!config.contains(key))
+                config.set(key, legacy);
         }
     }
 
@@ -281,6 +311,10 @@ public class Config {
         return (height == -999 || width == -999) ? null : new int[]{width, height};
     }
 
+    public static boolean getMarkerKeepUpright(String marker) {
+        return config.getBoolean("markers.sizes." + marker + ".keep-upright", false);
+    }
+
     public static List<File> getResourcepackCopyDestinationFiles() {
         return resourcepackCopyDestinations.stream().map(i -> Path.of(i).isAbsolute() ? new File(i) : new File(NMinimap.getInstance().getDataFolder().getParentFile(), i)).toList();
     }
@@ -289,9 +323,14 @@ public class Config {
         return resourcepackZipDestinations.stream().map(i -> Path.of(i).isAbsolute() ? new File(i) : new File(NMinimap.getInstance().getDataFolder().getParentFile(), i)).toList();
     }
 
-    public static void validateLocationMarkers() {
+    public static void validateConfig() {
+        if (!playerMarker.isEmpty())
+            keepUprightForPlayerMarker = getMarkerKeepUpright(playerMarker);
+
+        var markerManager = NMinimap.getInstance().getMarkerManager();
+
         staticMarkers.removeIf((marker) -> {
-            if (!NMinimap.getInstance().getMarkerImageManager().getMarkerImages().containsKey(marker.marker().getIcon())) {
+            if (!markerManager.hasMarker(marker.marker().getIcon())) {
                 NMinimap.getInstance().getLogger().severe("Icon " + marker.marker().getIcon() + " is not found for static marker " + marker.name() + "!");
                 return true;
             }
@@ -299,14 +338,24 @@ public class Config {
         });
 
         new HashSet<>(mobRadarEntityIcons.entrySet()).forEach((marker) -> {
-            if (NMinimap.getInstance().getMarkerImageManager().getMarkerImages().containsKey(marker.getValue().icon()))
+            if (markerManager.hasMarker(marker.getValue().icon()))
                 return;
             NMinimap.getInstance().getLogger().severe("Icon " + marker.getValue().icon() + " is not found for entity " + marker.getKey() + "!");
             mobRadarEntityIcons.remove(marker.getKey());
         });
 
-        if (!NMinimap.getInstance().getMarkerImageManager().getMarkerImages().containsKey(mobRadarDefaultMarker.icon())) {
+        if (!markerManager.hasMarker(mobRadarDefaultMarker.icon())) {
             NMinimap.getInstance().getLogger().severe("Icon " + mobRadarDefaultMarker.icon() + " is not found for mob-radar!");
+        }
+
+        if (defaultFrame != null) {
+            var matched = NMinimap.getInstance().getFrameManager().getFrame(defaultFrame);
+            if (matched == null) {
+                NMinimap.getInstance().getLogger().severe("Default frame \"" + defaultFrame + "\" is not found!");
+                defaultFrame = null;
+            } else {
+                defaultFrame = matched.name();
+            }
         }
     }
 
@@ -359,6 +408,98 @@ public class Config {
         }
 
         return list;
+    }
+
+    private static Map<String, FrameDefinition> loadFrames(FileConfiguration config) {
+        var cs = config.getConfigurationSection("frames");
+        Map<String, FrameDefinition> result = new LinkedHashMap<>();
+        if (cs == null)
+            return result;
+
+        for (var name : cs.getKeys(false)) {
+            var path = "frames." + name;
+            result.put(name, new FrameDefinition(
+                    name,
+                    config.getBoolean(path + ".use-permission", false),
+                    loadFrameLayers(config, path + ".square.layers", name, false),
+                    loadFrameLayers(config, path + ".round.layers", name, true)
+            ));
+        }
+        return result;
+    }
+
+    private static List<FrameLayerDefinition> loadFrameLayers(FileConfiguration config, String path, String frameName, boolean defaultRound) {
+        List<FrameLayerDefinition> layers = new ArrayList<>();
+        for (var raw : config.getMapList(path)) {
+            var textureObj = raw.get("texture");
+            if (textureObj == null || textureObj.toString().isBlank()) {
+                NMinimap.getInstance().getLogger().severe("Frame \"" + frameName + "\" has a layer without a texture!");
+                continue;
+            }
+            var texture = textureObj.toString();
+
+            Boolean isRound = parseLayerRound(raw.containsKey("type") ? String.valueOf(raw.get("type")) : null, defaultRound);
+            if (isRound == null) {
+                NMinimap.getInstance().getLogger().severe("Unknown frame layer type \"" + raw.get("type") + "\" in frame \"" + frameName + "\"!");
+                continue;
+            }
+
+            int offsetX = 0;
+            int offsetY = 0;
+            var offset = raw.get("offset");
+            if (offset instanceof Map<?, ?> offsetMap) {
+                offsetX = Math.max(-127, Math.min(127, mapInt(offsetMap, "x", 0)));
+                offsetY = Math.max(-127, Math.min(127, mapInt(offsetMap, "y", 0)));
+            }
+
+            Integer zIndex = null;
+            if (raw.containsKey("z-index"))
+                zIndex = Math.max(0, Math.min(255, mapInt(raw, "z-index", 128)));
+
+            layers.add(new FrameLayerDefinition(
+                    texture,
+                    isRound,
+                    mapBoolean(raw, "rotate-with-player", false),
+                    mapBoolean(raw, "inverse-rotation", false),
+                    Math.max(0, Math.min(255, mapInt(raw, "inset", 0))),
+                    offsetX,
+                    offsetY,
+                    zIndex
+            ));
+        }
+        return layers;
+    }
+
+    private static int mapInt(Map<?, ?> map, String key, int def) {
+        var value = map.get(key);
+        if (value instanceof Number number)
+            return number.intValue();
+        if (value != null) {
+            try {
+                return Integer.parseInt(value.toString());
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return def;
+    }
+
+    private static Boolean parseLayerRound(String value, boolean fallback) {
+        if (value == null || value.isBlank())
+            return fallback;
+        if (value.equalsIgnoreCase("round"))
+            return true;
+        if (value.equalsIgnoreCase("square"))
+            return false;
+        return null;
+    }
+
+    private static boolean mapBoolean(Map<?, ?> map, String key, boolean def) {
+        var value = map.get(key);
+        if (value instanceof Boolean bool)
+            return bool;
+        if (value != null)
+            return Boolean.parseBoolean(value.toString());
+        return def;
     }
 
     private static List<UndergroundLayer> loadUndergroundLayers(FileConfiguration config) {

@@ -1,9 +1,12 @@
+#define FL_ROTATE 1
+#define FL_INV_ROT 2
+
 vec2 texSize = textureSize(Sampler0, 0);
 ivec2 uv = ivec2(UV0 * texSize);
 
 const vec2 corners[] = vec2[](vec2(0, 0), vec2(0, 1), vec2(1, 1), vec2(1, 0));
 #ifdef UNREL_ID //We can't rely on gl_VertexID as is cause of merged buffer
-    #ifdef GL_ARB_shader_draw_parameters //Take a shortcut if gpu can do it
+    #if defined(GL_ARB_shader_draw_parameters) && !defined(NO_PARAMS) //Take a shortcut if gpu can do it
 int idx = gl_VertexID - gl_BaseVertexARB;
     #else //Take by uv
 int idx = 0;
@@ -50,7 +53,14 @@ if (id(mapUV + ivec2(0)) == 0xFF0000 && id(mapUV + ivec2(1, 0)) == 0x597D27 && i
         map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x - (63 - MAP_CROP_RADIUS) / 64.0 * MAP_SIZE.x, 0);
     else
         map = map + MAP_OFFSET;
-    gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), MAP_DEPTH, 1);
+    
+    #ifdef MAP_ABSOLUTE_SIZES
+    map *= vec2(2, -2) / ScreenSize;
+    #else
+    map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
+    #endif
+
+    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MAP_DEPTH, 1);
     vertexColor = vec4(1);
     custom = isRound ? 2 : 1;
     uvCoord = corner2 * 128;
@@ -60,25 +70,30 @@ if (id(mapUV + ivec2(0)) == 0xFF0000 && id(mapUV + ivec2(1, 0)) == 0x597D27 && i
 }
 else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xffff) == 0x0100)) //Markers
 {
-#ifndef GL_ARB_shader_draw_parameters //Checking color if GPU doesn't have extension
+#if !defined(GL_ARB_shader_draw_parameters) || defined(NO_PARAMS) //Checking color if GPU doesn't have extension
     idx = int(round(testColor.r * 255)) - 1;
     corner = corners[idx % 4];
 #endif
-    vec2 scaleData = round(texelFetch(Sampler0, uv + ivec2(0, 1 - corner.y * 2), 0).rg * 255);
+    vec4 metaScale = round(texelFetch(Sampler0, uv + ivec2(0, 1 - corner.y * 2), 0) * 255);
+    vec2 scaleData = metaScale.xy;
+    int flags = int(metaScale.z);
 
     int meta = int(testColor.r*255-1) / 4;
     bool isRight = meta % 2 == 0;
     bool isRound = (meta / 2) % 2 != 0;
 
     vec2 pos = Color.rg;
+    float angle = -Color.b * 2 * PI;
+
     if (isRound)
     {
         rotAngle = mat2_rotate_z(yaw);
         pos -= 0.5;
         pos = normalize(pos) * clamp(length(pos), 0.0, MAP_CROP_RADIUS / 128.0) + 0.5;
-    }
 
-    float angle = -Color.b * 2 * PI;
+        if ((flags & FL_ROTATE) == 0)
+            angle -= yaw;
+    }
 
     float offset = isRound ? (1.0 + MAP_CROP_RADIUS) / 128.0 : 0.5;
 
@@ -90,7 +105,125 @@ else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xff
     else
         map = map + MAP_OFFSET;
 
-    gl_Position = vec4(vec2(1, -ProjMat[1][1]/ProjMat[0][0]) * map + vec2(isRight? 1 : -1, 1), MARKER_DEPTH, 1);
+    #ifdef MAP_ABSOLUTE_SIZES
+    map *= vec2(2, -2) / ScreenSize;
+    #else
+    map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
+    #endif
+
+    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MARKER_DEPTH, 1);
+    vertexColor = vec4(1);
+    
+    sphericalVertexDistance = 0;
+    cylindricalVertexDistance = 0;
+}
+else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xffff) == 0x0200)) //Square border
+{
+#if !defined(GL_ARB_shader_draw_parameters) || defined(NO_PARAMS) //Checking color if GPU doesn't have extension
+    idx = int(round(testColor.r * 255)) - 1;
+    corner = corners[idx % 4];
+#endif
+    custom = 4;
+
+    int meta = int(testColor.r*255-1) / 4;
+    bool isRight = meta % 2 == 0;
+    vec3 scaleData = round(texelFetch(Sampler0, uv + ivec2(0, 1 - corner.y * 2), 0).rgb * 255);
+    int flags = int(scaleData.b);
+
+
+    ivec2 stp = ivec2(round(UV0 * 256) - scaleData.xy * corner);
+
+    //R = offset.x + 127
+    //G = offset,y + 127
+    //B = target map content size
+    vec4 meta1 = round(texelFetch(Sampler0, stp + ivec2(0, 2), 0) * 255);
+    
+    float angle = -Color.b * 2 * PI;
+    if ((flags & FL_ROTATE) != 0)
+        angle += (flags & FL_INV_ROT) != 0 ? -yaw : yaw;
+
+    vec2 size = scaleData.xy - vec2(2, 0);
+
+    vec2 border = size - vec2(meta1.b);
+    texCoord0 = UV0 + vec2(1 - corner.x * 2, 0) / texSize;
+
+    box = vec4(stp + vec2(1, 0), size);
+    b_meta = vec3(meta1.b, 0, 0);
+    uvCoord = corner;
+
+    vec2 map = (mat2_rotate_z(angle) * (corner - 0.5) * (size / 128.0) + 0.5 + 1 / 256.0 + (meta1.rg - 127)/128.0) * MAP_SIZE;
+
+    if (isRight)
+        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x, 0) + vec2(-1 /256.0 + (127 - MAP_CONTENT_SIZE) / 256.0) * vec2(1,-1) * MAP_SIZE;
+    else
+        map = map + MAP_OFFSET + vec2(-(127 - MAP_CONTENT_SIZE) / 256.0) * MAP_SIZE;
+
+    #ifdef MAP_ABSOLUTE_SIZES
+    map *= vec2(2, -2) / ScreenSize;
+    #else
+    map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
+    #endif
+
+    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MAP_DEPTH * (1 + 0.0001 * (Color.r-0.5)), 1);
+    vertexColor = vec4(1);
+    
+    sphericalVertexDistance = 0;
+    cylindricalVertexDistance = 0;
+}
+else if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xffff) == 0x0300)) //Round border
+{
+#if !defined(GL_ARB_shader_draw_parameters) || defined(NO_PARAMS) //Checking color if GPU doesn't have extension
+    idx = int(round(testColor.r * 255)) - 1;
+    corner = corners[idx % 4];
+#endif
+    custom = 3;
+
+    int meta = int(testColor.r*255-1) / 4;
+    bool isRight = meta % 2 == 0;
+    vec2 scaleData = round(texelFetch(Sampler0, uv + ivec2(1 - corner.x * 2, 0), 0).rg * 255) + 1;
+
+    ivec2 stp = ivec2(round(UV0 * 256) - scaleData * corner);
+
+    //R  = flags
+    //GB = total length
+    vec4 meta1 = round(texelFetch(Sampler0, stp + ivec2(2, 0), 0) * 255);
+    
+    //G = inner offset
+    vec4 meta2 = round(texelFetch(Sampler0, stp + ivec2(3, 0), 0) * 255);
+    float lenData = meta1.g * 0x100 + meta1.b;
+    vec2 widthData = meta2.gb;
+    int flags = int(meta1.r);
+
+    int partCount = int(ceil(lenData / 256));
+    float width = ((scaleData.y - 2) / partCount) - meta2.g;
+
+    b_meta = vec3(lenData, widthData);
+
+    uvCoord = (corner - 0.5) * (1 + width / 4.0) * (128.0 / MAP_CONTENT_SIZE);
+
+    float angle = Color.b * 2 * PI;
+
+    if ((flags & FL_ROTATE) != 0)
+        angle -= (flags & FL_INV_ROT) != 0 ? -yaw : yaw;
+
+    uvCoord = mat2_rotate_z(angle) * uvCoord;
+
+    box = vec4(stp + vec2(0, 1), scaleData - vec2(0, 2));    
+
+    vec2 map = (corner * (1 + width / 4.0) - width / 8.0) * MAP_SIZE;
+
+    if (isRight)
+        map = map + MAP_OFFSET * vec2(-1, 1) - vec2(MAP_SIZE.x, 0) + vec2(-1 /256.0 + (127 - MAP_CONTENT_SIZE) / 256.0) * vec2(1,-1) * MAP_SIZE;
+    else
+        map = map + MAP_OFFSET + vec2(1 /256.0 - (127 - MAP_CONTENT_SIZE) / 256.0) * MAP_SIZE;
+
+    #ifdef MAP_ABSOLUTE_SIZES
+    map *= vec2(2, -2) / ScreenSize;
+    #else
+    map *= vec2(1, -ProjMat[1][1]/ProjMat[0][0]);
+    #endif
+
+    gl_Position = vec4(map + vec2(isRight? 1 : -1, 1), MAP_DEPTH * (1 + 0.0001 * (Color.r-0.5)), 1);
     vertexColor = vec4(1);
     
     sphericalVertexDistance = 0;

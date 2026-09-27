@@ -24,13 +24,19 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MarkerListener implements Listener {
 
+
     @EventHandler
     public void mapOwner(AsyncMarkerRenderEvent e) {
         var player = e.getPlayer();
         if (Config.playerMarker.isEmpty())
             return;
+        
+        int rotation = Config.keepUprightForPlayerMarker ?
+                0
+                :
+                (int) (((Math.floorMod((int) player.getPlayer().getLocation().getYaw() - 2, 360) / 360.0f) * 256.0) - 127);
 
-        e.getMarkers().add(new PositionMarker(Config.playerMarker, 0, 0, (int) (((Math.floorMod((int) player.getPlayer().getLocation().getYaw() - 2, 360) / 360.0f) * 256.0) - 127)));
+        e.getMarkers().add(new PositionMarker(Config.playerMarker, 0, 0, rotation));
     }
 
     @EventHandler(priority = EventPriority.LOW)

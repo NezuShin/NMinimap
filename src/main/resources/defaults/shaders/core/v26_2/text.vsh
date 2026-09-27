@@ -1,8 +1,8 @@
 #version 330
 #define UNREL_ID
 
-#define MAP_DEPTH 1.0
-#define MARKER_DEPTH 1.0
+#define MAP_DEPTH 0.9999
+#define MARKER_DEPTH 0.9999
 
 #ifdef GL_ARB_shader_draw_parameters
 #extension GL_ARB_shader_draw_parameters : require
@@ -38,12 +38,16 @@ out vec2 texCoord0;
 
 flat out int custom;
 out vec2 uvCoord;
+flat out vec3 b_meta;
+flat out vec4 box;
 
 #moj_import <nminimap:vertex_utils.glsl>
 
 void main() {
     custom = 0;
     uvCoord = vec2(0);
+    b_meta = vec3(0);
+    box = vec4(0);
 
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
 

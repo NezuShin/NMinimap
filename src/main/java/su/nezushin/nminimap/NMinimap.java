@@ -20,12 +20,13 @@ import su.nezushin.nminimap.papi.NMinimapPAPIExpansion;
 import su.nezushin.nminimap.player.NMapPlayer;
 import su.nezushin.nminimap.chunks.ChunkManager;
 import su.nezushin.nminimap.radar.MobRadarManager;
-import su.nezushin.nminimap.resourcepack.MarkerImageManager;
+import su.nezushin.nminimap.frames.FrameManager;
+import su.nezushin.nminimap.markers.MarkerManager;
+import su.nezushin.nminimap.resourcepack.ResourcepackManager;
 import su.nezushin.nminimap.updatechecker.UpdateCheckerManager;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
 import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
-import su.nezushin.nminimap.util.config.UndergroundLayer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +39,7 @@ public final class NMinimap extends JavaPlugin {
 
     private PacketManager packetManager;
     private ChunkManager chunkManager;
-    private MarkerImageManager markerImageManager;
+    private ResourcepackManager resourcepackManager;
     private DatabaseManager databaseManager;
     private ModCompatibilityManager modCompatibilityManager;
     private WorldGuardManager worldGuardManager;
@@ -117,7 +118,7 @@ public final class NMinimap extends JavaPlugin {
         }
 
         chunkManager = new ChunkManager();
-        markerImageManager = new MarkerImageManager();
+        resourcepackManager = new ResourcepackManager();
         databaseManager = new DatabaseManager();
         modCompatibilityManager = new ModCompatibilityManager();
         worldGuardManager = new WorldGuardManager();
@@ -131,7 +132,7 @@ public final class NMinimap extends JavaPlugin {
         updateCheckerManager = new UpdateCheckerManager();
         mobRadarManager = new MobRadarManager();
 
-        Config.validateLocationMarkers();
+        Config.validateConfig();
 
         SchedulerUtil.getScheduler().async(() -> {
             playersWithMap.forEach(NMapPlayer::sendMap);
@@ -187,6 +188,7 @@ public final class NMinimap extends JavaPlugin {
                 player.setRound(Config.defaultRound);
                 player.setScale(Config.defaultScale);
                 player.setRadarEnabled(Config.defaultEnableMobRadar);
+                player.setFrame(Config.defaultFrame);
 
                 player.saveAsync();
             }
@@ -214,8 +216,16 @@ public final class NMinimap extends JavaPlugin {
         return chunkManager;
     }
 
-    public MarkerImageManager getMarkerImageManager() {
-        return markerImageManager;
+    public ResourcepackManager getResourcepackManager() {
+        return resourcepackManager;
+    }
+
+    public MarkerManager getMarkerManager() {
+        return resourcepackManager.getMarkerManager();
+    }
+
+    public FrameManager getFrameManager() {
+        return resourcepackManager.getFrameManager();
     }
 
     public Set<NMapPlayer> getPlayersWithMap() {

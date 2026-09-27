@@ -173,6 +173,22 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
                         Message.radar_disabled.send(p);
                         return;
                     }
+                } else if (args[0].equalsIgnoreCase("frame")) {
+                    if (args[1].equalsIgnoreCase("none")) {
+                        player.setFrame(null);
+                        Message.frame_removed.send(p);
+                        return;
+                    }
+
+                    var matched = NMinimap.getInstance().getFrameManager().getFrame(args[1]);
+                    if (matched == null || (matched.usePermission() && !p.hasPermission("nminimap.frame." + matched.name()))) {
+                        Message.incorrect_frame.send(p);
+                        return;
+                    }
+
+                    player.setFrame(matched.name());
+                    Message.frame_set.replace("{frame}", matched.name()).send(p);
+                    return;
                 }
             }
             Message.help.send(p);
@@ -189,7 +205,7 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
             return List.of();
 
         if (args.length == 1) {
-            return Lists.newArrayList("scale", "style", "side", "radar", "enable", "disable", "admin")
+            return Lists.newArrayList("scale", "style", "side", "radar", "frame", "enable", "disable", "admin")
                     .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[0])).toList();
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("scale"))
@@ -204,6 +220,18 @@ public class MinimapCommand implements CommandExecutor, TabCompleter {
             else if (args[0].equalsIgnoreCase("radar"))
                 return Lists.newArrayList("enable", "disable")
                         .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[1])).toList();
+            else if (args[0].equalsIgnoreCase("frame")) {
+                var manager = NMinimap.getInstance().getFrameManager();
+                var suggestions = Lists.newArrayList(manager.getFrameNames());
+                suggestions.add("none");
+                return suggestions.stream()
+                        .filter(i -> StringUtil.startsWithIgnoreCase(i, args[1]))
+                        .filter(frame -> {
+                            var baked = manager.getFrame(frame);
+                            return baked == null || !baked.usePermission() || sender.hasPermission("nminimap.frame." + baked.name());
+                        })
+                        .toList();
+            }
             else if (args[0].equalsIgnoreCase("admin"))
                 return Lists.newArrayList("reload", "stats", "clean-cache")
                         .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[1])).toList();

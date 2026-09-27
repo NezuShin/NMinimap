@@ -1,13 +1,14 @@
 #version 330
 
-#define MAP_DEPTH -1.0
-#define MARKER_DEPTH -1.0
+#define MAP_DEPTH -0.9999
+#define MARKER_DEPTH -0.9999
 
 #moj_import <nminimap:config.glsl>
 #moj_import <minecraft:fog.glsl>
 #moj_import <minecraft:dynamictransforms.glsl>
 #moj_import <minecraft:projection.glsl>
 #moj_import <minecraft:sample_lightmap.glsl>
+#moj_import <minecraft:globals.glsl>
 
 in vec3 Position;
 in vec4 Color;
@@ -24,12 +25,16 @@ out vec2 texCoord0;
 
 flat out int custom;
 out vec2 uvCoord;
+flat out vec3 b_meta;
+flat out vec4 box;
 
 #moj_import <nminimap:vertex_utils.glsl>
 
 void main() {
     custom = 0;
     uvCoord = vec2(0);
+    b_meta = vec3(0);
+    box = vec4(0);
 
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
 
