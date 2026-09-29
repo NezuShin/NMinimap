@@ -84,6 +84,9 @@ public class NMinimapPAPIExpansion extends PlaceholderExpansion {
             return nminimapPlayer.isRight() ? "right" : "left";
         } else if (params.equalsIgnoreCase("style")) {
             return nminimapPlayer.isRound() ? "round" : "square";
+        } else if(params.equalsIgnoreCase("frame")){
+            var frame = nminimapPlayer.getFrame();
+            return frame == null ? "none" : frame;
         }
 
         return null;

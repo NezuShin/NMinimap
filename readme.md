@@ -84,6 +84,7 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 - `nminimap_scale` - 1, 2, 4, 8
 - `nminimap_side` - right or left
 - `nminimap_style` - round or square
+- `nminimap_frame` - current map frame name; none if not set.
 
 #### Statistics related:
 - `nminimap_stats_loaded_tiles` - count of tiles in ram, number

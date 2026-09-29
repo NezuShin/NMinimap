@@ -124,6 +124,9 @@ markers:
       - TRIDENT
       - AREA_EFFECT_CLOUD
       - MARKER
+      - ITEM_DISPLAY
+      - TEXT_DISPLAY
+      - BLOCK_DISPLAY
 
 
     #Allow radar enable only for players with nminimap.allow-radar permission
