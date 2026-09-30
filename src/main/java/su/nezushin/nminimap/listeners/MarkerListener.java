@@ -31,7 +31,7 @@ public class MarkerListener implements Listener {
         if (Config.playerMarker.isEmpty())
             return;
         
-        int rotation = Config.keepUprightForPlayerMarker ?
+        int rotation = Config.keepUprightForPlayerMarker && player.isRound() ?
                 0
                 :
                 (int) (((Math.floorMod((int) player.getPlayer().getLocation().getYaw() - 2, 360) / 360.0f) * 256.0) - 127);
