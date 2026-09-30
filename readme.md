@@ -16,6 +16,7 @@ Serverside minimap based on core shaders
 - Unlimited amount of custom markers
 - Side of the screen selection (left or right)
 - Scale of map from 1x (1 pixel = 1 block) to 8x (1 pixel = 8x8 blocks)
+- Map frames that can be switched in-game
 - Async work as much as possible
 - Map size up tp 127 x 127 pixels
 - Automatic resource pack build
