@@ -287,6 +287,15 @@ per-world-settings:
     #Highly suggested set this to false for short-living worlds
     allow-file-cache: true
 
+    # Optional overrides. Unspecified fields inherit the top-level settings.
+    # Explicit underground-layer fields take priority over these defaults.
+    water-rendering:
+      mode: fixed
+      opacity: 0.15
+      color-source: bottom
+    smart-descend-defaults:
+      min-connected-columns: 3
+
     ceiling-blocks:
       - BEDROCK
     #Simple list of worlds where to apply these settings
@@ -408,6 +417,12 @@ water-rendering:
 # Configuration for underground layers (caves)
 # It uses WorldGuard regions.
 smart-descend-defaults:
+  # Shared settings for all underground layers, overridable per world and per layer.
+  # These defaults do not enable a global underground renderer.
+  no-opening-mode: fixed
+  min-y: region-floor
+  min-open-height: 2
+  transparent-blocks: [AIR, CAVE_AIR, VOID_AIR]
   # Minimum number of horizontally distinct columns in one connected air/water space.
   # 1 disables the connectivity check and keeps the previous behavior.
   min-connected-columns: 1
@@ -443,7 +458,7 @@ underground-layers:
         - CAVE_AIR
         - VOID_AIR
 
-    # Optional per-layer override. Omitted values inherit the global water-rendering section.
+    # Optional per-layer override. Omitted values inherit per-world, then global water settings.
     water-rendering:
       # region: use this layer's water settings only inside its WG regions;
       # map: use them across the whole map while the player is inside the layer.

@@ -11,7 +11,6 @@ import su.nezushin.nminimap.util.ConnectedCaveCheck;
 import su.nezushin.nminimap.util.ColorUtil;
 import su.nezushin.nminimap.util.PerWorldSettingsUtil;
 import su.nezushin.nminimap.util.RenderUtil;
-import su.nezushin.nminimap.util.config.Config;
 import su.nezushin.nminimap.util.config.WaterRenderingSettings;
 
 import java.util.HashMap;
@@ -53,7 +52,7 @@ public class ChunkRender {
                 NMinimap.async(() -> {
                     try {
                         var hasCeiling = c.getWorld().hasCeiling();
-                        int minY = PerWorldSettingsUtil.getMinY(c.getWorld());
+                        int minY = Math.max(c.getWorld().getMinHeight(), PerWorldSettingsUtil.getMinY(c.getWorld()));
                         boolean skipCeiling = PerWorldSettingsUtil.getSkipCeiling(c.getWorld());
                         Set<Material> ceilingBlocks = PerWorldSettingsUtil.getCeilingBlocks(c.getWorld());
                         var chunkSnapshot = c.getChunkSnapshot(true, false, false);
@@ -65,17 +64,18 @@ public class ChunkRender {
                                 snapshots.put(entry.getKey(), entry.getValue().join().getChunkSnapshot(true, false, false));
                             connectedCaveCheck = new ConnectedCaveCheck(snapshots);
                         }
+                        var northCaveCheck = connectedCaveCheck == null ? null : connectedCaveCheck.forChunk(0, -1);
 
                         var northChunk = new BlockDataInfo[(16) * (8)];
                         var currentChunk = new BlockDataInfo[(16) * (16)];
 
-                        int maxY = PerWorldSettingsUtil.getMaxY(c.getWorld());
+                        int maxY = Math.min(c.getWorld().getMaxHeight() - 1, PerWorldSettingsUtil.getMaxY(c.getWorld()));
 
                         for (var x = 0; x < 16; x++) {
                             for (var z = 0; z < 16; z++) {
                                 if (z < 8) {
                                     northChunk[x + (z * 16)] = renderColumn(northChunkSnapshot, x, 15 - z, minY, maxY,
-                                            hasCeiling, skipCeiling, ceilingBlocks, chunk, cNorth, null);
+                                            hasCeiling, skipCeiling, ceilingBlocks, chunk, cNorth, northCaveCheck);
                                 }
                                 currentChunk[x + (z * 16)] = renderColumn(chunkSnapshot, x, z, minY, maxY,
                                         hasCeiling, skipCeiling, ceilingBlocks, chunk, c, connectedCaveCheck);
@@ -95,7 +95,7 @@ public class ChunkRender {
                                         lastYLevel = RenderUtil.getMostCommonOpaqueBlockBlockData(northChunk, x, 0, scale).yLevel();
                                     }
                                     var info = RenderUtil.getMostCommonOpaqueBlockBlockData(currentChunk, x, z, scale);
-                                    var waterSettings = chunk.layer() == null ? Config.waterRendering : chunk.layer().waterRendering();
+                                    var waterSettings = chunk.layer() == null ? PerWorldSettingsUtil.getWaterRendering(chunk.world()) : chunk.layer().waterRendering();
                                     var color = waterColor(info, waterSettings);
                                     var waterDepth = info.waterDepth();
 
@@ -153,7 +153,7 @@ public class ChunkRender {
                                                ChunkEntry chunk, Chunk sourceChunk, ConnectedCaveCheck connectedCaveCheck) {
         if (chunk.layer() == null || chunk.surface())
             return RenderUtil.getHighestBlockDataAt(snapshot, x, z, minY, maxY, hasCeiling, skipCeiling, ceilingBlocks,
-                    (chunk.layer() == null ? Config.waterRendering : chunk.layer().waterRendering()).maxSampledDepth());
+                    (chunk.layer() == null ? PerWorldSettingsUtil.getWaterRendering(chunk.world()) : chunk.layer().waterRendering()).maxSampledDepth());
         Integer regionFloor = null;
         if (chunk.layer().smartDescend().useRegionFloor())
             regionFloor = NMinimap.getInstance().getWorldGuardManager().getLayerFloorAt(sourceChunk.getWorld(),

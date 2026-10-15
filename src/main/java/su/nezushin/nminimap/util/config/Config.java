@@ -46,6 +46,7 @@ public class Config {
     public static List<UndergroundLayer> undergroundLayers = new ArrayList<>();
 
     public static WaterRenderingSettings waterRendering;
+    public static SmartDescendSettings smartDescendDefaults;
 
     public static List<StaticMarker> staticMarkers = new ArrayList<>();
 
@@ -252,12 +253,16 @@ public class Config {
         frames = loadFrames(config);
 
         waterRendering = loadWaterRendering(config, "water-rendering", defaultWaterRendering());
-        undergroundLayers = loadUndergroundLayers(config);
+        smartDescendDefaults = loadSmartDescend(config, "smart-descend-defaults", new SmartDescendSettings(
+                Integer.MIN_VALUE, true, SmartDescendSettings.NoOpeningMode.FIXED,
+                Set.of(Material.AIR, Material.CAVE_AIR, Material.VOID_AIR), 2, 1));
+        undergroundLayers = loadUndergroundLayers(config, smartDescendDefaults, waterRendering);
 
         staticMarkers = loadLocationMarkers(config);
 
         perWorldSettings = loadPerWorldSettings(config);
         PerWorldSettingsUtil.clearCache();
+        su.nezushin.nminimap.chunks.cache.CacheFingerprint.clear();
 
         checkForUpdates = config.getBoolean("updates.check-for-updates", true);
 
@@ -506,7 +511,9 @@ public class Config {
         return def;
     }
 
-    private static List<UndergroundLayer> loadUndergroundLayers(FileConfiguration config) {
+    private static List<UndergroundLayer> loadUndergroundLayers(FileConfiguration config,
+                                                               SmartDescendSettings smartDefaults,
+                                                               WaterRenderingSettings waterDefaults) {
         var cs = config.getConfigurationSection("underground-layers");
         if (cs == null)
             return Lists.newArrayList();
@@ -521,8 +528,8 @@ public class Config {
                     config.getInt(path + ".render-from-y", 64),
                     config.getInt(path + ".priority", 0),
                     (float) config.getDouble(path + ".darken", 0.5),
-                    loadSmartDescend(config, path + ".smart-descend"),
-                    loadWaterRendering(config, path + ".water-rendering", waterRendering)
+                    loadSmartDescend(config, path + ".smart-descend", smartDefaults),
+                    loadWaterRendering(config, path + ".water-rendering", waterDefaults)
             ));
         }
         return list;
@@ -561,11 +568,11 @@ public class Config {
         );
     }
 
-    private static SmartDescendSettings loadSmartDescend(FileConfiguration config, String path) {
+    private static SmartDescendSettings loadSmartDescend(FileConfiguration config, String path, SmartDescendSettings defaults) {
         var materials = EnumSet.noneOf(Material.class);
         var names = config.contains(path + ".transparent-blocks")
                 ? config.getStringList(path + ".transparent-blocks")
-                : List.of("AIR", "CAVE_AIR", "VOID_AIR");
+                : defaults.transparentBlocks().stream().map(Enum::name).toList();
         for (var name : names) {
             try {
                 materials.add(Material.valueOf(name.toUpperCase(Locale.ROOT).replace('-', '_')));
@@ -573,7 +580,7 @@ public class Config {
                 NMinimap.getInstance().getLogger().warning("Unknown material at " + path + ".transparent-blocks: " + name);
             }
         }
-        var minYSetting = config.getString(path + ".min-y", "region-floor");
+        var minYSetting = config.getString(path + ".min-y", defaults.useRegionFloor() ? "region-floor" : Integer.toString(defaults.minY()));
         boolean useRegionFloor = "region-floor".equalsIgnoreCase(minYSetting);
         int minY = Integer.MIN_VALUE;
         if (!useRegionFloor) {
@@ -588,11 +595,10 @@ public class Config {
                 minY,
                 useRegionFloor,
                 loadEnum(SmartDescendSettings.NoOpeningMode.class, config.getString(path + ".no-opening-mode"),
-                        SmartDescendSettings.NoOpeningMode.FIXED, path + ".no-opening-mode"),
+                        defaults.noOpeningMode(), path + ".no-opening-mode"),
                 materials,
-                config.getInt(path + ".min-open-height", 2),
-                config.getInt(path + ".min-connected-columns",
-                        config.getInt("smart-descend-defaults.min-connected-columns", 1))
+                config.getInt(path + ".min-open-height", defaults.minOpenHeight()),
+                Math.min(48 * 48, config.getInt(path + ".min-connected-columns", defaults.minConnectedColumns()))
         );
     }
 
@@ -626,6 +632,8 @@ public class Config {
                 ceilingBlocks = loadEnumSet(Material.class, config.getStringList(path + ".ceiling-blocks"), "Material");
             }
 
+            var worldWater = loadWaterRendering(config, path + ".water-rendering", waterRendering);
+            var worldSmart = loadSmartDescend(config, path + ".smart-descend-defaults", smartDescendDefaults);
             list.add(new PerWorldSettings(
                     key,
                     config.contains(path + ".max-y") ? config.getInt(path + ".max-y") : null,
@@ -634,7 +642,10 @@ public class Config {
                     config.contains(path + ".allow-file-cache") ? config.getBoolean(path + ".allow-file-cache", true) : null,
                     ceilingBlocks,
                     new HashSet<>(config.getStringList(path + ".worlds")),
-                    regex
+                    regex,
+                    worldWater,
+                    worldSmart,
+                    loadUndergroundLayers(config, worldSmart, worldWater)
             ));
         }
         return list;

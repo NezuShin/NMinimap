@@ -4,7 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import su.nezushin.nminimap.NMinimap;
-import su.nezushin.nminimap.util.config.Config;
+import su.nezushin.nminimap.util.PerWorldSettingsUtil;
 import su.nezushin.nminimap.util.config.UndergroundLayer;
 
 import java.util.logging.Level;
@@ -22,7 +22,8 @@ public class WorldGuardManager {
     }
 
     public UndergroundLayer getActiveLayer(Location location) {
-        if (!enabled || Config.undergroundLayers.isEmpty()) {
+        var layers = PerWorldSettingsUtil.getUndergroundLayers(location.getWorld().getName());
+        if (!enabled || layers.isEmpty()) {
             return null;
         }
         try {
@@ -34,7 +35,7 @@ public class WorldGuardManager {
             UndergroundLayer bestLayer = null;
 
             for (com.sk89q.worldguard.protection.regions.ProtectedRegion region : set) {
-                for (UndergroundLayer layer : Config.undergroundLayers) {
+                for (UndergroundLayer layer : layers) {
                     for (String regionId : layer.wgRegions()) {
                         if (regionId.equalsIgnoreCase(region.getId())) {
                             if (bestLayer == null || layer.priority() > bestLayer.priority() ||

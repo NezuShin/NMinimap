@@ -138,12 +138,23 @@ public class RenderUtil {
             return missingCaveSurface(c, x, z, minY, worldMaxY, hasCeiling, skipCeiling, ceilingBlocks, layer);
 
         int searchMinY = Math.max(minY, smart.useRegionFloor() ? regionFloorY : smart.minY());
-        int openingY = isOpening(c, x, startY, z, searchMinY, startY, smart, connectedCaveCheck)
+        int openingY = smart.noOpeningMode() == SmartDescendSettings.NoOpeningMode.FIXED
+                && isOpening(c, x, startY, z, searchMinY, startY, smart, connectedCaveCheck)
                 ? startY : Integer.MIN_VALUE;
         if (openingY == Integer.MIN_VALUE && smart.noOpeningMode() == SmartDescendSettings.NoOpeningMode.DESCEND) {
-            for (int y = startY - 1; y >= searchMinY; y--) {
-                if (isOpening(c, x, y, z, searchMinY, startY, smart, connectedCaveCheck)) {
-                    openingY = y;
+            // One downward pass instead of rechecking min-open-height blocks at every Y.
+            int openHeight = 0;
+            for (int y = startY; y >= searchMinY; y--) {
+                if (!smart.transparentBlocks().contains(c.getBlockType(x, y, z))) {
+                    openHeight = 0;
+                    continue;
+                }
+                openHeight++;
+                int candidateY = y + smart.minOpenHeight() - 1;
+                if (openHeight >= smart.minOpenHeight() && (smart.minConnectedColumns() <= 1
+                        || connectedCaveCheck != null && connectedCaveCheck.hasConnectedColumns(x, candidateY, z,
+                        searchMinY, startY, smart))) {
+                    openingY = candidateY;
                     break;
                 }
             }

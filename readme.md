@@ -57,13 +57,13 @@ or [Resource Pack Manager](https://www.spigotmc.org/resources/resource-pack-mana
 
 ### Water and underground rendering
 
-Water rendering can be configured globally with `water-rendering` and overridden for each underground layer. `vanilla` keeps the original map shading; `fixed` applies a constant tint opacity; `depth` interpolates between minimum and maximum opacity according to water depth; `disabled` shows the block below the water. `color-source` selects whether the tint is blended with the water color or the block below it. All opacity and darkening values are between `0.0` and `1.0`.
+Water rendering can be configured globally with `water-rendering`, overridden in `per-world-settings.<entry>.water-rendering`, and overridden again for each underground layer. Each field inherits independently: an explicit layer value wins over a world value, which wins over the global default. `vanilla` keeps the original map shading; `fixed` applies a constant tint opacity; `depth` interpolates between minimum and maximum opacity according to water depth; `disabled` shows the block below the water. `color-source` selects whether the tint is blended with the water color or the block below it. All opacity and darkening values are between `0.0` and `1.0`.
 
-The per-layer `water-rendering.scope` controls where its override applies. `region` (default) uses it only for pixels inside the layer's WorldGuard regions; outside pixels use the global water settings. `map` uses the layer's water settings across the whole minimap while the player is inside that layer, including surface pixels outside its regions. Outside pixels still use surface terrain and the layer's `darken` factor. The top-level `water-rendering` remains the default when no underground layer is active.
+The per-layer `water-rendering.scope` controls where its override applies. `region` (default) uses it only for pixels inside the layer's WorldGuard regions; outside pixels use the world's water settings. `map` uses the layer's water settings across the whole minimap while the player is inside that layer, including surface pixels outside its regions. Outside pixels still use surface terrain and the layer's `darken` factor.
 
 Underground layers require WorldGuard regions. With `no-opening-mode: descend`, each map column searches downward from `render-from-y` for `min-open-height` consecutive blocks listed in `transparent-blocks`. `min-y` can be a numeric Y coordinate or `region-floor`, which uses the minimum Y of the covering WorldGuard region; it must be at or below `render-from-y`. A column without a qualifying opening shows the darkened surface. `no-opening-mode: fixed` (the default) checks only `render-from-y` and retains the original slice there when no opening is found. There is no separate `enabled` switch.
 
-An optional connectivity threshold excludes small isolated air or water pockets. `smart-descend-defaults.min-connected-columns` sets the default for all layers; a layer's `smart-descend.min-connected-columns` overrides it. `1` disables the connectivity check. Higher values require that many distinct horizontal columns in one six-directionally connected transparent space, searched within the current chunk and its eight neighbors. This is a local size check, not a pathfinding check from the player's position. Enabling it loads neighboring chunks during rendering and rerenders affected neighboring cached tiles after block changes.
+An optional connectivity threshold excludes small isolated air or water pockets. All smart-descend fields can be placed in the top-level `smart-descend-defaults` or in `per-world-settings.<entry>.smart-descend-defaults`; an explicit layer field takes priority. These defaults configure existing WG layers and do not enable a global underground renderer. `min-connected-columns: 1` disables the connectivity check and its extra neighbor loads. Higher values require that many distinct horizontal columns in one six-directionally connected transparent space, searched within the current chunk and its eight neighbors (at most 2,304 columns). This is a local size check, not a pathfinding check from the player's position. Results are reused within a tile render. Block changes invalidate neighboring tiles without rendering disk-only tiles that nobody is viewing.
 
 ```yaml
 water-rendering:
@@ -97,7 +97,26 @@ underground-layers:
       underwater-darken: 0.10
 ```
 
-Only blocks in `transparent-blocks` count as cave space; add `WATER` for flooded caves. Layer water settings not specified here inherit the global values. The tile cache is separated by rendering settings, so changes to these settings generate new tiles instead of reusing incompatible cached colors.
+Only blocks in `transparent-blocks` count as cave space; add `WATER` for flooded caves. With `region-floor`, a solid floor immediately below the region boundary can provide the opening's bottom color; the search does not continue into transparent blocks below that boundary. Custom water modes do not apply terrain-slope shading to water pixels.
+
+For example, set world defaults without repeating them in every layer:
+
+```yaml
+per-world-settings:
+  overworld:
+    worlds: [world]
+    water-rendering:
+      mode: fixed
+      opacity: 0.15
+      color-source: bottom
+    smart-descend-defaults:
+      no-opening-mode: descend
+      min-open-height: 2
+      min-connected-columns: 3
+      transparent-blocks: [AIR, CAVE_AIR, VOID_AIR, WATER]
+```
+
+Disk cache directories use SHA-256 of an explicit, sorted representation of rendering settings, including world height/ceiling overrides. Identical settings reuse the same directory across JVM restarts. Existing older cache directories are ignored and retained; the first run with the new cache format renders fresh tiles. Each file contains all four map scales. The startup count is the number of indexed disk tiles, not tiles loaded into RAM. Reads, writes and deletes of a tile share a lock; temporary Windows sharing violations are retried, and a failed replacement preserves the previous file. See [rendering checks and benchmark results](docs/rendering-review.md) for validation and performance limits.
 
 ### Permissions
 

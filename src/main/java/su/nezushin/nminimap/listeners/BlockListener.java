@@ -12,7 +12,6 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.ChunkEntry;
 import su.nezushin.nminimap.util.PerWorldSettingsUtil;
-import su.nezushin.nminimap.util.config.Config;
 import su.nezushin.nminimap.util.config.WaterRenderingSettings;
 
 import java.util.Set;
@@ -42,12 +41,13 @@ public class BlockListener implements Listener {
         var world = b.getWorld().getName();
         var chunkX = Math.floorDiv(b.getX(), 16);
         var chunkZ = Math.floorDiv(b.getZ(), 16);
-        if (updateSurface || !Config.undergroundLayers.isEmpty())
+        var layers = PerWorldSettingsUtil.getUndergroundLayers(world);
+        if (updateSurface || !layers.isEmpty())
             NMinimap.async(() -> {
                 var manager = NMinimap.getInstance().getChunkManager();
                 if (updateSurface)
                     manager.reRenderChunk(new ChunkEntry(world, chunkX, chunkZ, null));
-                for (var layer : Config.undergroundLayers) {
+                for (var layer : layers) {
                     if (updateSurface && layer.waterRendering().scope() == WaterRenderingSettings.Scope.MAP) {
                         var surfaceEntry = new ChunkEntry(world, chunkX, chunkZ, layer, true);
                         if (manager.getLoadedTiles().containsKey(surfaceEntry) || manager.getChunkCache().hasInCache(surfaceEntry))

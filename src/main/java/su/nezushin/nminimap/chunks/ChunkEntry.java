@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import su.nezushin.nminimap.util.config.Config;
 import su.nezushin.nminimap.util.config.UndergroundLayer;
+import su.nezushin.nminimap.chunks.cache.CacheFingerprint;
 
 import java.io.File;
 
@@ -21,8 +22,7 @@ public record ChunkEntry(String world, int x, int z, UndergroundLayer layer, boo
 
     public File getAsFile() {
         String layerSuffix = layer == null ? "" : surface ? "_surface_layer_" + layer.id() : "_layer_" + layer.id();
-        int settingsHash = layer != null ? layer.hashCode() : Config.waterRendering.hashCode();
-        var namespace = new File(Config.cacheFolder, "render-v8-" + Integer.toUnsignedString(settingsHash, 16));
+        var namespace = new File(Config.cacheFolder, CacheFingerprint.namespace(this));
         return new File(namespace, world + "." + x + "." + z + layerSuffix + ".bin.gz");
     }
 
