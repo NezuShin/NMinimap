@@ -96,7 +96,7 @@ public class ChunkManager {
         dirtyChunks.add(chunk);
     }
 
-    public void renderNextAwaitingChunk() {
+    public synchronized void renderNextAwaitingChunk() {
         if (RamCapacityUtil.getAvailableMemory() < Config.availableRamThreshold) {
             ramLow = true;
             return;
@@ -115,9 +115,9 @@ public class ChunkManager {
                 continue;
 
             // Accept this pass; any dirty set after this point triggers another via finishChunkJob.
-            dirtyChunks.remove(chunk);
+            boolean rerender = dirtyChunks.remove(chunk);
 
-            if (PerWorldSettingsUtil.getAllowFileCache(chunk.world()) && chunkCache.hasInCache(chunk))
+            if (!rerender && PerWorldSettingsUtil.getAllowFileCache(chunk.world()) && chunkCache.hasInCache(chunk))
                 chunkCache.loadFromCache(chunk);
             else
                 chunkRender.renderChunk(chunk);
@@ -145,6 +145,9 @@ public class ChunkManager {
     public void reRenderChunk(ChunkEntry chunk) {
         NMinimap.async(() -> {
             chunkCache.removeFromCache(chunk);
+            // Invalidate disk-only tiles without warming up chunks nobody is viewing.
+            if (!loadedTiles.containsKey(chunk) && !loadingChunks.contains(chunk) && !pendingChunks.contains(chunk))
+                return;
             // Always mark dirty + try enqueue. If a job is in flight, finishChunkJob
             // will re-enqueue via dirty; pendingChunks dedupes double enqueue.
             dirtyChunks.add(chunk);

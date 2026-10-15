@@ -2,8 +2,9 @@ package su.nezushin.nminimap.compatibility;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import su.nezushin.nminimap.NMinimap;
-import su.nezushin.nminimap.util.config.Config;
+import su.nezushin.nminimap.util.PerWorldSettingsUtil;
 import su.nezushin.nminimap.util.config.UndergroundLayer;
 
 import java.util.logging.Level;
@@ -21,7 +22,8 @@ public class WorldGuardManager {
     }
 
     public UndergroundLayer getActiveLayer(Location location) {
-        if (!enabled || Config.undergroundLayers.isEmpty()) {
+        var layers = PerWorldSettingsUtil.getUndergroundLayers(location.getWorld().getName());
+        if (!enabled || layers.isEmpty()) {
             return null;
         }
         try {
@@ -33,7 +35,7 @@ public class WorldGuardManager {
             UndergroundLayer bestLayer = null;
 
             for (com.sk89q.worldguard.protection.regions.ProtectedRegion region : set) {
-                for (UndergroundLayer layer : Config.undergroundLayers) {
+                for (UndergroundLayer layer : layers) {
                     for (String regionId : layer.wgRegions()) {
                         if (regionId.equalsIgnoreCase(region.getId())) {
                             if (bestLayer == null || layer.priority() > bestLayer.priority() ||
@@ -71,6 +73,29 @@ public class WorldGuardManager {
         } catch (Exception e) {
             NMinimap.getInstance().getLogger().log(Level.SEVERE, "WorldGuard region fetch failed", e);
             return false;
+        }
+    }
+
+    /** Returns the highest floor among this layer's regions covering the column. */
+    public Integer getLayerFloorAt(World world, int x, int z, UndergroundLayer layer) {
+        if (!enabled || layer == null) return null;
+        try {
+            var rm = com.sk89q.worldguard.WorldGuard.getInstance().getPlatform().getRegionContainer()
+                    .get(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(world));
+            if (rm == null) return null;
+
+            Integer floor = null;
+            for (String regionId : layer.wgRegions()) {
+                var region = rm.getRegion(regionId);
+                if (region == null) continue;
+                int regionFloor = region.getMinimumPoint().getBlockY();
+                if (region.contains(x, regionFloor, z) && (floor == null || regionFloor > floor))
+                    floor = regionFloor;
+            }
+            return floor;
+        } catch (Exception e) {
+            NMinimap.getInstance().getLogger().log(Level.SEVERE, "WorldGuard region floor fetch failed", e);
+            return null;
         }
     }
 

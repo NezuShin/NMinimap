@@ -21,7 +21,7 @@ public class MapDataUtil {
 
 
         int read;
-        if (arr.length != (read = is.read(arr, 0, arr.length))) {
+        if (arr.length != (read = is.readNBytes(arr, 0, arr.length))) {
             throw new IOException("Failed to read chunk data (" + read + " instead of " + arr.length + ")");
         }
 

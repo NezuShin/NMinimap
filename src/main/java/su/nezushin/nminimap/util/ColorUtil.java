@@ -81,6 +81,16 @@ public class ColorUtil {
         return result;
     }
 
+    public static byte blend(Color base, Color tint, float opacity) {
+        float alpha = Math.max(0f, Math.min(1f, opacity));
+        Color mixed = Color.fromRGB(
+                Math.round(base.getRed() * (1f - alpha) + tint.getRed() * alpha),
+                Math.round(base.getGreen() * (1f - alpha) + tint.getGreen() * alpha),
+                Math.round(base.getBlue() * (1f - alpha) + tint.getBlue() * alpha)
+        );
+        return getNearestColor(mixed);
+    }
+
     private static double getDistance(@NotNull Color c1, @NotNull Color c2) {
         // Paper start - Optimize color distance calculation by removing floating point math
         int rsum = c1.getRed() + c2.getRed(); // Use sum instead of mean for no division

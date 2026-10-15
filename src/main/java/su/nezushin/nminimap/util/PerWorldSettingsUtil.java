@@ -4,8 +4,12 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import su.nezushin.nminimap.util.config.Config;
 import su.nezushin.nminimap.util.config.PerWorldSettings;
+import su.nezushin.nminimap.util.config.WaterRenderingSettings;
+import su.nezushin.nminimap.util.config.SmartDescendSettings;
+import su.nezushin.nminimap.util.config.UndergroundLayer;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -33,6 +37,21 @@ public class PerWorldSettingsUtil {
 
     public static void clearCache() {
         cache.clear();
+    }
+
+    public static WaterRenderingSettings getWaterRendering(String worldName) {
+        var settings = find(worldName);
+        return settings == null ? Config.waterRendering : settings.waterRendering();
+    }
+
+    public static SmartDescendSettings getSmartDescendDefaults(String worldName) {
+        var settings = find(worldName);
+        return settings == null ? Config.smartDescendDefaults : settings.smartDescendDefaults();
+    }
+
+    public static List<UndergroundLayer> getUndergroundLayers(String worldName) {
+        var settings = find(worldName);
+        return settings == null ? Config.undergroundLayers : settings.undergroundLayers();
     }
 
     public static int getMinY(World world) {

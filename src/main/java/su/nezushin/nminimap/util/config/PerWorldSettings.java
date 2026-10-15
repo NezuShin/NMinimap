@@ -3,6 +3,7 @@ package su.nezushin.nminimap.util.config;
 import org.bukkit.Material;
 
 import java.util.Set;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public record PerWorldSettings(
@@ -13,7 +14,10 @@ public record PerWorldSettings(
         Boolean allowFileCache,
         Set<Material> ceilingBlocks,
         Set<String> worlds,
-        Pattern regex
+        Pattern regex,
+        WaterRenderingSettings waterRendering,
+        SmartDescendSettings smartDescendDefaults,
+        List<UndergroundLayer> undergroundLayers
 ) {
 
     public boolean matches(String worldName) {
