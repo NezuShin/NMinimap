@@ -51,20 +51,6 @@ void main() {
     cylindricalVertexDistance = fog_cylindrical_distance(Position);
     vertexColor = Color * sample_lightmap(Sampler2, UV2);
     
-    // vec2 texSize = textureSize(Sampler0, 0);
-    // ivec2 uv = ivec2(UV0 * texSize);
-    // vec4 testColor = texelFetch(Sampler0, uv, 0);
-    // int idTex = id(uv);
-
-    // const vec2 corners[] = vec2[](vec2(0, 0), vec2(0, 1), vec2(1, 1), vec2(1, 0));
-
-    // if (texSize == vec2(256) && round(testColor.a * 255) == 3 && ((idTex & 0xffff) == 0x0300))
-    // {
-    //     vec2 corner = corners[gl_VertexIndex % 4];
-
-    //     vertexColor = vec4(corner, 0, 1);
-    // }
-
     #include <nminimap:vertex_body.glsl>
 #else
     vertexColor = Color;
