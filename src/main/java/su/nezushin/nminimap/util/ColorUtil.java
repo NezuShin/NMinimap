@@ -3,6 +3,7 @@ package su.nezushin.nminimap.util;
 import org.bukkit.Color;
 import org.bukkit.map.MapPalette;
 import org.jetbrains.annotations.NotNull;
+import su.nezushin.nminimap.chunks.LayerData;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,10 +11,19 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ColorUtil {
 
+    /** Palette indices are {@code base * 4 + shade}. */
+    public static final int SHADE_LOW = 0, SHADE_NORMAL = 1, SHADE_HIGH = 2, SHADE_LOWEST = 3;
+
+    private static final int WATER_BASE = 12;
+
+    /** From this darken factor on, a darkened color may leave its hue to get dark enough. */
+    private static final float DARKEN_KEEP_HUE_LIMIT = 0.75f;
+
     private static final Map<Integer, Byte> colorMap;
 
     private static final Map<Color, Byte> colorDistanceCache = new ConcurrentHashMap<>();
-    private static final Map<Integer, Byte> darkenCache = new ConcurrentHashMap<>();
+    /** Darkened palette per darken factor, keyed by the factor's float bits. */
+    private static final Map<Integer, byte[]> darkenTables = new ConcurrentHashMap<>();
 
 
     public static byte exactColor(@NotNull Color color) {
@@ -25,7 +35,38 @@ public class ColorUtil {
      */
     public static void clearColorCache(){
         colorDistanceCache.clear();
-        darkenCache.clear();
+        darkenTables.clear();
+    }
+
+    public static byte withShade(byte mapColor, int shade) {
+        return (byte) ((mapColor & ~3) | shade);
+    }
+
+    /** Vanilla water shading of an unshaded color by depth; {@code parity} is the map cell checkerboard bit. */
+    public static byte waterShade(byte mapColor, int waterDepth, int parity) {
+        double diff = waterDepth * 0.1 + parity * 0.2;
+        if (diff < 0.5)
+            return withShade(mapColor, SHADE_HIGH);
+        if (diff > 0.9)
+            return withShade(mapColor, SHADE_LOW);
+        return withShade(mapColor, SHADE_NORMAL);
+    }
+
+    /**
+     * Vanilla hillshade of an unshaded color against the Y drawn north of it ({@link LayerData#NO_LAYER} = flat).
+     * Transparent and water colors are returned as is: water is shaded by depth when baked.
+     */
+    public static byte hillshade(byte mapColor, int y, int northY, int scale, int parity) {
+        int base = (mapColor & 0xFF) >> 2;
+        if (base == 0 || base == WATER_BASE)
+            return mapColor;
+        double slope = northY == LayerData.NO_LAYER ? 0 : (y - northY) * 4.0 / (scale + 4);
+        double diff = slope + (parity - 0.5) * 0.4;
+        if (diff > 0.6)
+            return withShade(mapColor, SHADE_HIGH);
+        if (diff < -0.6)
+            return withShade(mapColor, SHADE_LOW);
+        return withShade(mapColor, SHADE_NORMAL);
     }
 
     /**
@@ -54,31 +95,50 @@ public class ColorUtil {
         return c;
     }
 
+    /**
+     * Darken a palette color by {@code darkenFactor} (0..1). Below {@link #DARKEN_KEEP_HUE_LIMIT} the result is the closest
+     * of the same base color's four shades (so it clamps at the darkest one); above it, the nearest palette color.
+     */
     public static byte darken(byte mapColor, float darkenFactor) {
         if (darkenFactor <= 0f) return mapColor;
 
-        int cacheKey = (mapColor << 16) | (Float.floatToIntBits(darkenFactor) & 0xFFFF);
-        if (darkenCache.containsKey(cacheKey)) {
-            return darkenCache.get(cacheKey);
-        }
+        var table = darkenTables.computeIfAbsent(Float.floatToIntBits(darkenFactor), key -> buildDarkenTable(darkenFactor));
+        return table[mapColor & 0xFF];
+    }
 
-        int index = mapColor & 0xFF;
-        if (index < 0 || index >= colors.length) return mapColor;
-
-        Color base = colors[index];
-        if (base.asRGB() == 0) return mapColor;
-
+    private static byte[] buildDarkenTable(float darkenFactor) {
+        var table = new byte[256];
         float factor = Math.max(0f, 1f - darkenFactor);
+        for (int index = 0; index < table.length; index++) {
+            table[index] = (byte) index;
+            // Transparent shades and indices past the palette stay as they are
+            if (index < 4 || index >= colors.length)
+                continue;
 
-        Color newColor = Color.fromRGB(
-                Math.min(255, Math.max(0, (int) (base.getRed() * factor))),
-                Math.min(255, Math.max(0, (int) (base.getGreen() * factor))),
-                Math.min(255, Math.max(0, (int) (base.getBlue() * factor)))
-        );
+            Color base = colors[index];
+            Color target = Color.fromRGB(
+                    Math.min(255, Math.max(0, (int) (base.getRed() * factor))),
+                    Math.min(255, Math.max(0, (int) (base.getGreen() * factor))),
+                    Math.min(255, Math.max(0, (int) (base.getBlue() * factor)))
+            );
 
-        byte result = getNearestColor(newColor);
-        darkenCache.put(cacheKey, result);
-        return result;
+            if (darkenFactor >= DARKEN_KEEP_HUE_LIMIT) {
+                table[index] = getNearestColor(target);
+                continue;
+            }
+
+            int best = index;
+            double bestDistance = -1;
+            for (int shade = index & ~3; shade < (index & ~3) + 4 && shade < colors.length; shade++) {
+                double distance = getDistance(target, colors[shade]);
+                if (bestDistance == -1 || distance < bestDistance) {
+                    bestDistance = distance;
+                    best = shade;
+                }
+            }
+            table[index] = (byte) best;
+        }
+        return table;
     }
 
     private static double getDistance(@NotNull Color c1, @NotNull Color c2) {

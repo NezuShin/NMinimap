@@ -1,6 +1,9 @@
 package su.nezushin.nminimap.util;
 
 import su.nezushin.nminimap.chunks.ChunkManager;
+import su.nezushin.nminimap.chunks.ChunkTile;
+
+import java.util.Map;
 
 public class RamCapacityUtil {
 
@@ -25,14 +28,38 @@ public class RamCapacityUtil {
 
     public static long estimatePluginMemory(ChunkManager chunkManager) {
         long total = 0;
-        var emptyMap = chunkManager.getEmptyMap();
-        for (var scales : chunkManager.getLoadedTiles().values()) {
+        var emptyTile = chunkManager.getEmptyTile();
+        for (var tile : chunkManager.getLoadedTiles().values()) {
             total += OVERHEAD_PER_TILE;
-            if (scales == emptyMap)
+            if (tile == emptyTile)
                 continue;
-            for (var bytes : scales.values()) {
-                if (bytes != null)
-                    total += bytes.length;
+            total += estimateTileBytes(tile);
+        }
+        return total;
+    }
+
+    private static long estimateTileBytes(ChunkTile tile) {
+        long total = 0;
+        for (var layer : tile.layers()) {
+            if (layer.scales() != null) {
+                for (var bytes : layer.scales().values()) {
+                    if (bytes != null)
+                        total += bytes.length;
+                }
+            }
+            total += estimateGridBytes(layer.draws());
+            total += estimateGridBytes(layer.floors());
+            total += estimateGridBytes(layer.tops());
+        }
+        return total;
+    }
+
+    private static long estimateGridBytes(Map<Integer, short[]> grids) {
+        long total = 0;
+        if (grids != null) {
+            for (var grid : grids.values()) {
+                if (grid != null)
+                    total += grid.length * 2L;
             }
         }
         return total;

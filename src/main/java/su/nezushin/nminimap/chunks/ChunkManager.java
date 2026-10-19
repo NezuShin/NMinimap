@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class ChunkManager {
 
 
-    private final Map<ChunkEntry, Map<Integer, byte[]>> loadedTiles = new ConcurrentHashMap<>();
+    private final Map<ChunkEntry, ChunkTile> loadedTiles = new ConcurrentHashMap<>();
     private final Map<ChunkEntry, Long> lastChunkUse = new ConcurrentHashMap<>();
 
     private final Set<ChunkEntry> loadingChunks = ConcurrentHashMap.newKeySet();
@@ -29,7 +29,7 @@ public class ChunkManager {
     private final Set<ChunkEntry> dirtyChunks = ConcurrentHashMap.newKeySet();
     private final Queue<ChunkEntry> awaitingChunks = new ConcurrentLinkedQueue<>();
 
-    private final Map<Integer, byte[]> emptyMap = MapDataUtil.prepareEmptyMap();
+    private final ChunkTile emptyTile = MapDataUtil.prepareEmptyTile();
 
     private boolean ramLow;
 
@@ -125,21 +125,21 @@ public class ChunkManager {
         }
     }
 
-    public Map<Integer, byte[]> getOrRenderChunk(ChunkEntry chunk) {
+    public ChunkTile getOrRenderChunk(ChunkEntry chunk) {
         if (!chunk.isInsideWorldBorder())
-            return emptyMap;
+            return emptyTile;
 
-        Map<Integer, byte[]> tiles = loadedTiles.get(chunk);
+        ChunkTile tiles = loadedTiles.get(chunk);
         if (tiles != null)
             return tiles;
 
         if (loadingChunks.contains(chunk) || pendingChunks.contains(chunk))
-            return emptyMap;
+            return emptyTile;
 
         if (enqueueChunk(chunk))
             renderNextAwaitingChunk();
 
-        return emptyMap;
+        return emptyTile;
     }
 
     public void reRenderChunk(ChunkEntry chunk) {
@@ -165,7 +165,11 @@ public class ChunkManager {
         return chunkCache;
     }
 
-    public Map<ChunkEntry, Map<Integer, byte[]>> getLoadedTiles() {
+    public ChunkRender getChunkRender() {
+        return chunkRender;
+    }
+
+    public Map<ChunkEntry, ChunkTile> getLoadedTiles() {
         return loadedTiles;
     }
 
@@ -173,8 +177,8 @@ public class ChunkManager {
         return lastChunkUse;
     }
 
-    public Map<Integer, byte[]> getEmptyMap() {
-        return emptyMap;
+    public ChunkTile getEmptyTile() {
+        return emptyTile;
     }
 
     public boolean isRamLow() {

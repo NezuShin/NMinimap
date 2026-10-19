@@ -13,6 +13,7 @@ import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.markers.impl.LocationMarker;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
 import su.nezushin.nminimap.util.PerWorldSettingsUtil;
+import su.nezushin.nminimap.util.RenderUtil;
 import su.nezushin.nminimap.util.config.updater.ConfigUpdater;
 
 import java.io.*;
@@ -26,7 +27,10 @@ public class Config {
     public static FileConfiguration config;
 
     public static int mapId, maxRenderThreads = 30, maxScale = 8, mysqlPort, defaultScale, mapRenderInterval, mapPixelSize = 40, wgRegionUpdateInterval, mobRadarUpdateInterval,
-            mapDisplayOffsetX = 60, mapDisplayOffsetY = 60, mapDisplayScale = 6;
+            mapDisplayOffsetX = 60, mapDisplayOffsetY = 60, mapDisplayScale = 6,
+            multiLayerMaxLayers = 4, multiLayerMinAirGap = 1;
+
+    public static float multiLayerDarken = 0.5f;
 
     public static boolean allowFileCache = true, useMysql = false, mysqlUseSSL = false,
             resourcepackCopyMarkers = true, resourcepackCopyFrames = true, resourcepackCopyShaders = true,
@@ -56,6 +60,8 @@ public class Config {
 
     public static Set<EntityType> mobRadarAllowedEntities = EnumSet.noneOf(EntityType.class),
             mobRadarDisallowedEntities = EnumSet.noneOf(EntityType.class);
+
+    public static Set<Material> multiLayerSkipBlocks = EnumSet.noneOf(Material.class);
 
     public static String playerMarker, anotherPlayerMarker, mysqlHost, mysqlUser, mysqlPassword, mysqlDatabase, mysqlPlayersTableName, langName,
             packDescription, defaultFrame;
@@ -133,6 +139,12 @@ public class Config {
         wgRegionUpdateInterval = config.getInt("worldguard-region-update-interval", 10);
 
         skipCeiling = config.getBoolean("skip-ceiling", true);
+
+        multiLayerMaxLayers = Math.max(1, config.getInt("multi-layer-render.max-layers", 4));
+        multiLayerMinAirGap = Math.max(1, config.getInt("multi-layer-render.min-air-gap", 1));
+        multiLayerDarken = (float) Math.min(1.0, Math.max(0.0, config.getDouble("multi-layer-render.darken", 0.5)));
+        multiLayerSkipBlocks = loadMaterialsSoft(config.getStringList("multi-layer-render.layer-skip-blocks"));
+        RenderUtil.reloadPassable(multiLayerSkipBlocks);
 
         useMysql = config.getBoolean("database.mysql.use", false);
 
@@ -370,6 +382,18 @@ public class Config {
                 set.add(Enum.valueOf(enumClass, value.toUpperCase()));
             } catch (IllegalArgumentException ex) {
                 NMinimap.getInstance().getLogger().severe("Unknown " + typeName + " \"" + value + "\" in config!");
+            }
+        }
+        return set;
+    }
+
+    /** Ignores materials missing on this server version (e.g. newer leaves). */
+    private static Set<Material> loadMaterialsSoft(List<String> values) {
+        Set<Material> set = EnumSet.noneOf(Material.class);
+        for (String value : values) {
+            try {
+                set.add(Material.valueOf(value.toUpperCase()));
+            } catch (IllegalArgumentException ignored) {
             }
         }
         return set;

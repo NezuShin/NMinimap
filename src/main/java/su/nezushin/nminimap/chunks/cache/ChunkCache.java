@@ -4,6 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.ChunkEntry;
+import su.nezushin.nminimap.chunks.ChunkTile;
+import su.nezushin.nminimap.chunks.TileBakeSettings;
 import su.nezushin.nminimap.util.DiskCapacityUtil;
 import su.nezushin.nminimap.util.MapDataUtil;
 import su.nezushin.nminimap.util.PerWorldSettingsUtil;
@@ -111,6 +113,7 @@ public class ChunkCache {
 
         NMinimap.async(() -> {
             var file = chunk.getAsFile();
+            boolean loaded = false;
             try {
                 if (!file.exists()) {
                     cachedFiles.remove(chunk);
@@ -118,30 +121,41 @@ public class ChunkCache {
                 }
 
                 try (var is = new GZIPInputStream(new FileInputStream(file))) {
-                    var scales = MapDataUtil.readMap(is);
-                    chunkManager.getLoadedTiles().put(chunk, scales);
+                    var tile = MapDataUtil.readTile(is);
+                    var world = chunk.getWorld();
+                    if (world == null || tile.bakeSettings() == null
+                            || !tile.bakeSettings().equals(TileBakeSettings.current(world, chunk.layer()))) {
+                        throw new IOException("Tile bake settings do not match current render settings");
+                    }
+                    chunkManager.getLoadedTiles().put(chunk, tile);
                     chunkManager.getLastChunkUse().put(chunk, System.currentTimeMillis());
+                    loaded = true;
                 } catch (FileNotFoundException ex) {//?!
                     cachedFiles.remove(chunk);
                 } catch (Exception ex) {
-                    if (Config.cacheDeleteIfReadFailed) {
-                        try {
-                            if (file.exists())
-                                file.delete();
-                        } catch (Exception ex2) {
-                            NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to delete broken cache file" + file, ex2);
-                        }
+                    // Legacy or corrupt cache (e.g. pre-v4) — drop and re-render
+                    try {
+                        if (file.exists())
+                            file.delete();
+                    } catch (Exception ex2) {
+                        NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to delete broken cache file" + file, ex2);
                     }
                     cachedFiles.remove(chunk);//prevent another failed load try
-                    NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to load chunk tile from cache", ex);
+                    NMinimap.getInstance().getLogger().log(Level.WARNING,
+                            "Failed to load chunk tile from cache (will re-render): " + file.getName() + " — " + ex.getMessage());
                 }
             } finally {
-                chunkManager.finishChunkJob(chunk);
+                if (loaded) {
+                    chunkManager.finishChunkJob(chunk);
+                } else {
+                    // Keep loadingChunks membership; renderChunk will finish the job
+                    chunkManager.getChunkRender().renderChunk(chunk);
+                }
             }
         });
     }
 
-    public void saveToCache(ChunkEntry chunk, Map<Integer, byte[]> scales) {
+    public void saveToCache(ChunkEntry chunk, ChunkTile tile) {
         if (!PerWorldSettingsUtil.getAllowFileCache(chunk.world()))
             return;
         if (DiskCapacityUtil.getUsableSpace() < Config.availableDiskSpaceThreshold) {
@@ -160,7 +174,7 @@ public class ChunkCache {
         try {
             cachedFiles.remove(chunk);//prevent load from cache if file is being written right now
             try (var os = new GZIPOutputStream(new FileOutputStream(tmpFile))) {
-                MapDataUtil.saveMap(scales, os);
+                MapDataUtil.saveTile(tile, os);
             }
 
             try {

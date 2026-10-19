@@ -9,9 +9,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.inventory.FurnaceExtractEvent;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.ChunkEntry;
 import su.nezushin.nminimap.util.PerWorldSettingsUtil;
+import su.nezushin.nminimap.util.config.Config;
 
 import java.util.Set;
 
@@ -33,13 +35,26 @@ public class BlockListener implements Listener {
                         (listener, event) -> onBlockChange(event), NMinimap.getInstance()));
     }
 
-    public void update(Block b) {
+    /**
+     * @param structural the change can add or remove an open space, so it matters to cave layers even without sky light
+     */
+    public void update(Block b, boolean structural) {
         if (b == null)
             return;
-        if (b.getLightFromSky() == 15 || (b.getWorld().hasCeiling() && PerWorldSettingsUtil.getSkipCeiling(b.getWorld())))
+        if ((structural && Config.multiLayerMaxLayers > 1) || b.getLightFromSky() == 15
+                || (b.getWorld().hasCeiling() && PerWorldSettingsUtil.getSkipCeiling(b.getWorld())))
             NMinimap.async(() -> {
                 NMinimap.getInstance().getChunkManager().reRenderChunk(new ChunkEntry(b.getWorld().getName(), Math.floorDiv(b.getX(), 16), Math.floorDiv(b.getZ(), 16), null));
             });
+    }
+
+    /** Frequent events that don't add or remove solid blocks. */
+    private static boolean isNoisy(Event event) {
+        return event instanceof BlockRedstoneEvent || event instanceof MoistureChangeEvent
+                || event instanceof BlockFertilizeEvent || event instanceof BlockIgniteEvent
+                || event instanceof FurnaceExtractEvent
+                // BlockFormEvent (and BlockSpreadEvent, EntityBlockFormEvent) extends BlockGrowEvent
+                || (event instanceof BlockGrowEvent && !(event instanceof BlockFormEvent));
     }
 
 
@@ -47,37 +62,39 @@ public class BlockListener implements Listener {
         if (event instanceof BlockPhysicsEvent)
             return;
 
+        final boolean structural = !isNoisy(event);
+
         if (event instanceof BlockExplodeEvent explode) {
-            explode.blockList().forEach(this::update);
+            explode.blockList().forEach(b -> update(b, structural));
         } else if (event instanceof EntityExplodeEvent explode) {
-            explode.blockList().forEach(this::update);
+            explode.blockList().forEach(b -> update(b, structural));
         } else if (event instanceof EntityChangeBlockEvent changeBlock) {
-            update(changeBlock.getBlock());
+            update(changeBlock.getBlock(), structural);
         } else if (event instanceof BlockBurnEvent burn) {
-            update(burn.getIgnitingBlock());
+            update(burn.getIgnitingBlock(), structural);
         } else if (event instanceof BlockFertilizeEvent fertilize) {
             fertilize.getBlocks().stream()
                     .filter(BlockState::isPlaced)
                     .map(BlockState::getBlock)
-                    .forEach(this::update);
+                    .forEach(b -> update(b, structural));
         } else if (event instanceof BlockFromToEvent fromTo) {
-            update(fromTo.getToBlock());
+            update(fromTo.getToBlock(), structural);
         } else if (event instanceof BlockIgniteEvent ignite) {
-            update(ignite.getIgnitingBlock());
+            update(ignite.getIgnitingBlock(), structural);
         } else if (event instanceof BlockPistonExtendEvent pistonExtend) {
-            pistonExtend.getBlocks().forEach(this::update);
+            pistonExtend.getBlocks().forEach(b -> update(b, structural));
         } else if (event instanceof BlockPistonRetractEvent pistonRetract) {
-            pistonRetract.getBlocks().forEach(this::update);
+            pistonRetract.getBlocks().forEach(b -> update(b, structural));
         } else if (event instanceof SpongeAbsorbEvent spongeAbsorb) {
             spongeAbsorb.getBlocks().stream()
                     .filter(BlockState::isPlaced)
                     .map(BlockState::getBlock)
-                    .forEach(this::update);
+                    .forEach(b -> update(b, structural));
         } else if (event instanceof TNTPrimeEvent tntPrime) {
-            update(tntPrime.getPrimingBlock());
+            update(tntPrime.getPrimingBlock(), structural);
         }
         if (event instanceof BlockEvent blockEvent) {
-            update(blockEvent.getBlock());
+            update(blockEvent.getBlock(), structural);
         }
 
     }

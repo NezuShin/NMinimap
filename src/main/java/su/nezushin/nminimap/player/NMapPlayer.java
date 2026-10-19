@@ -16,8 +16,11 @@ import su.nezushin.nminimap.api.events.AsyncFrameRenderEvent;
 import su.nezushin.nminimap.api.events.AsyncMapRenderEvent;
 import su.nezushin.nminimap.api.events.AsyncMarkerRenderEvent;
 import su.nezushin.nminimap.chunks.ChunkEntry;
+import su.nezushin.nminimap.chunks.ChunkManager;
+import su.nezushin.nminimap.chunks.LayerData;
 import su.nezushin.nminimap.frames.FrameLayer;
 import su.nezushin.nminimap.resourcepack.ResourcepackManager;
+import su.nezushin.nminimap.util.ColorUtil;
 import su.nezushin.nminimap.util.DisallowedWorldsUtil;
 import su.nezushin.nminimap.util.config.Config;
 import su.nezushin.nminimap.util.config.Permission;
@@ -28,10 +31,14 @@ import java.util.Arrays;
 
 public class NMapPlayer implements AnvilORMSerializable {
 
+    private static final int[][] NEIGHBOURS = {{0, -1}, {0, 1}, {1, 0}, {-1, 0}};
+
 
     private Player player;
 
     private transient UndergroundLayer activeLayer;
+
+    private transient volatile PlayerCavity lastCavity;
 
     @SqlColumn(type = SqlType.VARCHAR, flags = SqlFlag.PRIMARY_KEY)
     private String id;
@@ -132,9 +139,16 @@ public class NMapPlayer implements AnvilORMSerializable {
         var mapData = new byte[128 * 128];
         var world = player.getWorld();
         var worldName = world.getName();
+        final int playerY = player.getLocation().getBlockY();
+        final var layer = this.activeLayer;
+
+        final var cavity = findPlayerCavity(chunkManager, worldName, px, playerY, pz, layer);
+        final boolean underground = !cavity.sky();
 
         for (var x = 1; x < mapSize; x++) {
-            for (var z = 1; z < mapSize; z++) {
+            int northY = LayerData.NO_LAYER;
+            // Row 0 is not drawn, it only seeds the hillshade of row 1
+            for (var z = 0; z < mapSize; z++) {
                 var wx = px + (x - mapSize / 2) * scale;
                 var wz = pz + (z - mapSize / 2) * scale;
 
@@ -144,29 +158,44 @@ public class NMapPlayer implements AnvilORMSerializable {
                 var localX = Math.floorMod(wx, 16);
                 var localZ = Math.floorMod(wz, 16);
 
-                var chunk = new ChunkEntry(worldName, cx, cz, this.activeLayer);
-                var bytes = chunkManager.getOrRenderChunk(chunk).get(scale);
+                // Blocks outside the WG layer region are drawn from the normal surface chunk
+                boolean outsideLayer = layer != null && !NMinimap.getInstance().getWorldGuardManager()
+                        .isInsideLayer(new Location(world, wx, layer.renderFromY(), wz), layer);
+
+                var chunk = new ChunkEntry(worldName, cx, cz, outsideLayer ? null : layer);
+                var tile = chunkManager.getOrRenderChunk(chunk);
 
                 chunkManager.getLastChunkUse().put(chunk, System.currentTimeMillis());
 
                 var indexXX = Math.floorDiv(localX, scale);
                 var indexZZ = Math.floorDiv(localZ, scale);
 
-                var color = colorAt(bytes, indexXX, indexZZ, chunkSize);
-                if (this.activeLayer != null) {
-                    // Check if block outside WG layer region
-                    if (!NMinimap.getInstance().getWorldGuardManager().isInsideLayer(new Location(world, wx, this.activeLayer.renderFromY(), wz), this.activeLayer)) {
-                        // Load normal surface chunk for outside region
-                        var normalChunk = new ChunkEntry(worldName, cx, cz, null);
-                        var normalBytes = chunkManager.getOrRenderChunk(normalChunk).get(scale);
-                        chunkManager.getLastChunkUse().put(normalChunk, System.currentTimeMillis());
-
-                        var normalColor = colorAt(normalBytes, indexXX, indexZZ, chunkSize);
-                        color = normalColor != 0 ? su.nezushin.nminimap.util.ColorUtil.darken(normalColor, this.activeLayer.darken()) : 0;
+                int layerIndex = 0;
+                boolean dim = false;
+                if (underground && !outsideLayer) {
+                    layerIndex = tile.containingIndex(scale, indexXX, indexZZ, chunkSize, playerY);
+                    if (layerIndex < 0) {
+                        // Inside solid blocks: show the floor above, dimmed if it's hidden above the player's ceiling
+                        layerIndex = tile.aboveIndex(scale, indexXX, indexZZ, chunkSize, playerY);
+                        if (layerIndex >= 0)
+                            dim = tile.floorY(layerIndex, scale, indexXX, indexZZ, chunkSize) > cavity.topY();
+                        else
+                            layerIndex = 0;
                     }
                 }
 
-                mapData[x + (z * fullMapSize)] = color;
+                int drawY = tile.drawY(layerIndex, scale, indexXX, indexZZ, chunkSize);
+                if (z > 0) {
+                    var color = tile.colorAt(layerIndex, scale, indexXX, indexZZ, chunkSize);
+                    color = ColorUtil.hillshade(color, drawY, northY, scale, (indexXX + indexZZ) & 1);
+                    if (dim)
+                        color = ColorUtil.darken(color, Config.multiLayerDarken);
+                    if (outsideLayer)
+                        color = ColorUtil.darken(color, layer.darken());
+
+                    mapData[x + (z * fullMapSize)] = color;
+                }
+                northY = drawY;
             }
         }
         var event = new AsyncMapRenderEvent(this, mapData);
@@ -310,13 +339,48 @@ public class NMapPlayer implements AnvilORMSerializable {
         return scale == 2 || scale == 4 || scale == 8 ? scale : 1;
     }
 
-    private static byte colorAt(byte[] bytes, int indexXX, int indexZZ, int chunkSize) {
-        if (bytes == null)
-            return 0;
-        var index = indexXX + (indexZZ * chunkSize);
-        if (index < 0 || index >= bytes.length)
-            return 0;
-        return bytes[index];
+    /**
+     * Open space the player is in, from their own column at scale 1. Falls back to the neighbouring columns, then to
+     * the last frame (also while the player's tile isn't rendered yet), then to an enclosed space at the player's Y.
+     */
+    private PlayerCavity findPlayerCavity(ChunkManager chunkManager, String worldName, int px, int py, int pz,
+                                          UndergroundLayer layer) {
+        PlayerCavity cavity = null;
+        var tile = chunkManager.getOrRenderChunk(new ChunkEntry(worldName, Math.floorDiv(px, 16), Math.floorDiv(pz, 16), layer));
+        if (tile != chunkManager.getEmptyTile()) {
+            cavity = cavityAt(chunkManager, worldName, px, py, pz, layer);
+            for (var i = 0; cavity == null && i < NEIGHBOURS.length; i++)
+                cavity = cavityAt(chunkManager, worldName, px + NEIGHBOURS[i][0], py, pz + NEIGHBOURS[i][1], layer);
+        }
+
+        var last = lastCavity;
+        if (cavity == null && last != null && last.world().equals(worldName))
+            return last;
+        if (cavity == null)
+            return new PlayerCavity(worldName, py, py + 1);
+
+        lastCavity = cavity;
+        return cavity;
+    }
+
+    private static PlayerCavity cavityAt(ChunkManager chunkManager, String worldName, int x, int y, int z,
+                                         UndergroundLayer layer) {
+        var tile = chunkManager.getOrRenderChunk(new ChunkEntry(worldName, Math.floorDiv(x, 16), Math.floorDiv(z, 16), layer));
+        var localX = Math.floorMod(x, 16);
+        var localZ = Math.floorMod(z, 16);
+        int layerIndex = tile.containingIndex(1, localX, localZ, 16, y);
+        if (layerIndex < 0)
+            return null;
+        return new PlayerCavity(worldName, tile.floorY(layerIndex, 1, localX, localZ, 16),
+                tile.topY(layerIndex, 1, localX, localZ, 16));
+    }
+
+    /** {@code topY} is {@link LayerData#SKY} when nothing solid is above the player. */
+    private record PlayerCavity(String world, int floorY, int topY) {
+
+        boolean sky() {
+            return topY == LayerData.SKY;
+        }
     }
 
     public boolean isRight() {
