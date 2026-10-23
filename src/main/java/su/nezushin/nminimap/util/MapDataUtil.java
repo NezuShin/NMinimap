@@ -6,9 +6,11 @@ import su.nezushin.nminimap.chunks.TileBakeSettings;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PushbackInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,8 +19,11 @@ import java.util.Map;
 
 public class MapDataUtil {
 
-    /** v6: v5 grids plus the bake settings that produced the tile. */
-    public static final int CACHE_VERSION = 6;
+    /** First bytes of every file written by the current format. */
+    public static final byte[] MAGIC = {'N', 'M', 'a', 'p'};
+
+    /** Version byte that follows {@link #MAGIC}. Bumped when the payload layout or bake semantics change. */
+    public static final int CACHE_VERSION = 1;
 
     private static final int[] SCALES = {1, 2, 4, 8};
 
@@ -59,9 +64,13 @@ public class MapDataUtil {
 
     private static byte[] loadMapForScale(int size, InputStream is) throws IOException {
         var arr = new byte[size * size];
-        int read;
-        if (arr.length != (read = is.read(arr, 0, arr.length))) {
-            throw new IOException("Failed to read chunk data (" + read + " instead of " + arr.length + ")");
+        int got = 0;
+        while (got < arr.length) {
+            int read = is.read(arr, got, arr.length - got);
+            if (read < 0) {
+                throw new IOException("Failed to read chunk data (" + got + " instead of " + arr.length + ")");
+            }
+            got += read;
         }
         return arr;
     }
@@ -74,13 +83,18 @@ public class MapDataUtil {
         return arr;
     }
 
-    private static Map<Integer, byte[]> readScales(InputStream is) throws IOException {
+    /** Master cache: four raw color grids and nothing else. */
+    public static Map<Integer, byte[]> readMap(InputStream is) throws IOException {
         Map<Integer, byte[]> scales = new HashMap<>();
         scales.put(1, loadMapForScale(16, is));
         scales.put(2, loadMapForScale(8, is));
         scales.put(4, loadMapForScale(4, is));
         scales.put(8, loadMapForScale(2, is));
         return scales;
+    }
+
+    private static Map<Integer, byte[]> readScales(InputStream is) throws IOException {
+        return readMap(is);
     }
 
     private static Map<Integer, short[]> readHeights(DataInputStream in) throws IOException {
@@ -113,11 +127,36 @@ public class MapDataUtil {
     }
 
     public static ChunkTile readTile(InputStream is) throws IOException {
-        DataInputStream in = new DataInputStream(is);
-        int version = in.readUnsignedByte();
-        if (version != CACHE_VERSION) {
-            throw new IOException("Unsupported cache version " + version + " (expected " + CACHE_VERSION + ")");
+        PushbackInputStream in = new PushbackInputStream(is, MAGIC.length);
+        byte[] magic = new byte[MAGIC.length];
+        int got = 0;
+        while (got < magic.length) {
+            int read = in.read(magic, got, magic.length - got);
+            if (read < 0)
+                throw new EOFException("Cache file is too short");
+            got += read;
         }
+        if (!Arrays.equals(magic, MAGIC)) {
+            in.unread(magic);
+            return readLegacyTile(in);
+        }
+        DataInputStream data = new DataInputStream(in);
+        int version = data.readUnsignedByte();
+        if (version != CACHE_VERSION)
+            throw new IOException("Unsupported cache version " + version + " (expected " + CACHE_VERSION + ")");
+        return readCurrentTile(data);
+    }
+
+    /** A file without the {@code NMap} prefix is a master color grid. */
+    private static ChunkTile readLegacyTile(InputStream is) throws IOException {
+        var scales = readMap(is);
+        if (is.read() != -1)
+            throw new IOException("Legacy cache has unexpected extra data");
+        var empty = prepareEmptyHeights();
+        return new ChunkTile(List.of(new LayerData(scales, empty, empty, empty)));
+    }
+
+    private static ChunkTile readCurrentTile(DataInputStream in) throws IOException {
         var bakeSettings = readBakeSettings(in);
         int layerCount = in.readUnsignedByte();
         if (layerCount < 1 || layerCount > 64) {
@@ -136,6 +175,7 @@ public class MapDataUtil {
 
     public static void saveTile(ChunkTile tile, OutputStream os) throws IOException {
         DataOutputStream out = new DataOutputStream(os);
+        out.write(MAGIC);
         out.writeByte(CACHE_VERSION);
         if (tile.bakeSettings() == null) {
             throw new IOException("Cannot save a tile with no bake settings");

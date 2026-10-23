@@ -122,10 +122,12 @@ public class ChunkCache {
 
                 try (var is = new GZIPInputStream(new FileInputStream(file))) {
                     var tile = MapDataUtil.readTile(is);
-                    var world = chunk.getWorld();
-                    if (world == null || tile.bakeSettings() == null
-                            || !tile.bakeSettings().equals(TileBakeSettings.current(world, chunk.layer()))) {
-                        throw new IOException("Tile bake settings do not match current render settings");
+                    // Master files have no bake recipe; a current file must still match the config.
+                    var baked = tile.bakeSettings();
+                    if (baked != null) {
+                        var world = chunk.getWorld();
+                        if (world == null || !baked.equals(TileBakeSettings.current(world, chunk.layer())))
+                            throw new IOException("Tile bake settings do not match current render settings");
                     }
                     chunkManager.getLoadedTiles().put(chunk, tile);
                     chunkManager.getLastChunkUse().put(chunk, System.currentTimeMillis());
@@ -133,7 +135,7 @@ public class ChunkCache {
                 } catch (FileNotFoundException ex) {//?!
                     cachedFiles.remove(chunk);
                 } catch (Exception ex) {
-                    // Legacy or corrupt cache (e.g. pre-v4) — drop and re-render
+                    // Unsupported version or a corrupt file — drop and re-render
                     try {
                         if (file.exists())
                             file.delete();

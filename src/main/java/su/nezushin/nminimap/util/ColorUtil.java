@@ -1,6 +1,7 @@
 package su.nezushin.nminimap.util;
 
 import org.bukkit.Color;
+import org.bukkit.Material;
 import org.bukkit.map.MapPalette;
 import org.jetbrains.annotations.NotNull;
 import su.nezushin.nminimap.chunks.LayerData;
@@ -53,12 +54,13 @@ public class ColorUtil {
     }
 
     /**
-     * Vanilla hillshade of an unshaded color against the Y drawn north of it ({@link LayerData#NO_LAYER} = flat).
+     * Vanilla hillshade of an unshaded color against the Y drawn north of it ({@link LayerData#NO_LAYER} north = flat).
+     * A {@code NO_LAYER} draw Y is a master cache color, already shaded, and is returned as is.
      * Transparent and water colors are returned as is: water is shaded by depth when baked.
      */
     public static byte hillshade(byte mapColor, int y, int northY, int scale, int parity) {
         int base = (mapColor & 0xFF) >> 2;
-        if (base == 0 || base == WATER_BASE)
+        if (y == LayerData.NO_LAYER || base == 0 || base == WATER_BASE)
             return mapColor;
         double slope = northY == LayerData.NO_LAYER ? 0 : (y - northY) * 4.0 / (scale + 4);
         double diff = slope + (parity - 0.5) * 0.4;

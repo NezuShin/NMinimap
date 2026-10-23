@@ -1,6 +1,5 @@
 package su.nezushin.nminimap.util;
 
-import com.google.common.collect.Sets;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -13,74 +12,38 @@ public class RenderUtil {
 
     private static final Set<Material> transparent;
 
-    /** Drawn with water depth shading, like vanilla maps do. */
+    /**
+     * Drawn with water depth shading, like vanilla maps do.
+     */
     private static final Set<Material> waterLike = EnumSet.of(Material.WATER, Material.BUBBLE_COLUMN,
             Material.KELP, Material.KELP_PLANT, Material.SEAGRASS, Material.TALL_SEAGRASS);
 
-    /** Indexed by {@link Material#ordinal()}, built by {@link #reloadPassable(Set)}. */
+    /**
+     * Indexed by {@link Material#ordinal()}, built by {@link #reloadPassable(Set)}.
+     */
     private static volatile boolean[] passable = new boolean[0];
 
-    /** Placeholder when a column has no block for a given layer index. */
+    /**
+     * Placeholder when a column has no block for a given layer index.
+     */
     public static final BlockDataInfo EMPTY_BLOCK = new BlockDataInfo(Color.fromRGB(0), LayerData.NO_LAYER, 0,
             LayerData.NO_LAYER, LayerData.NO_LAYER);
 
     static {
         transparent = EnumSet.noneOf(Material.class);
 
-
-        //Version-safe transparent material list.
-        Sets.newHashSet("BLUE_STAINED_GLASS_PANE", "OXIDIZED_COPPER_BARS",
-                "LIME_STAINED_GLASS", "WAXED_WEATHERED_COPPER_BARS", "ORANGE_STAINED_GLASS_PANE",
-                "ORANGE_STAINED_GLASS", "WHITE_STAINED_GLASS_PANE", "COPPER_BARS", "RED_STAINED_GLASS_PANE",
-                "CYAN_STAINED_GLASS", "LIGHT_BLUE_STAINED_GLASS", "CYAN_STAINED_GLASS_PANE",
-                "WEATHERED_COPPER_BARS", "MAGENTA_STAINED_GLASS_PANE", "WAXED_EXPOSED_COPPER_BARS",
-                "WHITE_STAINED_GLASS", "PURPLE_STAINED_GLASS_PANE", "BLACK_STAINED_GLASS",
-                "BROWN_STAINED_GLASS", "YELLOW_STAINED_GLASS", "BLUE_STAINED_GLASS", "BROWN_STAINED_GLASS_PANE",
-                "LIGHT_BLUE_STAINED_GLASS_PANE", "WAXED_OXIDIZED_COPPER_BARS", "IRON_BARS",
-                "PURPLE_STAINED_GLASS", "GLASS", "GREEN_STAINED_GLASS_PANE", "BLACK_STAINED_GLASS_PANE",
-                "LIGHT_GRAY_STAINED_GLASS", "WAXED_COPPER_BARS", "LIME_STAINED_GLASS_PANE", "GRAY_STAINED_GLASS",
-                "GLASS_PANE", "EXPOSED_COPPER_BARS", "PINK_STAINED_GLASS", "GREEN_STAINED_GLASS",
-                "GRAY_STAINED_GLASS_PANE", "TINTED_GLASS", "LIGHT_GRAY_STAINED_GLASS_PANE", "RED_STAINED_GLASS",
-                "PINK_STAINED_GLASS_PANE", "MAGENTA_STAINED_GLASS", "YELLOW_STAINED_GLASS_PANE",
-                "ACACIA_BUTTON", "ACACIA_SAPLING", "ACTIVATOR_RAIL", "AIR",
-                "ALLIUM", "ATTACHED_MELON_STEM", "ATTACHED_PUMPKIN_STEM", "AZURE_BLUET",
-                "BARRIER", "BEETROOTS", "BIRCH_BUTTON", "BIRCH_SAPLING",
-                "BLACK_CARPET", "BLUE_CARPET", "BLUE_ORCHID", "BROWN_CARPET",
-                "BROWN_MUSHROOM", "CARROTS", "CAVE_AIR", "CHORUS_FLOWER",
-                "CHORUS_PLANT", "COCOA", "COMPARATOR", "CREEPER_HEAD",
-                "CREEPER_WALL_HEAD", "CYAN_CARPET", "DANDELION", "DARK_OAK_BUTTON",
-                "DARK_OAK_SAPLING", "DEAD_BUSH", "DETECTOR_RAIL", "DRAGON_HEAD",
-                "DRAGON_WALL_HEAD", "END_GATEWAY", "END_PORTAL", "END_ROD", "FERN",
-                "FIRE", "FLOWER_POT", "GRAY_CARPET", "GREEN_CARPET",
-                "JUNGLE_BUTTON", "JUNGLE_SAPLING", "LADDER", "LARGE_FERN", "LEVER",
-                "LIGHT_BLUE_CARPET", "LIGHT_GRAY_CARPET", "LILAC", "LILY_PAD",
-                "LIME_CARPET", "MAGENTA_CARPET", "MELON_STEM", "NETHER_PORTAL",
-                "NETHER_WART", "OAK_BUTTON", "OAK_SAPLING", "ORANGE_CARPET",
-                "ORANGE_TULIP", "OXEYE_DAISY", "PEONY", "PINK_CARPET", "PINK_TULIP",
-                "PLAYER_HEAD", "PLAYER_WALL_HEAD", "POPPY", "POTATOES",
-                "POTTED_ACACIA_SAPLING", "POTTED_ALLIUM", "POTTED_AZALEA_BUSH",
-                "POTTED_AZURE_BLUET", "POTTED_BIRCH_SAPLING", "POTTED_BLUE_ORCHID",
-                "POTTED_BROWN_MUSHROOM", "POTTED_CACTUS", "POTTED_DANDELION",
-                "POTTED_DARK_OAK_SAPLING", "POTTED_DEAD_BUSH", "POTTED_FERN",
-                "POTTED_FLOWERING_AZALEA_BUSH", "POTTED_JUNGLE_SAPLING", "POTTED_OAK_SAPLING",
-                "POTTED_ORANGE_TULIP", "POTTED_OXEYE_DAISY", "POTTED_PINK_TULIP",
-                "POTTED_POPPY", "POTTED_RED_MUSHROOM", "POTTED_RED_TULIP",
-                "POTTED_SPRUCE_SAPLING", "POTTED_WHITE_TULIP", "POWERED_RAIL",
-                "PUMPKIN_STEM", "PURPLE_CARPET", "RAIL", "REDSTONE_TORCH",
-                "REDSTONE_WALL_TORCH", "REDSTONE_WIRE", "RED_CARPET", "RED_MUSHROOM",
-                "RED_TULIP", "REPEATER", "ROSE_BUSH", "SHORT_GRASS",
-                "SKELETON_SKULL", "SKELETON_WALL_SKULL", "SNOW", "SPRUCE_BUTTON",
-                "SPRUCE_SAPLING", "STONE_BUTTON", "STRUCTURE_VOID", "SUGAR_CANE",
-                "SUNFLOWER", "TALL_GRASS", "TORCH", "TRIPWIRE", "TRIPWIRE_HOOK",
-                "VINE", "VOID_AIR", "WALL_TORCH", "WHEAT", "WHITE_CARPET",
-                "WHITE_TULIP", "WITHER_SKELETON_SKULL", "WITHER_SKELETON_WALL_SKULL",
-                "YELLOW_CARPET", "ZOMBIE_HEAD", "ZOMBIE_WALL_HEAD").forEach(i -> {
+        // Map color NONE: look through these when picking the surface color (glass, air, rails, ...).
+        // Snow/carpets/flowers have real map colors and must stay drawable.
+        for (var material : Material.values()) {
+            if (material.isLegacy() || !material.isBlock())
+                continue;
             try {
-                transparent.add(Material.valueOf(i));
-            } catch (Exception ex) {
-                //:(
+                if (material.createBlockData().getMapColor().asRGB() == 0)
+                    transparent.add(material);
+            } catch (Exception ignored) {
+                // Some materials cannot create block data on this server build
             }
-        });
+        }
     }
 
     public static boolean isTransparent(Material material) {
@@ -107,7 +70,9 @@ public class RenderUtil {
         passable = table;
     }
 
-    /** Blocks a player can occupy: they never split a column into separate layers. */
+    /**
+     * Blocks a player can occupy: they never split a column into separate layers.
+     */
     public static boolean isPassable(Material material) {
         var table = passable;
         int ordinal = material.ordinal();
@@ -124,6 +89,22 @@ public class RenderUtil {
     }
 
     /**
+     * Highest Y to start scanning from. {@link ChunkSnapshot#getHighestBlockYAt} uses the
+     * MOTION_BLOCKING heightmap (Paper/Spigot), which omits non-solid cover like snow layers,
+     * carpets, and flowers — walk up through non-air so those still get drawn.
+     */
+    private static int topSurfaceY(ChunkSnapshot c, int x, int z, int maxY) {
+        int y = Math.min(c.getHighestBlockYAt(x, z), maxY);
+        while (y < maxY) {
+            var above = c.getBlockType(x, y + 1, z);
+            if (above.isAir())
+                break;
+            y++;
+        }
+        return y;
+    }
+
+    /**
      * Open spaces of a column from the top down. A space is a run of passable blocks (air, liquids, foliage, ...)
      * resting on a solid floor; runs thinner than {@code minAirGap} without liquid in them merge into the solid around them.
      */
@@ -131,7 +112,7 @@ public class RenderUtil {
                                                        boolean hasCeiling, boolean skipCeiling, Set<Material> ceilingBlocks,
                                                        int maxLayers, int minAirGap) {
         List<BlockDataInfo> layers = new ArrayList<>();
-        int y = Math.min(c.getHighestBlockYAt(x, z), maxY);
+        int y = topSurfaceY(c, x, z, maxY);
         if (y < minY)
             return layers;
 

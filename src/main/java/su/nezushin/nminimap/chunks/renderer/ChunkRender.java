@@ -47,7 +47,8 @@ public class ChunkRender {
                         Set<Material> ceilingBlocks = PerWorldSettingsUtil.getCeilingBlocks(c.getWorld());
                         var chunkSnapshot = c.getChunkSnapshot(true, false, false);
 
-                        int maxY = PerWorldSettingsUtil.getMaxY(c.getWorld());
+                        // Inclusive block Y; default config max is unbounded, so clamp to the world
+                        int maxY = Math.min(PerWorldSettingsUtil.getMaxY(c.getWorld()), c.getWorld().getMaxHeight() - 1);
                         if (chunk.layer() != null)
                             maxY = Math.min(maxY, chunk.layer().renderFromY());
 

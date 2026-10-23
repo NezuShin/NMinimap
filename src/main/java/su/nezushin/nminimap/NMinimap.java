@@ -25,6 +25,7 @@ import su.nezushin.nminimap.markers.MarkerManager;
 import su.nezushin.nminimap.resourcepack.ResourcepackManager;
 import su.nezushin.nminimap.updatechecker.UpdateCheckerManager;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
+import su.nezushin.nminimap.util.ColorUtil;
 import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimap.util.config.Config;
 
@@ -78,6 +79,9 @@ public final class NMinimap extends JavaPlugin {
                 Bukkit.getPluginManager().isPluginEnabled("Geyser-Spigot") ? "Yes" : "No"));
 
         load();
+
+
+        ColorUtil.clearColorCache();
     }
 
 
