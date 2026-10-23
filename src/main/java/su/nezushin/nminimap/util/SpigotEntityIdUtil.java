@@ -1,22 +1,16 @@
 package su.nezushin.nminimap.util;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.entity.EntityType;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SpigotEntityIdUtil {
 
+    // Our entities exist only in packets, so we hand out our own ids.
+    // The server counts entity ids up from 0, so negative ids never clash with real entities.
+    // Starts well below -1, because some packets use -1 to mean "no entity".
+    private static final AtomicInteger NEXT_ID = new AtomicInteger(-1_000_000);
+
     public static int nextEntityId() {
-        try {
-            return Bukkit.getUnsafe().nextEntityId();
-        } catch (NoSuchMethodError e) {
-            var world = Bukkit.getWorlds().get(0);
-            var entity = world.spawnEntity(new Location(world, 0, 0, 0), EntityType.SHEEP);
-
-            entity.remove();
-
-            return entity.getEntityId();
-        }
+        return NEXT_ID.getAndDecrement();
     }
 
 }
