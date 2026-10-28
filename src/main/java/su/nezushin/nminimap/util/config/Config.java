@@ -334,6 +334,8 @@ public class Config {
                 NMinimap.getInstance().getLogger().severe("Icon " + marker.marker().getIcon() + " is not found for static marker " + marker.name() + "!");
                 return true;
             }
+            if (Bukkit.getWorld(marker.world()) == null)
+                NMinimap.getInstance().getLogger().warning("World " + marker.world() + " for static marker " + marker.name() + " is not loaded. The marker will appear once the world is loaded");
             return false;
         });
 
@@ -404,7 +406,8 @@ public class Config {
                                     (float) config.getDouble("static-markers." + i + ".yaw", 0),
                                     (float) config.getDouble("static-markers." + i + ".pitch", 0)
                             )),
-                    i));
+                    i,
+                    config.getString("static-markers." + i + ".world", "world")));
         }
 
         return list;

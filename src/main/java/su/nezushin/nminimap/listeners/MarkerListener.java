@@ -63,7 +63,10 @@ public class MarkerListener implements Listener {
         var player = e.getPlayer();
         var p = player.getPlayer();
 
-        e.getMarkers().addAll(Config.staticMarkers.stream().map(StaticMarker::marker).filter(i -> i.getLocation().getWorld().equals(p.getWorld())).toList());
+        var worldName = p.getWorld().getName();
+
+        // Case-insensitive, same as Bukkit.getWorld(String)
+        e.getMarkers().addAll(Config.staticMarkers.stream().filter(i -> i.world().equalsIgnoreCase(worldName)).map(StaticMarker::marker).toList());
     }
 
     Map<World, Collection<Entity>> entityList = new ConcurrentHashMap<>();
