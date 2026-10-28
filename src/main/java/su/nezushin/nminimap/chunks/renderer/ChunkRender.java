@@ -1,6 +1,6 @@
 package su.nezushin.nminimap.chunks.renderer;
 
-import org.bukkit.Chunk;
+import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.BlockDataInfo;
@@ -14,14 +14,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 
 public class ChunkRender {
 
     public void renderChunk(ChunkEntry chunk) {
         var chunkManager = NMinimap.getInstance().getChunkManager();
-        CompletableFuture<Chunk> futureFirstChunk = ChunkLoadingUtil.getChunkAt(chunk.getWorld(), chunk.x(), chunk.z());
-        CompletableFuture<Chunk> futureSecondChunk = ChunkLoadingUtil.getChunkAt(chunk.getWorld(), chunk.x(), chunk.z() - 1);
+        var world = chunk.getWorld();
+        CompletableFuture<Supplier<ChunkSnapshot>> futureFirstChunk = ChunkLoadingUtil.getChunkSnapshotAt(world, chunk.x(), chunk.z());
+        CompletableFuture<Supplier<ChunkSnapshot>> futureSecondChunk = ChunkLoadingUtil.getChunkSnapshotAt(world, chunk.x(), chunk.z() - 1);
 
         CompletableFuture.allOf(futureFirstChunk, futureSecondChunk).whenComplete((v, ex) -> {
             if (ex != null) {
@@ -32,22 +34,22 @@ public class ChunkRender {
             }
 
             try {
-                Chunk c = futureFirstChunk.join();
-                Chunk cNorth = futureSecondChunk.join();
+                Supplier<ChunkSnapshot> c = futureFirstChunk.join();
+                Supplier<ChunkSnapshot> cNorth = futureSecondChunk.join();
 
                 NMinimap.async(() -> {
                     try {
-                        var hasCeiling = c.getWorld().hasCeiling();
-                        int minY = PerWorldSettingsUtil.getMinY(c.getWorld());
-                        boolean skipCeiling = PerWorldSettingsUtil.getSkipCeiling(c.getWorld());
-                        Set<Material> ceilingBlocks = PerWorldSettingsUtil.getCeilingBlocks(c.getWorld());
-                        var chunkSnapshot = c.getChunkSnapshot(true, false, false);
-                        var northChunkSnapshot = cNorth.getChunkSnapshot(true, false, false);
+                        var hasCeiling = world.hasCeiling();
+                        int minY = PerWorldSettingsUtil.getMinY(world);
+                        boolean skipCeiling = PerWorldSettingsUtil.getSkipCeiling(world);
+                        Set<Material> ceilingBlocks = PerWorldSettingsUtil.getCeilingBlocks(world);
+                        var chunkSnapshot = c.get();
+                        var northChunkSnapshot = cNorth.get();
 
                         var northChunk = new BlockDataInfo[(16) * (8)];
                         var currentChunk = new BlockDataInfo[(16) * (16)];
 
-                        int maxY = PerWorldSettingsUtil.getMaxY(c.getWorld());
+                        int maxY = PerWorldSettingsUtil.getMaxY(world);
                         if (chunk.layer() != null)
                             maxY = Math.min(maxY, chunk.layer().renderFromY());
 

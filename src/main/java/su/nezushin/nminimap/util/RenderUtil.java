@@ -118,7 +118,9 @@ public class RenderUtil {
             return infoArray[x + (z * 16)];
 
 
-        Map<Color, Integer> map = new HashMap<>();
+        // Insertion-ordered so ties go to the first color seen. HashMap order depends on
+        // Color.hashCode(), which changes on every JVM start.
+        Map<Color, Integer> map = new LinkedHashMap<>();
         Map<Color, Integer> yLevel = new HashMap<>();
         Map<Color, Integer> waterDepth = new HashMap<>();
         for (var i = 0; i < scale; i++)
@@ -131,7 +133,14 @@ public class RenderUtil {
                     yLevel.put(color, info.yLevel());
                     waterDepth.put(color, Math.max(info.waterDepth(), waterDepth.getOrDefault(color, 0)));
                 }
-        var data = map.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).map(Map.Entry::getKey).findFirst().orElse(null);
+        Color data = null;
+        int bestCount = 0;
+        for (var entry : map.entrySet()) {
+            if (entry.getValue() > bestCount) { // strict '>' keeps the first-seen colour on a tie
+                bestCount = entry.getValue();
+                data = entry.getKey();
+            }
+        }
 
         return new BlockDataInfo(data, yLevel.get(data), waterDepth.get(data));
     }
