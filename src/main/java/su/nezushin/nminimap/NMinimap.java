@@ -14,6 +14,7 @@ import su.nezushin.nminimap.listeners.BlockListener;
 import su.nezushin.nminimap.listeners.ChunkListener;
 import su.nezushin.nminimap.listeners.CommandPermissionListener;
 import su.nezushin.nminimap.listeners.PlayerListener;
+import su.nezushin.nminimap.listeners.ProjectileListener;
 import su.nezushin.nminimap.listeners.MarkerListener;
 import su.nezushin.nminimap.packets.PacketManager;
 import su.nezushin.nminimap.papi.NMinimapPAPIExpansion;
@@ -154,6 +155,7 @@ public final class NMinimap extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new MarkerListener(), getInstance());
         Bukkit.getPluginManager().registerEvents(new PlayerListener(), getInstance());
         Bukkit.getPluginManager().registerEvents(new ChunkListener(), getInstance());
+        Bukkit.getPluginManager().registerEvents(new ProjectileListener(), getInstance());
         if (Config.commandPermissionApplyToMinimap)
             Bukkit.getPluginManager().registerEvents(new CommandPermissionListener(), getInstance());
         new BlockListener().registerListener();

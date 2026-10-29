@@ -21,8 +21,12 @@ import su.nezushin.nminimap.util.VanillaMapUtil;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class PacketManager {
+
+    // Ticks to wait after the last burning arrow flew near a player before re-spawning their item frames
+    private static final long ITEM_FRAME_REFRESH_DELAY = 5;
 
     private EntityHook entityHook;
 
@@ -36,6 +40,11 @@ public class PacketManager {
     private ItemStack mapItem;
 
     private final Set<Player> trackedPlayers = ConcurrentHashMap.newKeySet();
+
+    // Player -> tick when their item frames should be re-spawned
+    private final Map<Player, Long> itemFrameRefreshTicks = new ConcurrentHashMap<>();
+
+    private final AtomicLong currentTick = new AtomicLong();
 
 
     public PacketManager() {
@@ -98,6 +107,27 @@ public class PacketManager {
     }
 
     /**
+     * Re-spawn item frames for player a few ticks later. Spawning with the same id replaces the client-side entity,
+     * which is the only way to put out fire that a client-side arrow hit set on it.
+     * Repeated calls push the re-spawn back, so it happens once the arrow is gone.
+     *
+     * @param p Player
+     */
+    public void requestItemFrameRefresh(Player p) {
+        if (trackedPlayers.contains(p))
+            itemFrameRefreshTicks.put(p, currentTick.get() + ITEM_FRAME_REFRESH_DELAY);
+    }
+
+    private void respawnItemFrames(Player p) {
+        entityHook.spawnItemFrame(p, upItemFrameEntityId, mapItem, false);
+        entityHook.spawnItemFrame(p, downItemFrameEntityId, mapItem, true);
+        entityHook.spawnItemFrame(p, facingItemFrameEntityId, mapItem, true);
+
+        // New frames are not riding the player yet
+        passengerHook.updatePassengers(p, upItemFrameEntityId, downItemFrameEntityId, markerEntityId);
+    }
+
+    /**
      * Update map data for player
      *
      * @param p
@@ -128,6 +158,7 @@ public class PacketManager {
         entityHook.removeEntities(p, upItemFrameEntityId, downItemFrameEntityId, facingItemFrameEntityId, markerEntityId, facingMarkerEntityId);
         this.trackedPlayers.remove(p);
         this.foliaWorldMap.remove(p);
+        this.itemFrameRefreshTicks.remove(p);
     }
 
 
@@ -148,7 +179,14 @@ public class PacketManager {
 
 
     private void tickTrackedPlayers() {
+        var tick = currentTick.incrementAndGet();
+
         for (var p : trackedPlayers) {
+            var refreshTick = itemFrameRefreshTicks.get(p);
+            // remove(key, value) keeps a newer request made in the meantime
+            if (refreshTick != null && refreshTick <= tick && itemFrameRefreshTicks.remove(p, refreshTick))
+                respawnItemFrames(p);
+
             entityHook.teleportItemFrame(p, facingItemFrameEntityId);
             entityHook.teleportMarker(p, facingMarkerEntityId);
         }

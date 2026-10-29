@@ -21,6 +21,9 @@ import java.util.UUID;
 
 public class PacketEventsEntityHook implements EntityHook {
 
+    // How far in front of the player the facing item frame and text display are placed
+    private static final double FACING_DISTANCE = 5;
+
     @Override
     public void spawnMarker(Player p, int id) {
         PacketEventsUtil.sendPackets(p, new WrapperPlayServerSpawnEntity(id, UUID.randomUUID(),
@@ -46,7 +49,7 @@ public class PacketEventsEntityHook implements EntityHook {
         var loc = p.getEyeLocation().add(0, -1, 0);
         var face = p.getFacing().getOppositeFace();
 
-        PacketEventsUtil.sendPackets(p, new WrapperPlayServerEntityTeleport(id, SpigotConversionUtil.fromBukkitLocation(loc.add(p.getLocation().getDirection().multiply(3))), false)
+        PacketEventsUtil.sendPackets(p, new WrapperPlayServerEntityTeleport(id, SpigotConversionUtil.fromBukkitLocation(loc.add(p.getLocation().getDirection().multiply(FACING_DISTANCE))), false)
                 , new WrapperPlayServerEntityMetadata(id, Lists.newArrayList(
                         new EntityData(8, EntityDataTypes.BLOCK_FACE, BlockFace.getBlockFaceByValue(PacketEventsUtil.getBlockFace(face)))
                 )));
@@ -54,7 +57,7 @@ public class PacketEventsEntityHook implements EntityHook {
 
     @Override
     public void teleportMarker(Player p, int id) {
-        var loc = p.getEyeLocation().add(0, -1, 0).add(p.getLocation().getDirection().multiply(3));
+        var loc = p.getEyeLocation().add(0, -1, 0).add(p.getLocation().getDirection().multiply(FACING_DISTANCE));
 
         PacketEventsUtil.sendPackets(p, new WrapperPlayServerEntityTeleport(id, SpigotConversionUtil.fromBukkitLocation(loc), false));
     }

@@ -2,9 +2,11 @@ package su.nezushin.nminimap.util;
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import su.nezushin.nminimap.NMinimap;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 
@@ -41,6 +43,11 @@ public class SchedulerUtil {
 
         public void sync(Runnable run);
 
+        /**
+         * Repeat task on the thread that owns the entity, until task returns false or the entity is removed
+         */
+        public void entityTimer(Entity entity, BooleanSupplier task, long delay, long period);
+
         public boolean isFolia();
     }
 
@@ -67,6 +74,14 @@ public class SchedulerUtil {
         @Override
         public void sync(Runnable run) {
             Bukkit.getScheduler().scheduleSyncDelayedTask(NMinimap.getInstance(), run);
+        }
+
+        @Override
+        public void entityTimer(Entity entity, BooleanSupplier task, long delay, long period) {
+            Bukkit.getScheduler().runTaskTimer(NMinimap.getInstance(), t -> {
+                if (!entity.isValid() || !task.getAsBoolean())
+                    t.cancel();
+            }, delay, period);
         }
 
         @Override
@@ -105,6 +120,15 @@ public class SchedulerUtil {
         @Override
         public void sync(Runnable run) {
             Bukkit.getGlobalRegionScheduler().execute(NMinimap.getInstance(), run);
+        }
+
+        @Override
+        public void entityTimer(Entity entity, BooleanSupplier task, long delay, long period) {
+            // Entity scheduler stops by itself when the entity is removed
+            entity.getScheduler().runAtFixedRate(NMinimap.getInstance(), t -> {
+                if (!task.getAsBoolean())
+                    t.cancel();
+            }, null, delay, period);
         }
 
         @Override
