@@ -315,9 +315,9 @@ public void drawFrame(AsyncFrameRenderEvent e) {
 
 
 ###  Looking for affordable and powerful Server hosting?
-![](https://dash.galeniusnodes.com/templates/lagom2/assets/img/logo/logo_big_inverse.1453033100.png)
-Make sure to check out [GaleniusNodes](https://dash.galeniusnodes.com/index.php?ref=nmap)! Starting at 3€/month.\
-[With my link you can get 20% off Your first month](https://dash.galeniusnodes.com/index.php?ref=nmap)
+![](https://github.com/user-attachments/assets/48835c49-57bb-4067-a815-2b772651be29)
+Make sure to check out [GaleniusNodes](https://billing.galeniusnodes.com/ref/nmap)! Starting at 3€/month.\
+[With my link you can get 20% off Your first month](https://billing.galeniusnodes.com/ref/nmap)
 
 ### Help and support
 
