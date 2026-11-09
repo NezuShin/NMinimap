@@ -44,6 +44,11 @@ layout(location = 7) flat out vec4 box;
 #include <nminimap:vertex_utils.glsl>
 
 void main() {
+    custom = 0;
+    uvCoord = vec2(0);
+    b_meta = vec3(0);
+    box = vec4(0);
+
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
 
 #if !defined(IS_GUI) && !defined(IS_SEE_THROUGH)
