@@ -2,9 +2,11 @@ package su.nezushin.nminimap.chunks.renderer;
 
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
+import org.bukkit.World;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimap.chunks.BlockDataInfo;
 import su.nezushin.nminimap.chunks.ChunkEntry;
+import su.nezushin.nminimap.chunks.ChunkManager;
 import su.nezushin.nminimap.util.ChunkLoadingUtil;
 import su.nezushin.nminimap.util.ColorUtil;
 import su.nezushin.nminimap.util.PerWorldSettingsUtil;
@@ -22,8 +24,14 @@ public class ChunkRender {
     public void renderChunk(ChunkEntry chunk) {
         var chunkManager = NMinimap.getInstance().getChunkManager();
         var world = chunk.getWorld();
+        if (world == null) {
+            chunkManager.finishChunkJob(chunk);
+            return;
+        }
+
+        var northChunkEntry = new ChunkEntry(chunk.world(), chunk.x(), chunk.z() - 1, null);
         CompletableFuture<Supplier<ChunkSnapshot>> futureFirstChunk = ChunkLoadingUtil.getChunkSnapshotAt(world, chunk.x(), chunk.z());
-        CompletableFuture<Supplier<ChunkSnapshot>> futureSecondChunk = ChunkLoadingUtil.getChunkSnapshotAt(world, chunk.x(), chunk.z() - 1);
+        CompletableFuture<Supplier<ChunkSnapshot>> futureSecondChunk = loadNorthChunkSnapshot(chunkManager, world, northChunkEntry);
 
         CompletableFuture.allOf(futureFirstChunk, futureSecondChunk).whenComplete((v, ex) -> {
             if (ex != null) {
@@ -35,6 +43,10 @@ public class ChunkRender {
 
             try {
                 Supplier<ChunkSnapshot> c = futureFirstChunk.join();
+                if (c == null) {
+                    chunkManager.finishChunkJob(chunk);
+                    return;
+                }
                 Supplier<ChunkSnapshot> cNorth = futureSecondChunk.join();
 
                 NMinimap.async(() -> {
@@ -44,9 +56,9 @@ public class ChunkRender {
                         boolean skipCeiling = PerWorldSettingsUtil.getSkipCeiling(world);
                         Set<Material> ceilingBlocks = PerWorldSettingsUtil.getCeilingBlocks(world);
                         var chunkSnapshot = c.get();
-                        var northChunkSnapshot = cNorth.get();
+                        var northChunkSnapshot = cNorth != null ? cNorth.get() : null;
 
-                        var northChunk = new BlockDataInfo[(16) * (8)];
+                        var northChunk = northChunkSnapshot != null ? new BlockDataInfo[(16) * (8)] : null;
                         var currentChunk = new BlockDataInfo[(16) * (16)];
 
                         int maxY = PerWorldSettingsUtil.getMaxY(world);
@@ -55,7 +67,7 @@ public class ChunkRender {
 
                         for (var x = 0; x < 16; x++) {
                             for (var z = 0; z < 16; z++) {
-                                if (z < 8) {
+                                if (z < 8 && northChunkSnapshot != null) {
                                     northChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(northChunkSnapshot, x, 15 - z, minY, maxY, hasCeiling, skipCeiling, ceilingBlocks);
                                 }
                                 currentChunk[x + (z * 16)] = RenderUtil.getHighestBlockDataAt(chunkSnapshot, x, z, minY, maxY, hasCeiling, skipCeiling, ceilingBlocks);
@@ -71,7 +83,7 @@ public class ChunkRender {
                             for (var x = 0; x < 16 / scale; x++) {
                                 lastYLevel = 0;
                                 for (var z = 0; z < 16 / scale; z++) {
-                                    if (z == 0) {
+                                    if (z == 0 && northChunk != null) {
                                         lastYLevel = RenderUtil.getMostCommonOpaqueBlockBlockData(northChunk, x, 0, scale).yLevel();
                                     }
                                     var info = RenderUtil.getMostCommonOpaqueBlockBlockData(currentChunk, x, z, scale);
@@ -122,5 +134,24 @@ public class ChunkRender {
                 NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to render chunk tile", e);
             }
         });
+    }
+
+    /**
+     * Loads the northern neighbor snapshot only inside the world border without generating missing
+     * chunks on Paper, and tracks the load so {@code ChunkListener} does not recurse on it.
+     */
+    private CompletableFuture<Supplier<ChunkSnapshot>> loadNorthChunkSnapshot(ChunkManager chunkManager, World world, ChunkEntry northChunkEntry) {
+        if (!northChunkEntry.isInsideWorldBorder()) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        chunkManager.markNeighborChunkLoading(northChunkEntry);
+        try {
+            return ChunkLoadingUtil.getChunkSnapshotAt(world, northChunkEntry.x(), northChunkEntry.z(), false)
+                    .whenComplete((v, ex) -> chunkManager.unmarkNeighborChunkLoading(northChunkEntry));
+        } catch (Throwable t) {
+            chunkManager.unmarkNeighborChunkLoading(northChunkEntry);
+            return CompletableFuture.failedFuture(t);
+        }
     }
 }

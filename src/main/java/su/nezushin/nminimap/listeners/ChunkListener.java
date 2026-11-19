@@ -17,13 +17,17 @@ public class ChunkListener implements Listener {
             return;
 
         var chunk = e.getChunk();
-        NMinimap.async(() -> {
-            var chunkManager = NMinimap.getInstance().getChunkManager();
-            var entry = new ChunkEntry(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), null);
+        var chunkManager = NMinimap.getInstance().getChunkManager();
+        var entry = new ChunkEntry(chunk.getWorld().getName(), chunk.getX(), chunk.getZ(), null);
 
-            if (PerWorldSettingsUtil.getAllowFileCache(entry.world()) && !chunkManager.getChunkCache().hasInCache(entry))
-                NMinimap.getInstance().getChunkManager().getOrRenderChunk(entry);
-        });
+        // Check synchronously before spawning an async task so neighbor-only loads don't race past unmark.
+        if (chunkManager.isNeighborChunkLoading(entry)
+                || !PerWorldSettingsUtil.getAllowFileCache(entry.world())
+                || chunkManager.getChunkCache().hasInCache(entry)
+                || !entry.isInsideWorldBorder())
+            return;
+
+        NMinimap.async(() -> chunkManager.getOrRenderChunk(entry));
     }
 
     @EventHandler

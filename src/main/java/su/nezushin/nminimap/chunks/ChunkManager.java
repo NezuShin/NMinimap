@@ -27,6 +27,11 @@ public class ChunkManager {
      * dirties that arrive mid-job are preserved for {@link #finishChunkJob}.
      */
     private final Set<ChunkEntry> dirtyChunks = ConcurrentHashMap.newKeySet();
+    /**
+     * Chunks currently being loaded solely as northern neighbors by {@link ChunkRender},
+     * ref-counted so concurrent renders don't unmark an in-flight load early.
+     */
+    private final Map<ChunkEntry, Integer> neighborLoadingChunks = new ConcurrentHashMap<>();
     private final Queue<ChunkEntry> awaitingChunks = new ConcurrentLinkedQueue<>();
 
     private final Map<Integer, byte[]> emptyMap = MapDataUtil.prepareEmptyMap();
@@ -94,6 +99,18 @@ public class ChunkManager {
 
     public void markDirty(ChunkEntry chunk) {
         dirtyChunks.add(chunk);
+    }
+
+    public void markNeighborChunkLoading(ChunkEntry chunk) {
+        neighborLoadingChunks.merge(chunk, 1, Integer::sum);
+    }
+
+    public void unmarkNeighborChunkLoading(ChunkEntry chunk) {
+        neighborLoadingChunks.computeIfPresent(chunk, (k, count) -> count > 1 ? count - 1 : null);
+    }
+
+    public boolean isNeighborChunkLoading(ChunkEntry chunk) {
+        return neighborLoadingChunks.containsKey(chunk);
     }
 
     public void renderNextAwaitingChunk() {

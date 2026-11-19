@@ -38,9 +38,19 @@ public class ChunkLoadingUtil {
      * thread right after loading, and {@code get()} just returns it.
      */
     public static CompletableFuture<Supplier<ChunkSnapshot>> getChunkSnapshotAt(World w, int x, int z) {
+        return getChunkSnapshotAt(w, x, z, true);
+    }
+
+    /**
+     * Loads a chunk (optionally generating it on Paper when {@code generate} is true) and gives back
+     * a way to get its block snapshot. Returns {@code null} from the future when {@code generate} is
+     * false and the chunk does not exist on Paper.
+     */
+    public static CompletableFuture<Supplier<ChunkSnapshot>> getChunkSnapshotAt(World w, int x, int z, boolean generate) {
 
         if (isPaper) {
-            return w.getChunkAtAsync(x, z).thenApply(chunk -> () -> takeSnapshot(chunk));
+            return w.getChunkAtAsync(x, z, generate)
+                    .thenApply(chunk -> chunk != null ? () -> takeSnapshot(chunk) : null);
         }
 
         CompletableFuture<Supplier<ChunkSnapshot>> future = new CompletableFuture<>();
